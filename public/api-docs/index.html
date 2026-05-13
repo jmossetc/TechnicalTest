@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShopManager API Docs</title>
+  <link rel="stylesheet" href="./assets/swagger-ui.css" />
+  <style>
+    html { box-sizing: border-box; overflow-y: scroll; }
+    *, *:before, *:after { box-sizing: inherit; }
+    body { margin: 0; background: #fafafa; }
+  </style>
+  <link rel="icon" href="data:," />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="noindex" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="color-scheme" content="light dark">
+  <script>
+    // Allow overriding the spec URL via query string ?url=
+    function getSpecUrl() {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('url') || './openapi.yaml';
+    }
+  </script>
+  <!-- Swagger UI will be loaded from local assets placed by `make openapi` -->
+</head>
+<body>
+  <div id="swagger-ui"></div>
+
+  <script src="./assets/swagger-ui-bundle.js"></script>
+  <script src="./assets/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.ui = SwaggerUIBundle({
+      url: getSpecUrl(),
+      dom_id: '#swagger-ui',
+      deepLinking: true,
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      layout: "StandaloneLayout"
+    });
+  </script>
+</body>
+</html>
