@@ -83,6 +83,8 @@ final readonly class ListUsersController implements ControllerInterface
             return [];
         }
 
-        return array_values(array_filter(explode(',', $raw)));
+        return explode(',', $raw)
+                |> array_filter(...)
+                |> array_values(...);
     }
 }

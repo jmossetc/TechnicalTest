@@ -53,9 +53,7 @@ final readonly class UserAuthorizationService
                 throw new ForbiddenException('You can only create shop managers for shops belonging to your company');
             }
 
-            if ($targetRole === Role::Employee) {
-                return;
-            }
+            return;
         }
 
         if ($caller->role === Role::ShopManager) {
@@ -70,9 +68,7 @@ final readonly class UserAuthorizationService
                 throw new ForbiddenException('You can only create shop managers for your own shop');
             }
 
-            if ($targetRole === Role::Employee) {
-                return;
-            }
+            return;
         }
 
         throw new ForbiddenException('You do not have permission to create accounts');

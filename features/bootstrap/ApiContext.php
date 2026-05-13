@@ -585,6 +585,7 @@ final class ApiContext implements Context
             'password'   => $password,
             'first_name' => 'Test',
             'last_name'  => 'User',
+            'role'       => 'employee',
         ], $extra);
     }
 

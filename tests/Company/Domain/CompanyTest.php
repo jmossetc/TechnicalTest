@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CompanyTest extends TestCase
 {
+    /** @param array{id?: CompanyId, name?: CompanyName} $overrides */
     private function makeCompany(array $overrides = []): Company
     {
         return new Company(

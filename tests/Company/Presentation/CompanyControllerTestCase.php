@@ -70,11 +70,17 @@ abstract class CompanyControllerTestCase extends TestCase
         return (new CreateCompanyHandler($this->companyRepo))->handle(new CreateCompany($name));
     }
 
+    /**
+     * @param array<string, mixed>  $body
+     * @param array<string, string> $attrs
+     * @param array<string, string> $query
+     */
     protected function authedRequest(string $method, string $path, array $body = [], array $attrs = [], array $query = []): Request
     {
         return new Request($method, $path, ['Authorization' => 'Bearer tok'], $body, $attrs, $query);
     }
 
+    /** @param array<string, string> $attrs */
     protected function unauthRequest(string $method, string $path, array $attrs = []): Request
     {
         return new Request($method, $path, [], [], $attrs);

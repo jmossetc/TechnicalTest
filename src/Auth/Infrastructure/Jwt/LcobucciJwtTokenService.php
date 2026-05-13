@@ -25,7 +25,7 @@ use Throwable;
 
 final class LcobucciJwtTokenService implements TokenServiceInterface
 {
-    private readonly Configuration $jwtConfiguration;
+    private Configuration $jwtConfiguration;
 
     public function __construct(
         private readonly JwtConfig $config,
@@ -35,8 +35,7 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
         $key = InMemory::plainText($config->secret);
 
         $this->jwtConfiguration = Configuration::forSymmetricSigner($signer, $key);
-
-        $this->jwtConfiguration->setValidationConstraints(
+        $this->jwtConfiguration = $this->jwtConfiguration->withValidationConstraints(
             new SignedWith($signer, $key),
             new IssuedBy($config->issuer),
             new PermittedFor($config->audience),
@@ -48,10 +47,6 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
     {
         $now = $this->clock->now();
         $expiresAt = $now->modify("+{$this->config->ttlSeconds} seconds");
-
-        if (!$expiresAt instanceof DateTimeImmutable) {
-            throw new \RuntimeException('Failed to compute token expiry');
-        }
 
         $token = $this->jwtConfiguration->builder()
             ->issuedBy($this->config->issuer)
@@ -78,10 +73,6 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
             throw new InvalidTokenException('malformed token', previous: $e);
         }
 
-        if (!$parsed instanceof Plain) {
-            throw new InvalidTokenException('unexpected token type');
-        }
-
         try {
             $this->jwtConfiguration->validator()->assert(
                 $parsed,
@@ -89,6 +80,10 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
             );
         } catch (RequiredConstraintsViolated $e) {
             throw new InvalidTokenException($e->getMessage(), previous: $e);
+        }
+
+        if (!$parsed instanceof Plain) {
+            throw new InvalidTokenException('unsupported token type');
         }
 
         $userId = $parsed->claims()->get('user_id');

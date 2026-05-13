@@ -11,27 +11,27 @@ use Mossetc\TechnicalTest\Auth\Domain\Service\PasswordHasherInterface;
 final readonly class PasswordHasher implements PasswordHasherInterface
 {
     /** @var non-empty-string|null */
-    private ?string $pepper;
+    private ?string $salt;
 
-    public function __construct(string $pepper)
+    public function __construct(string $salt)
     {
-        $this->pepper = $pepper !== '' ? $pepper : null;
+        $this->salt = $salt !== '' ? $salt : null;
     }
 
     public function hash(PlainPassword $password): HashedPassword
     {
         return HashedPassword::fromHash(
-            password_hash($this->peppered($password), PASSWORD_BCRYPT),
+            password_hash($this->salted($password), PASSWORD_BCRYPT),
         );
     }
 
     public function verify(PlainPassword $password, HashedPassword $hash): bool
     {
-        return password_verify($this->peppered($password), $hash->hash);
+        return password_verify($this->salted($password), $hash->hash);
     }
 
-    private function peppered(PlainPassword $password): string
+    private function salted(PlainPassword $password): string
     {
-        return $this->pepper !== null ? $this->pepper . $password->value : $password->value;
+        return $this->salt !== null ? $this->salt . $password->value : $password->value;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Auth\Presentation\Controller;
 
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
+use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Model\FirstName;
 use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
@@ -13,6 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Service\RegistrationInputValidatorService;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
@@ -30,6 +32,9 @@ use PHPUnit\Framework\TestCase;
 
 final class RegisterUserControllerTest extends TestCase
 {
+    private const string COMPANY_A = '11111111-1111-4111-8111-111111111111';
+    private const string SHOP_A    = 'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
     private UserId $callerId;
     private InMemoryUserRepository $userRepo;
 
@@ -39,6 +44,8 @@ final class RegisterUserControllerTest extends TestCase
         $this->userRepo = new InMemoryUserRepository();
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
     private function makeAuth(): JwtAuthMiddleware
     {
         $svc = $this->createStub(TokenServiceInterface::class);
@@ -47,7 +54,7 @@ final class RegisterUserControllerTest extends TestCase
         return new JwtAuthMiddleware($svc);
     }
 
-    private function seedCaller(Role $role, ?string $companyId = null): void
+    private function seedCaller(Role $role, ?string $companyId = null, ?string $shopId = null): void
     {
         $this->userRepo->save(new User(
             id:        $this->callerId,
@@ -57,6 +64,7 @@ final class RegisterUserControllerTest extends TestCase
             lastName:  new LastName('User'),
             role:      $role,
             companyId: $companyId,
+            shopId:    $shopId,
         ));
     }
 
@@ -83,15 +91,20 @@ final class RegisterUserControllerTest extends TestCase
             new RegisterUserHandler($this->userRepo, new PasswordHasher('')),
             $this->makeAuth(),
             new UserAuthorizationService($this->userRepo),
-            $shopRepo ?? $this->createStub(ShopRepositoryInterface::class),
+            new RegistrationInputValidatorService($shopRepo ?? $this->createStub(ShopRepositoryInterface::class)),
         );
     }
 
+    /** @param array<string, mixed> $body */
     private function req(array $body): Request
     {
         return new Request('POST', '/api/users', ['Authorization' => 'Bearer tok'], $body);
     }
 
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
     private function validBody(array $overrides = []): array
     {
         return array_merge([
@@ -99,10 +112,13 @@ final class RegisterUserControllerTest extends TestCase
             'password'   => 'password123',
             'first_name' => 'New',
             'last_name'  => 'User',
+            'role'       => 'employee',
         ], $overrides);
     }
 
-    public function testReturns201OnSuccess(): void
+    // ── Success cases ─────────────────────────────────────────────────────────
+
+    public function testReturns201WithIdOnSuccess(): void
     {
         $this->seedCaller(Role::Admin);
 
@@ -112,6 +128,85 @@ final class RegisterUserControllerTest extends TestCase
         $this->assertArrayHasKey('id', $response->data());
     }
 
+    public function testCreatedUserIsPersisted(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $this->ctrl()($this->req($this->validBody()));
+
+        $this->assertSame(2, $this->userRepo->count()); // caller + new user
+    }
+
+    public function testReturnedIdMatchesPersistedUser(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->req($this->validBody()));
+
+        $id = $response->data()['id'] ?? null;
+        $this->assertIsString($id);
+        $this->assertNotNull($this->userRepo->findById(new UserId($id)));
+    }
+
+    public function testAdminCanCreateCompanyAdmin(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->req($this->validBody([
+            'role'       => 'company_admin',
+            'company_id' => self::COMPANY_A,
+        ])));
+
+        $this->assertSame(201, $response->status());
+    }
+
+    public function testAdminCanCreateShopManagerWhenShopExists(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'role'    => 'shop_manager',
+            'shop_id' => self::SHOP_A,
+        ])));
+
+        $this->assertSame(201, $response->status());
+    }
+
+    public function testCompanyAdminCanCreateEmployeeInOwnCompany(): void
+    {
+        $this->seedCaller(Role::CompanyAdmin, companyId: self::COMPANY_A);
+
+        $response = $this->ctrl()($this->req($this->validBody([
+            'role'       => 'employee',
+            'company_id' => self::COMPANY_A,
+        ])));
+
+        $this->assertSame(201, $response->status());
+    }
+
+    public function testCompanyAdminCanCreateCompanyAdminInOwnCompany(): void
+    {
+        $this->seedCaller(Role::CompanyAdmin, companyId: self::COMPANY_A);
+
+        $response = $this->ctrl()($this->req($this->validBody([
+            'role'       => 'company_admin',
+            'company_id' => self::COMPANY_A,
+        ])));
+
+        $this->assertSame(201, $response->status());
+    }
+
+    public function testShopManagerCanCreateEmployee(): void
+    {
+        $this->seedCaller(Role::ShopManager, shopId: self::SHOP_A);
+
+        $response = $this->ctrl()($this->req($this->validBody(['role' => 'employee'])));
+
+        $this->assertSame(201, $response->status());
+    }
+
+    // ── Authentication errors (401) ───────────────────────────────────────────
+
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
         $response = $this->ctrl()(new Request('POST', '/api/users', [], $this->validBody()));
@@ -119,126 +214,145 @@ final class RegisterUserControllerTest extends TestCase
         $this->assertSame(401, $response->status());
     }
 
-    public function testReturns422WhenEmailMissing(): void
+    public function testReturns401WhenTokenIsInvalid(): void
+    {
+        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc->method('validate')->willThrowException(new InvalidTokenException('bad token'));
+        $ctrl = new RegisterUserController(
+            new RegisterUserHandler($this->userRepo, new PasswordHasher('')),
+            new JwtAuthMiddleware($svc),
+            new UserAuthorizationService($this->userRepo),
+            new RegistrationInputValidatorService($this->createStub(ShopRepositoryInterface::class)),
+        );
+
+        $response = $ctrl($this->req($this->validBody()));
+
+        $this->assertSame(401, $response->status());
+    }
+
+    // ── Validation errors (422) ───────────────────────────────────────────────
+
+    public function testReturns422WhenEmailIsMissing(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $body = $this->validBody();
+        unset($body['email']);
+
+        $this->assertSame(422, $this->ctrl()($this->req($body))->status());
+    }
+
+    public function testReturns422WhenPasswordIsMissing(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $body = $this->validBody();
+        unset($body['password']);
+
+        $this->assertSame(422, $this->ctrl()($this->req($body))->status());
+    }
+
+    public function testReturns422WhenFirstNameIsMissing(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $body = $this->validBody();
+        unset($body['first_name']);
+
+        $this->assertSame(422, $this->ctrl()($this->req($body))->status());
+    }
+
+    public function testReturns422WhenLastNameIsMissing(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $body = $this->validBody();
+        unset($body['last_name']);
+
+        $this->assertSame(422, $this->ctrl()($this->req($body))->status());
+    }
+
+    public function testReturns422WhenRoleIsMissing(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $body = $this->validBody();
+        unset($body['role']);
+
+        $this->assertSame(422, $this->ctrl()($this->req($body))->status());
+    }
+
+    public function testReturns422WhenRoleIsInvalid(): void
     {
         $this->seedCaller(Role::Admin);
 
-        $response = $this->ctrl()($this->req($this->validBody(['email' => ''])));
+        $this->assertSame(422, $this->ctrl()($this->req($this->validBody(['role' => 'superuser'])))->status());
+    }
+
+    public function testReturns422WhenCompanyAdminHasNoCompanyId(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $this->assertSame(422, $this->ctrl()($this->req($this->validBody(['role' => 'company_admin'])))->status());
+    }
+
+    public function testReturns422WhenShopManagerHasNoShopId(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $this->assertSame(422, $this->ctrl()($this->req($this->validBody(['role' => 'shop_manager'])))->status());
+    }
+
+    public function testReturns422WhenShopManagerShopDoesNotExist(): void
+    {
+        $this->seedCaller(Role::Admin);
+        // shop repo returns null → shop not found
+        $response = $this->ctrl($this->makeShopRepo(null))($this->req($this->validBody([
+            'role'    => 'shop_manager',
+            'shop_id' => self::SHOP_A,
+        ])));
 
         $this->assertSame(422, $response->status());
     }
 
-    public function testReturns422WhenPasswordMissing(): void
-    {
-        $this->seedCaller(Role::Admin);
+    // ── Authorization errors (403) ────────────────────────────────────────────
 
-        $response = $this->ctrl()($this->req($this->validBody(['password' => ''])));
-
-        $this->assertSame(422, $response->status());
-    }
-
-    public function testReturns422WhenFirstNameMissing(): void
-    {
-        $this->seedCaller(Role::Admin);
-
-        $response = $this->ctrl()($this->req($this->validBody(['first_name' => ''])));
-
-        $this->assertSame(422, $response->status());
-    }
-
-    public function testReturns422WhenLastNameMissing(): void
-    {
-        $this->seedCaller(Role::Admin);
-
-        $response = $this->ctrl()($this->req($this->validBody(['last_name' => ''])));
-
-        $this->assertSame(422, $response->status());
-    }
-
-    public function testReturns422ForUnknownRole(): void
-    {
-        $this->seedCaller(Role::Admin);
-
-        $response = $this->ctrl()($this->req($this->validBody(['role' => 'superuser'])));
-
-        $this->assertSame(422, $response->status());
-    }
-
-    public function testReturns422ForCompanyAdminWithoutCompanyId(): void
-    {
-        $this->seedCaller(Role::Admin);
-
-        $response = $this->ctrl()($this->req($this->validBody(['role' => 'company_admin'])));
-
-        $this->assertSame(422, $response->status());
-    }
-
-    public function testReturns422ForShopManagerWithoutShopId(): void
-    {
-        $this->seedCaller(Role::Admin);
-
-        $response = $this->ctrl()($this->req($this->validBody(['role' => 'shop_manager'])));
-
-        $this->assertSame(422, $response->status());
-    }
-
-    public function testReturns403WhenForbidden(): void
+    public function testReturns403WhenEmployeeTriesToRegister(): void
     {
         $this->seedCaller(Role::Employee);
 
-        $response = $this->ctrl()($this->req($this->validBody()));
+        $this->assertSame(403, $this->ctrl()($this->req($this->validBody()))->status());
+    }
+
+    public function testReturns403WhenCompanyAdminTriesToCreateAdmin(): void
+    {
+        $this->seedCaller(Role::CompanyAdmin, companyId: self::COMPANY_A);
+
+        $this->assertSame(403, $this->ctrl()($this->req($this->validBody(['role' => 'admin'])))->status());
+    }
+
+    public function testReturns403WhenCompanyAdminCreatesUserForOtherCompany(): void
+    {
+        $this->seedCaller(Role::CompanyAdmin, companyId: self::COMPANY_A);
+        $otherCompany = '22222222-2222-4222-8222-222222222222';
+
+        $response = $this->ctrl()($this->req($this->validBody([
+            'role'       => 'company_admin',
+            'company_id' => $otherCompany,
+        ])));
 
         $this->assertSame(403, $response->status());
     }
 
-    public function testReturns409OnDuplicateEmail(): void
+    // ── Conflict (409) ────────────────────────────────────────────────────────
+
+    public function testReturns409WhenEmailIsAlreadyTaken(): void
     {
         $this->seedCaller(Role::Admin);
-        // Pre-register the same email
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('new@example.com'),
-            password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('X'), lastName: new LastName('Y'), role: Role::Employee,
+            id:        UserId::generate(),
+            email:     new Email('new@example.com'),
+            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Existing'),
+            lastName:  new LastName('User'),
+            role:      Role::Employee,
         ));
 
-        $response = $this->ctrl()($this->req($this->validBody()));
-
-        $this->assertSame(409, $response->status());
-    }
-
-    public function testDefaultRoleIsEmployee(): void
-    {
-        $this->seedCaller(Role::Admin);
-        $this->ctrl()($this->req($this->validBody()));
-
-        $user = $this->userRepo->findByEmail(new Email('new@example.com'));
-        $this->assertNotNull($user);
-        $this->assertSame(Role::Employee, $user->role);
-    }
-
-    public function testCompanyAdminCanRegisterEmployeeForOwnCompany(): void
-    {
-        $companyId = '11111111-1111-4111-8111-111111111111';
-        $this->seedCaller(Role::CompanyAdmin, $companyId);
-
-        $response = $this->ctrl()($this->req($this->validBody()));
-
-        $this->assertSame(201, $response->status());
-    }
-
-    public function testShopManagerResolvesCompanyFromShop(): void
-    {
-        $companyId = '11111111-1111-4111-8111-111111111111';
-        $shopId    = ShopId::generate()->value;
-        $this->seedCaller(Role::Admin);
-
-        $this->ctrl($this->makeShopRepo($companyId))(
-            $this->req($this->validBody(['role' => 'shop_manager', 'shop_id' => $shopId])),
-        );
-
-        $user = $this->userRepo->findByEmail(new Email('new@example.com'));
-        $this->assertNotNull($user);
-        $this->assertSame(Role::ShopManager, $user->role);
-        $this->assertSame($companyId, $user->companyId);
+        $this->assertSame(409, $this->ctrl()($this->req($this->validBody()))->status());
     }
 }

@@ -68,13 +68,19 @@ services:
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware: ~
 
-  Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization: ~
+  Mossetc\TechnicalTest\Auth\Domain\Service\RegistrationInputValidatorService: ~
+
+  Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService: ~
+
+  Mossetc\TechnicalTest\Auth\Domain\Service\UserDeletionService: ~
 
   Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler: ~
 
   Mossetc\TechnicalTest\Auth\Application\Handler\LoginUserHandler: ~
 
   Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler: ~
+
+  Mossetc\TechnicalTest\Auth\Application\Handler\DeleteUserHandler: ~
 
   # autoconfigure: true makes the container read #[AsHttpController] and add the tag.
   # To add a new controller: create the class with the attribute, add one line here.

@@ -28,8 +28,12 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
 
         $this->assertSame(200, $response->status());
         $data = $response->data();
-        $this->assertCount(2, $data['data']);
-        $this->assertSame(2,  $data['pagination']['total']);
+        $items = $data['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(2, $items);
+        $pagination = $data['pagination'];
+        $this->assertIsArray($pagination);
+        $this->assertSame(2, $pagination['total']);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
@@ -52,8 +56,10 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
     {
         $this->seedCompany('Test');
 
-        $item = $this->ctrl()($this->authedRequest('GET', '/api/companies'))->data()['data'][0];
-
+        $items = $this->ctrl()($this->authedRequest('GET', '/api/companies'))->data()['data'];
+        $this->assertIsArray($items);
+        $item = $items[0];
+        $this->assertIsArray($item);
         $this->assertArrayHasKey('id',         $item);
         $this->assertArrayHasKey('name',       $item);
         $this->assertArrayHasKey('email',      $item);
@@ -71,8 +77,13 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
             'GET', '/api/companies', query: ['page' => '1', 'limit' => '2'],
         ));
 
-        $this->assertCount(2, $response->data()['data']);
-        $this->assertSame(3, $response->data()['pagination']['total']);
+        $data = $response->data();
+        $items = $data['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(2, $items);
+        $pagination = $data['pagination'];
+        $this->assertIsArray($pagination);
+        $this->assertSame(3, $pagination['total']);
     }
 
     public function testNameFilterIsApplied(): void
@@ -83,8 +94,12 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
             'GET', '/api/companies', query: ['name' => 'Alpha'],
         ));
 
-        $this->assertCount(1, $response->data()['data']);
-        $this->assertSame('Alpha Corp', $response->data()['data'][0]['name']);
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+        $first = $items[0];
+        $this->assertIsArray($first);
+        $this->assertSame('Alpha Corp', $first['name']);
     }
 
     public function testEmptyNameQueryParamIsIgnored(): void
@@ -95,6 +110,8 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
             'GET', '/api/companies', query: ['name' => ''],
         ));
 
-        $this->assertCount(1, $response->data()['data']);
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
     }
 }

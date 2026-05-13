@@ -15,6 +15,7 @@ use Symfony\Component\Routing\RouteCollection;
 
 final class RouterTest extends TestCase
 {
+    /** @param array<string, array{string, list<string>}> $definitions */
     private function makeRoutes(array $definitions = []): RouteCollection
     {
         $collection = new RouteCollection();
@@ -26,6 +27,7 @@ final class RouterTest extends TestCase
         return $collection;
     }
 
+    /** @param array<string, ControllerInterface> $controllers */
     private function makeContainer(array $controllers): ContainerInterface
     {
         $container = $this->createStub(ContainerInterface::class);
@@ -72,7 +74,7 @@ final class RouterTest extends TestCase
     public function testInjectsRouteAttributesIntoRequest(): void
     {
         $capturedRequest = null;
-        $controller      = new class (\stdClass::class) implements ControllerInterface {
+        $controller      = new class implements ControllerInterface {
             public ?Request $captured = null;
             public function __invoke(Request $request): Response {
                 $this->captured = $request;
@@ -180,6 +182,7 @@ final class RouterTest extends TestCase
         $response = $router->dispatch($this->req('DELETE', '/api/users'));
 
         $error = $response->data()['error'] ?? '';
+        $this->assertIsString($error);
         $this->assertStringContainsString('Allowed', $error);
     }
 }

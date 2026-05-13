@@ -61,6 +61,7 @@ final class ListUsersControllerTest extends TestCase
         );
     }
 
+    /** @param array<string, string> $query */
     private function request(array $query = []): Request
     {
         return new Request('GET', '/api/users', ['Authorization' => 'Bearer tok'], [], [], $query);
@@ -78,8 +79,9 @@ final class ListUsersControllerTest extends TestCase
         $response = $this->ctrl()($this->request());
 
         $this->assertSame(200, $response->status());
-        // admin + other user
-        $this->assertCount(2, $response->data()['data']);
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(2, $items);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
@@ -105,7 +107,7 @@ final class ListUsersControllerTest extends TestCase
         $this->seedCaller(Role::Admin);
 
         $pagination = $this->ctrl()($this->request())->data()['pagination'];
-
+        $this->assertIsArray($pagination);
         $this->assertArrayHasKey('total', $pagination);
         $this->assertArrayHasKey('page',  $pagination);
         $this->assertArrayHasKey('limit', $pagination);
@@ -116,8 +118,10 @@ final class ListUsersControllerTest extends TestCase
     {
         $this->seedCaller(Role::Admin);
 
-        $item = $this->ctrl()($this->request())->data()['data'][0];
-
+        $items = $this->ctrl()($this->request())->data()['data'];
+        $this->assertIsArray($items);
+        $item = $items[0];
+        $this->assertIsArray($item);
         $this->assertArrayHasKey('id',         $item);
         $this->assertArrayHasKey('email',      $item);
         $this->assertArrayHasKey('first_name', $item);
@@ -144,6 +148,8 @@ final class ListUsersControllerTest extends TestCase
         $response = $this->ctrl()($this->request());
 
         $this->assertSame(200, $response->status());
-        $this->assertCount(1, $response->data()['data']);
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
     }
 }

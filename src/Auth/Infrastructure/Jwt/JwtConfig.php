@@ -8,16 +8,19 @@ use InvalidArgumentException;
 
 final readonly class JwtConfig
 {
-    /**
-     * @param non-empty-string $secret
-     * @param non-empty-string $issuer
-     * @param non-empty-string $audience
-     */
+    /** @var non-empty-string */
+    public string $secret;
+    /** @var non-empty-string */
+    public string $issuer;
+    /** @var non-empty-string */
+    public string $audience;
+    public int $ttlSeconds;
+
     public function __construct(
-        public string $secret,
-        public string $issuer,
-        public string $audience,
-        public int $ttlSeconds = 3600,
+        string $secret,
+        string $issuer,
+        string $audience,
+        int $ttlSeconds = 3600,
     ) {
         if (strlen($secret) < 32) {
             throw new InvalidArgumentException('JWT secret must be at least 32 characters long');
@@ -34,5 +37,10 @@ final readonly class JwtConfig
         if ($ttlSeconds <= 0) {
             throw new InvalidArgumentException('JWT TTL must be positive');
         }
+
+        $this->secret    = $secret;
+        $this->issuer    = $issuer;
+        $this->audience  = $audience;
+        $this->ttlSeconds = $ttlSeconds;
     }
 }

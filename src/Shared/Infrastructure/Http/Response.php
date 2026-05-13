@@ -6,12 +6,13 @@ namespace Mossetc\TechnicalTest\Shared\Infrastructure\Http;
 
 final readonly class Response
 {
+    /** @param array<string, mixed> $data */
     private function __construct(
-        private mixed $data,
+        private array $data,
         private int $status,
     ) {}
 
-    /** @param array<string, mixed>|array<mixed> $data */
+    /** @param array<string, mixed> $data */
     public static function json(array $data, int $status = 200): self
     {
         return new self($data, $status);
@@ -34,8 +35,8 @@ final readonly class Response
         return $this->status;
     }
 
-    /** @return mixed */
-    public function data(): mixed
+    /** @return array<string, mixed> */
+    public function data(): array
     {
         return $this->data;
     }
