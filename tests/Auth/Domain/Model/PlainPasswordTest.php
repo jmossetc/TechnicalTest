@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
+namespace Mossetc\TechnicalTest\Tests\Auth\Domain\Model;
 
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;

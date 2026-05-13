@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mossetc\TechnicalTest\Tests\Integration\Auth;
+namespace Mossetc\TechnicalTest\Tests\Auth\Application\Handler;
 
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
@@ -25,9 +25,9 @@ final class RegisterUserHandlerTest extends TestCase
         $this->handler    = new RegisterUserHandler($this->repository, new PasswordHasher(''));
     }
 
-    private function cmd(string $email = 'alice@example.com', string $password = 'password123'): RegisterUser
+    private function cmd(string $email = 'alice@example.com', string $role = 'employee'): RegisterUser
     {
-        return new RegisterUser($email, $password, 'Alice', 'Smith');
+        return new RegisterUser($email, 'password123', 'Alice', 'Smith', $role);
     }
 
     public function testRegistersNewUser(): void
@@ -35,21 +35,17 @@ final class RegisterUserHandlerTest extends TestCase
         $userId = $this->handler->handle($this->cmd());
 
         $saved = $this->repository->findById($userId);
-
         $this->assertNotNull($saved);
         $this->assertSame('alice@example.com', $saved->email->value);
-        $this->assertSame('Alice', $saved->firstName->value);
-        $this->assertSame('Smith', $saved->lastName->value);
-        $this->assertSame(Role::Employee, $saved->role);
     }
 
-    public function testReturnedUserIdMatchesSavedUser(): void
+    public function testReturnsGeneratedId(): void
     {
-        $userId = $this->handler->handle($this->cmd());
-        $saved  = $this->repository->findById($userId);
+        $id   = $this->handler->handle($this->cmd());
+        $user = $this->repository->findById($id);
 
-        $this->assertNotNull($saved);
-        $this->assertTrue($userId->equals($saved->id));
+        $this->assertNotNull($user);
+        $this->assertTrue($id->equals($user->id));
     }
 
     public function testHashesPassword(): void
@@ -57,12 +53,21 @@ final class RegisterUserHandlerTest extends TestCase
         $this->handler->handle($this->cmd());
 
         $user = $this->repository->findByEmail(new Email('alice@example.com'));
-
         $this->assertNotNull($user);
         $this->assertNotSame('password123', $user->password->hash);
     }
 
-    public function testRoleIsStoredOnUser(): void
+    public function testStoresFirstAndLastName(): void
+    {
+        $this->handler->handle(new RegisterUser('a@b.com', 'password123', 'Bob', 'Jones'));
+
+        $user = $this->repository->findByEmail(new Email('a@b.com'));
+        $this->assertNotNull($user);
+        $this->assertSame('Bob', $user->firstName->value);
+        $this->assertSame('Jones', $user->lastName->value);
+    }
+
+    public function testStoresRole(): void
     {
         $this->handler->handle(new RegisterUser(
             'cm@example.com', 'password123', 'Carol', 'M',
@@ -70,13 +75,34 @@ final class RegisterUserHandlerTest extends TestCase
         ));
 
         $user = $this->repository->findByEmail(new Email('cm@example.com'));
-
         $this->assertNotNull($user);
         $this->assertSame(Role::CompanyAdmin, $user->role);
         $this->assertSame('11111111-1111-4111-8111-111111111111', $user->companyId);
     }
 
-    public function testThrowsWhenEmailAlreadyRegistered(): void
+    public function testDefaultRoleIsEmployee(): void
+    {
+        $this->handler->handle($this->cmd());
+
+        $user = $this->repository->findByEmail(new Email('alice@example.com'));
+        $this->assertNotNull($user);
+        $this->assertSame(Role::Employee, $user->role);
+    }
+
+    public function testStoresShopId(): void
+    {
+        $this->handler->handle(new RegisterUser(
+            'sm@example.com', 'password123', 'Sam', 'M',
+            'shop_manager', '11111111-1111-4111-8111-111111111111',
+            'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        ));
+
+        $user = $this->repository->findByEmail(new Email('sm@example.com'));
+        $this->assertNotNull($user);
+        $this->assertSame('aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa', $user->shopId);
+    }
+
+    public function testThrowsOnDuplicateEmail(): void
     {
         $this->handler->handle($this->cmd());
 
@@ -90,17 +116,17 @@ final class RegisterUserHandlerTest extends TestCase
         $this->handler->handle(new RegisterUser('not-an-email', 'password123', 'A', 'B'));
     }
 
-    public function testThrowsOnTooShortPassword(): void
+    public function testThrowsOnShortPassword(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->handler->handle(new RegisterUser('alice@example.com', 'short', 'A', 'B'));
+        $this->handler->handle(new RegisterUser('a@b.com', 'short', 'A', 'B'));
     }
 
     public function testEmailIsCaseInsensitive(): void
     {
-        $this->handler->handle($this->cmd());
+        $this->handler->handle($this->cmd('alice@example.com'));
 
         $this->expectException(UserAlreadyExistsException::class);
-        $this->handler->handle(new RegisterUser('ALICE@EXAMPLE.COM', 'password123', 'A', 'B'));
+        $this->handler->handle($this->cmd('ALICE@EXAMPLE.COM'));
     }
 }

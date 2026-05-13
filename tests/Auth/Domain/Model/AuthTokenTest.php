@@ -1,6 +1,6 @@
 <?php
 
-namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
+namespace Mossetc\TechnicalTest\Tests\Auth\Domain\Model;
 
 use Mossetc\TechnicalTest\Auth\Domain\Model\AuthToken;
 use PHPUnit\Framework\TestCase;

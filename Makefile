@@ -11,7 +11,6 @@ install:
 .PHONY: tests
 tests:
 	$(DC) exec app ./vendor/bin/phpunit
-	$(DC) exec app ./vendor/bin/behat
 
 .PHONY: behat
 behat:
@@ -19,7 +18,7 @@ behat:
 
 .PHONY: tests-coverage
 tests-coverage:
-	$(DC) exec -e XDEBUG_MODE=coverage app ./vendor/bin/phpunit --coverage-html tests/coverage-report/
+	$(DC) exec -e XDEBUG_MODE=coverage app ./vendor/bin/phpunit --coverage-html coverage-report/
 
 .PHONY: analyse
 analyse:

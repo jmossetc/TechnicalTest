@@ -1,1 +1,0 @@
-Need to add salt to password hashing for security

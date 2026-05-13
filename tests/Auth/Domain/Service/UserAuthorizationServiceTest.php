@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Application;
+namespace Mossetc\TechnicalTest\Tests\Auth\Domain\Service;
 
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
@@ -34,7 +34,6 @@ final class UserAuthorizationServiceTest extends TestCase
     }
 
     // ── authorizeRegistration ─────────────────────────────────────────────────
-
     public function testAdminCanRegisterAdmin(): void
     {
         $this->service(callerRole: Role::Admin)
@@ -140,6 +139,14 @@ final class UserAuthorizationServiceTest extends TestCase
             ->authorizeRegistration($this->callerId, Role::Employee, null, null);
         $this->addToAssertionCount(1);
     }
+
+    public function testInactiveUserCannotRegisterAccount(): void
+    {
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::Admin, isUserActive: false)
+            ->authorizeRegistration($this->callerId, Role::Admin, null, null);
+    }
+
 
     // ── authorizeDeletion ─────────────────────────────────────────────────────
 
@@ -257,14 +264,63 @@ final class UserAuthorizationServiceTest extends TestCase
         $this->service(callerRole: Role::Employee)->resolveListingScope($this->callerId);
     }
 
+    public function testAuthorizeAdminOnlyAction(): void
+    {
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::Employee)->authorizeAdminOnlyAction($this->callerId);
+    }
+
+    public function testAuthorizeCompanyAccessForAdmin(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->service(callerRole: Role::Admin)->authorizeCompanyAccess($this->callerId, self::COMPANY_A);
+    }
+
+    public function testAuthorizeCompanyAccessForCompanyAdmin(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)->authorizeCompanyAccess($this->callerId, self::COMPANY_A);
+    }
+
+    public function testAuthorizeCompanyAccessForWrongCompanyAdmin(): void
+    {
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_B)->authorizeCompanyAccess($this->callerId, self::COMPANY_A);
+    }
+
+    public function testAuthorizeShopAccessForAdmin(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->service(callerRole: Role::Admin)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+    }
+
+    public function testAuthorizeShopAccessForCompanyAdmin(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+    }
+
+    public function testAuthorizeShopAccessForShopManager(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+    }
+
+    public function testAuthorizeShopAccessForWrongShopManager(): void
+    {
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_B1)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function service(
         Role $callerRole = Role::Employee,
         ?string $callerCompanyId = null,
         ?string $callerShopId = null,
+        bool $isUserActive = true,
     ): UserAuthorization {
-        $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId);
+        $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId, $isUserActive);
 
         $repo = $this->createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturnCallback(
@@ -279,6 +335,7 @@ final class UserAuthorizationServiceTest extends TestCase
         Role $role = Role::Employee,
         ?string $companyId = null,
         ?string $shopId = null,
+        bool $isActive = true,
     ): User {
         return new User(
             id:        $id,
@@ -289,6 +346,7 @@ final class UserAuthorizationServiceTest extends TestCase
             role:      $role,
             companyId: $companyId,
             shopId:    $shopId,
+            isActive:  $isActive,
         );
     }
 }

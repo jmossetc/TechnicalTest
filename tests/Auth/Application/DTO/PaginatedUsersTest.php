@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Application;
+namespace Mossetc\TechnicalTest\Tests\Auth\Application\DTO;
 
 use Mossetc\TechnicalTest\Auth\Application\DTO\PaginatedUsers;
 use PHPUnit\Framework\TestCase;
