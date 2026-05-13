@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 
 info:
-  title: Auth API
+  title: ShopManager API
   version: "1.0.0"
   description: |
     JWT-based authentication REST API built with plain PHP 8.5 and Symfony Router.
@@ -108,7 +108,7 @@ paths:
     post:
       operationId: loginUser
       summary: Authenticate and obtain a JWT token
-      tags: [Auth]
+      tags: [ShopManager]
       requestBody:
         required: true
         content:

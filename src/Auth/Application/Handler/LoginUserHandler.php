@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Application\Handler;
 
-use Mossetc\TechnicalTest\Auth\Application\Query\LoginUser;
-use Mossetc\TechnicalTest\Auth\Domain\AuthToken;
-use Mossetc\TechnicalTest\Auth\Domain\Email;
+use Mossetc\TechnicalTest\Auth\Application\Command\LoginUser;
+use Mossetc\TechnicalTest\Auth\Domain\Model\AuthToken;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
-use Mossetc\TechnicalTest\Auth\Domain\PlainPassword;
-use Mossetc\TechnicalTest\Auth\Domain\TokenServiceInterface;
-use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
 
 final readonly class LoginUserHandler
 {

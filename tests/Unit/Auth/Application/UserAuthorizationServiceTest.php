@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Application;
 
-use Mossetc\TechnicalTest\Auth\Application\Query\UserScope;
-use Mossetc\TechnicalTest\Auth\Application\Service\UserAuthorizationService;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
-use Mossetc\TechnicalTest\Auth\Domain\Role;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\UserRole;
-use Mossetc\TechnicalTest\Auth\Domain\UserRoleRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
 use PHPUnit\Framework\TestCase;
 
 final class UserAuthorizationServiceTest extends TestCase
@@ -331,7 +330,7 @@ final class UserAuthorizationServiceTest extends TestCase
         array $callerRoles = [],
         array $targetRoles = [],
         array $shopCompanyMap = [],
-    ): UserAuthorizationService {
+    ): UserAuthorization {
         $callerId = $this->callerId;
         $targetId = $this->targetId;
 
@@ -355,6 +354,6 @@ final class UserAuthorizationServiceTest extends TestCase
                 static fn(string $shopId): ?string => $shopCompanyMap[$shopId] ?? null,
             );
 
-        return new UserAuthorizationService($repo);
+        return new UserAuthorization($repo);
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
 
 use InvalidArgumentException;
-use Mossetc\TechnicalTest\Auth\Domain\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use PHPUnit\Framework\TestCase;
 
 final class EmailTest extends TestCase

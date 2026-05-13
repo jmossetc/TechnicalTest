@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Integration\Auth;
 
 use DateTimeImmutable;
-use Mossetc\TechnicalTest\Auth\Domain\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtConfig;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\LcobucciJwtTokenService;
 use PHPUnit\Framework\TestCase;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Tests\Integration\Auth;
 
+use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
+use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
-use Mossetc\TechnicalTest\Auth\Application\Query\ListUsers;
-use Mossetc\TechnicalTest\Auth\Application\Query\RegisterUser;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
 use PHPUnit\Framework\TestCase;

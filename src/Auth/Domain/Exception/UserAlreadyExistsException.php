@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Domain\Exception;
 
-use Mossetc\TechnicalTest\Auth\Domain\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use RuntimeException;
 
 final class UserAlreadyExistsException extends RuntimeException

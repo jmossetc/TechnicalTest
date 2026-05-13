@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Mossetc\TechnicalTest\Auth\Infrastructure\DI\ContainerFactory;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Request;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Router;
+use Mossetc\TechnicalTest\Shared\Infrastructure\DI\ContainerFactory;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Router;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

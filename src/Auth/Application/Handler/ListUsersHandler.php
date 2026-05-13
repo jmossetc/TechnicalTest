@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Application\Handler;
 
-use Mossetc\TechnicalTest\Auth\Application\Query\ListUsers;
-use Mossetc\TechnicalTest\Auth\Application\Query\PaginatedUsers;
-use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
-use Mossetc\TechnicalTest\Auth\Domain\UserRoleRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
+use Mossetc\TechnicalTest\Auth\Application\DTO\PaginatedUsers;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
 
 final readonly class ListUsersHandler
 {

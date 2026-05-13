@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
-use Mossetc\TechnicalTest\Auth\Domain\Role;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\UserRole;
-use Mossetc\TechnicalTest\Auth\Infrastructure\DI\ContainerFactory;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Request;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Response;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Router;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
+use Mossetc\TechnicalTest\Shared\Infrastructure\DI\ContainerFactory;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Router;
 use PHPUnit\Framework\Assert;
 
 final class ApiContext implements Context
@@ -521,11 +521,11 @@ final class ApiContext implements Context
 
         // Seed the admin user directly into the in-memory stores
         $userId = UserId::generate();
-        $user = new \Mossetc\TechnicalTest\Auth\Domain\User(
+        $user = new \Mossetc\TechnicalTest\Auth\Domain\Model\User(
             id: $userId,
-            email: new \Mossetc\TechnicalTest\Auth\Domain\Email($adminEmail),
-            password: \Mossetc\TechnicalTest\Auth\Domain\HashedPassword::fromPlain(
-                new \Mossetc\TechnicalTest\Auth\Domain\PlainPassword($adminPassword),
+            email: new \Mossetc\TechnicalTest\Auth\Domain\Model\Email($adminEmail),
+            password: \Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword::fromPlain(
+                new \Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword($adminPassword),
             ),
         );
 
@@ -589,11 +589,11 @@ final class ApiContext implements Context
     private function seedUser(string $email, string $password): UserId
     {
         $userId = UserId::generate();
-        $user = new \Mossetc\TechnicalTest\Auth\Domain\User(
+        $user = new \Mossetc\TechnicalTest\Auth\Domain\Model\User(
             id: $userId,
-            email: new \Mossetc\TechnicalTest\Auth\Domain\Email($email),
-            password: \Mossetc\TechnicalTest\Auth\Domain\HashedPassword::fromPlain(
-                new \Mossetc\TechnicalTest\Auth\Domain\PlainPassword($password),
+            email: new \Mossetc\TechnicalTest\Auth\Domain\Model\Email($email),
+            password: \Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword::fromPlain(
+                new \Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword($password),
             ),
         );
 

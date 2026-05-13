@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Application;
 
-use Mossetc\TechnicalTest\Auth\Application\Query\PaginatedUsers;
+use Mossetc\TechnicalTest\Auth\Application\DTO\PaginatedUsers;
 use PHPUnit\Framework\TestCase;
 
 final class PaginatedUsersTest extends TestCase

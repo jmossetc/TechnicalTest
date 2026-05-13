@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Mossetc\TechnicalTest\Auth\Domain\Email;
-use Mossetc\TechnicalTest\Auth\Domain\User;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 
 /**
  * In-memory implementation of UserRepositoryInterface for Behat scenarios.

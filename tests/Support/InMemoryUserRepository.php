@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Tests\Support;
 
-use Mossetc\TechnicalTest\Auth\Domain\Email;
-use Mossetc\TechnicalTest\Auth\Domain\User;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 
 final class InMemoryUserRepository implements UserRepositoryInterface
 {

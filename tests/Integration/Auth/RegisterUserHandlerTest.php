@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Integration\Auth;
 
 use InvalidArgumentException;
+use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
-use Mossetc\TechnicalTest\Auth\Application\Query\RegisterUser;
-use Mossetc\TechnicalTest\Auth\Domain\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;

@@ -2,7 +2,7 @@
 
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
 
-use Mossetc\TechnicalTest\Auth\Domain\AuthToken;
+use Mossetc\TechnicalTest\Auth\Domain\Model\AuthToken;
 use PHPUnit\Framework\TestCase;
 
 class AuthTokenTest extends TestCase

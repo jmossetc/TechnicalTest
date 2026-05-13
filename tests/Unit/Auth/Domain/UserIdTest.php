@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
 
 use InvalidArgumentException;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use PHPUnit\Framework\TestCase;
 
 final class UserIdTest extends TestCase

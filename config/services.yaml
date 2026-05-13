@@ -17,12 +17,11 @@ services:
     autoconfigure: false
 
   # ── Database ──────────────────────────────────────────────────────────────────
-  # Scalars and PHP constants cannot be autowired — factory + explicit args required.
 
   PDO:
     class: PDO
     factory:
-      - 'Mossetc\TechnicalTest\Auth\Infrastructure\DI\PdoFactory'
+      - 'Mossetc\TechnicalTest\Shared\Infrastructure\DI\PdoFactory'
       - 'create'
     arguments:
       - '%env(DB_HOST)%'
@@ -33,15 +32,15 @@ services:
 
   # ── Repository ────────────────────────────────────────────────────────────────
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository: ~
+  Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository: ~
 
-  Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface:
-    alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository'
+  Mossetc\TechnicalTest\Auth\Domain\RepositoryInterface\UserRepositoryInterface:
+    alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository'
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository: ~
+  Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository: ~
 
-  Mossetc\TechnicalTest\Auth\Domain\UserRoleRepositoryInterface:
-    alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository'
+  Mossetc\TechnicalTest\Auth\Domain\RepositoryInterface\UserRoleRepositoryInterface:
+    alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository'
 
   # ── JWT ───────────────────────────────────────────────────────────────────────
 
@@ -52,21 +51,21 @@ services:
       - '%env(JWT_AUDIENCE)%'
       - '%jwt.ttl%'
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Clock\SystemClock: ~
+  Mossetc\TechnicalTest\Shared\Infrastructure\Clock\SystemClock: ~
 
   Psr\Clock\ClockInterface:
-    alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Clock\SystemClock'
+    alias: 'Mossetc\TechnicalTest\Shared\Infrastructure\Clock\SystemClock'
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\LcobucciJwtTokenService: ~
 
-  Mossetc\TechnicalTest\Auth\Domain\TokenServiceInterface:
+  Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface:
     alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\LcobucciJwtTokenService'
 
-  # ── HTTP — all autowired via type hints ───────────────────────────────────────
+  # ── HTTP ──────────────────────────────────────────────────────────────────────
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\JwtAuthMiddleware: ~
+  Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware: ~
 
-  Mossetc\TechnicalTest\Auth\Application\Service\UserAuthorizationService: ~
+  Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization: ~
 
   Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler: ~
 
@@ -77,34 +76,33 @@ services:
   # autoconfigure: true makes the container read #[AsHttpController] and add the tag.
   # To add a new controller: create the class with the attribute, add one line here.
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\RegisterUserController:
+  Mossetc\TechnicalTest\Auth\Presentation\Controller\RegisterUserController:
     autoconfigure: true
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\LoginUserController:
+  Mossetc\TechnicalTest\Auth\Presentation\Controller\LoginUserController:
     autoconfigure: true
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\GetUserController:
+  Mossetc\TechnicalTest\Auth\Presentation\Controller\GetUserController:
     autoconfigure: true
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\ListUsersController:
+  Mossetc\TechnicalTest\Auth\Presentation\Controller\ListUsersController:
     autoconfigure: true
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\DeleteUserController:
+  Mossetc\TechnicalTest\Auth\Presentation\Controller\DeleteUserController:
     autoconfigure: true
 
   # ── Routing ───────────────────────────────────────────────────────────────────
-  # RouteCollection depends on a scalar path — factory + explicit arg required.
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\RouteLoader: ~
+  Mossetc\TechnicalTest\Shared\Infrastructure\Http\RouteLoader: ~
 
   Symfony\Component\Routing\RouteCollection:
     factory:
-      - '@Mossetc\TechnicalTest\Auth\Infrastructure\Http\RouteLoader'
+      - '@Mossetc\TechnicalTest\Shared\Infrastructure\Http\RouteLoader'
       - 'load'
     arguments:
       - '%routes.config%'
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Router:
+  Mossetc\TechnicalTest\Shared\Infrastructure\Http\Router:
     public: true
     arguments:
       $controllers: !tagged_locator { tag: 'app.http_controller', index_by: 'route' }

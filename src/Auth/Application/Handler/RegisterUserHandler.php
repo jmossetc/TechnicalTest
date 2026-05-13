@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Application\Handler;
 
-use Mossetc\TechnicalTest\Auth\Application\Query\RegisterUser;
-use Mossetc\TechnicalTest\Auth\Domain\Email;
+use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
-use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;
-use Mossetc\TechnicalTest\Auth\Domain\PlainPassword;
-use Mossetc\TechnicalTest\Auth\Domain\Role;
-use Mossetc\TechnicalTest\Auth\Domain\User;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
-use Mossetc\TechnicalTest\Auth\Domain\UserRole;
-use Mossetc\TechnicalTest\Auth\Domain\UserRoleRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
 
 final readonly class RegisterUserHandler
 {

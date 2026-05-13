@@ -14,12 +14,12 @@ use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 use Lcobucci\JWT\Validation\Constraint\PermittedFor;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\RequiredConstraintsViolated;
-use Mossetc\TechnicalTest\Auth\Domain\AuthToken;
-use Mossetc\TechnicalTest\Auth\Domain\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\AuthToken;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
-use Mossetc\TechnicalTest\Auth\Domain\TokenServiceInterface;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Clock\SystemClock;
+use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Clock\SystemClock;
 use Psr\Clock\ClockInterface;
 use Throwable;
 

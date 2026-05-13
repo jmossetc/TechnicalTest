@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
 
 use DateTimeImmutable;
-use Mossetc\TechnicalTest\Auth\Domain\Email;
-use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;
-use Mossetc\TechnicalTest\Auth\Domain\PlainPassword;
-use Mossetc\TechnicalTest\Auth\Domain\User;
-use Mossetc\TechnicalTest\Auth\Domain\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase

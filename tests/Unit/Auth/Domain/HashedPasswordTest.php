@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
 
 use InvalidArgumentException;
-use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;
-use Mossetc\TechnicalTest\Auth\Domain\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use PHPUnit\Framework\TestCase;
 
 final class HashedPasswordTest extends TestCase
