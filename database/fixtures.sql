@@ -8,11 +8,11 @@
 -- ── Users ────────────────────────────────────────────────────────────────────
 
 INSERT INTO users (id, email, password_hash) VALUES
-    (UUID_TO_BIN('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'), 'admin@example.com',           '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-    (UUID_TO_BIN('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e'), 'company.manager@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-    (UUID_TO_BIN('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f'), 'shop.manager@example.com',    '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-    (UUID_TO_BIN('d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80'), 'user@example.com',            '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-    (UUID_TO_BIN('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091'), 'deleted@example.com',         '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+    (UUID_TO_BIN('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'), 'admin@example.com',           '$2y$10$nEt6UajoUSGFN11kFgHOrO5GnrA.7AxlEtEa0os3qTepwgGqV61Ci'),
+    (UUID_TO_BIN('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e'), 'company.manager@example.com', '$2y$10$nEt6UajoUSGFN11kFgHOrO5GnrA.7AxlEtEa0os3qTepwgGqV61Ci'),
+    (UUID_TO_BIN('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f'), 'shop.manager@example.com',    '$2y$10$nEt6UajoUSGFN11kFgHOrO5GnrA.7AxlEtEa0os3qTepwgGqV61Ci'),
+    (UUID_TO_BIN('d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80'), 'user@example.com',            '$2y$10$nEt6UajoUSGFN11kFgHOrO5GnrA.7AxlEtEa0os3qTepwgGqV61Ci'),
+    (UUID_TO_BIN('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091'), 'deleted@example.com',         '$2y$10$nEt6UajoUSGFN11kFgHOrO5GnrA.7AxlEtEa0os3qTepwgGqV61Ci');
 
 -- Soft-delete one user
 UPDATE users SET deleted_at = '2025-01-15 10:00:00'

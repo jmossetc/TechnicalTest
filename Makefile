@@ -6,7 +6,7 @@ DC          := docker compose
 install:
 	$(DC) exec app composer install
 
-# ── Quality (run inside the PHPcontainer) ─────────────────────
+# ── Quality ─────────────────────
 
 .PHONY: tests
 tests:
