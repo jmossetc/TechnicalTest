@@ -636,6 +636,14 @@ final class ApiContext implements Context
     }
 
     /**
+     * @When I list companies filtered by name :name
+     */
+    public function iListCompaniesFilteredByName(string $name): void
+    {
+        $this->lastResponse = $this->doGet('/api/companies', $this->token, ['name' => $name]);
+    }
+
+    /**
      * @When I get the company :companyId
      */
     public function iGetTheCompany(string $companyId): void

@@ -17,8 +17,8 @@ final readonly class ListCompaniesHandler
         $offset = ($query->page - 1) * $query->limit;
 
         return new PaginatedCompanies(
-            companies: $this->repository->findPaginated($query->limit, $offset),
-            total:     $this->repository->count(),
+            companies: $this->repository->findPaginated($query->limit, $offset, $query->name),
+            total:     $this->repository->count($query->name),
             page:      $query->page,
             limit:     $query->limit,
         );

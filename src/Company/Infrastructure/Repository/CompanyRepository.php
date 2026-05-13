@@ -60,13 +60,21 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
-    public function findPaginated(int $limit, int $offset): array
+    public function findPaginated(int $limit, int $offset, ?string $name = null): array
     {
+        $params = ['limit' => $limit, 'offset' => $offset];
+        $where  = 'deleted_at IS NULL';
+
+        if ($name !== null) {
+            $where          .= ' AND name LIKE :name';
+            $params['name'] = '%' . $name . '%';
+        }
+
         $stmt = $this->prepare(
-            'SELECT ' . self::SELECT_COLUMNS . '
-             FROM companies WHERE deleted_at IS NULL ORDER BY name ASC LIMIT :limit OFFSET :offset',
+            'SELECT ' . self::SELECT_COLUMNS . "
+             FROM companies WHERE {$where} ORDER BY name ASC LIMIT :limit OFFSET :offset",
         );
-        $stmt->execute(['limit' => $limit, 'offset' => $offset]);
+        $stmt->execute($params);
 
         $companies = [];
         while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
@@ -76,10 +84,18 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
         return $companies;
     }
 
-    public function count(): int
+    public function count(?string $name = null): int
     {
-        $stmt = $this->prepare('SELECT COUNT(*) FROM companies WHERE deleted_at IS NULL');
-        $stmt->execute();
+        $params = [];
+        $where  = 'deleted_at IS NULL';
+
+        if ($name !== null) {
+            $where          .= ' AND name LIKE :name';
+            $params['name'] = '%' . $name . '%';
+        }
+
+        $stmt = $this->prepare("SELECT COUNT(*) FROM companies WHERE {$where}");
+        $stmt->execute($params);
 
         $count = $stmt->fetchColumn();
 

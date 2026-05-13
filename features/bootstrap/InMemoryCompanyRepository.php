@@ -37,17 +37,30 @@ final class InMemoryCompanyRepository implements CompanyRepositoryInterface
         return null;
     }
 
-    public function findPaginated(int $limit, int $offset): array
+    public function findPaginated(int $limit, int $offset, ?string $name = null): array
     {
-        $companies = array_values($this->store);
+        $companies = array_values($this->filtered($name));
         usort($companies, static fn(Company $a, Company $b): int => strcmp($a->name->value, $b->name->value));
 
         return array_slice($companies, $offset, $limit);
     }
 
-    public function count(): int
+    public function count(?string $name = null): int
     {
-        return count($this->store);
+        return count($this->filtered($name));
+    }
+
+    /** @return array<string, Company> */
+    private function filtered(?string $name): array
+    {
+        if ($name === null) {
+            return $this->store;
+        }
+
+        return array_filter(
+            $this->store,
+            static fn(Company $c): bool => stripos($c->name->value, $name) !== false,
+        );
     }
 
     public function delete(CompanyId $id): void

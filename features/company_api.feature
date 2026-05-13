@@ -63,6 +63,34 @@ Feature: Company API
     And the "data" array should have 2 items
     And the response "pagination.total" should equal "3"
 
+  Scenario: Admin can filter companies by name (exact match)
+    Given I am logged in as admin
+    And I create a company with name "Alpha Corp"
+    And I create a company with name "Beta Corp"
+    And I create a company with name "Gamma Corp"
+    When I list companies filtered by name "Beta Corp"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+    And the response "pagination.total" should equal "1"
+
+  Scenario: Admin can filter companies by partial name
+    Given I am logged in as admin
+    And I create a company with name "Alpha Corp"
+    And I create a company with name "Alpha Industries"
+    And I create a company with name "Beta Corp"
+    When I list companies filtered by name "Alpha"
+    Then the response status should be 200
+    And the "data" array should have 2 items
+    And the response "pagination.total" should equal "2"
+
+  Scenario: Name filter returns empty list when no match
+    Given I am logged in as admin
+    And I create a company with name "Alpha Corp"
+    When I list companies filtered by name "Nonexistent"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+    And the response "pagination.total" should equal "0"
+
   # ── Get ───────────────────────────────────────────────────────────────────────
 
   Scenario: Admin gets a company by id

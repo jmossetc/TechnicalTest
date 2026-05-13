@@ -19,9 +19,9 @@ interface CompanyRepositoryInterface
     /**
      * @return list<Company>
      */
-    public function findPaginated(int $limit, int $offset): array;
+    public function findPaginated(int $limit, int $offset, ?string $name = null): array;
 
-    public function count(): int;
+    public function count(?string $name = null): int;
 
     public function delete(CompanyId $id): void;
 }

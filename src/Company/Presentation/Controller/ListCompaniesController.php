@@ -44,8 +44,11 @@ final readonly class ListCompaniesController implements ControllerInterface
 
         $page  = max(1, (int) ($request->query['page'] ?? '1'));
         $limit = min(100, max(1, (int) ($request->query['limit'] ?? '10')));
+        $name  = isset($request->query['name']) && $request->query['name'] !== ''
+            ? $request->query['name']
+            : null;
 
-        $result = $this->handler->handle(new ListCompanies($page, $limit));
+        $result = $this->handler->handle(new ListCompanies($page, $limit, $name));
 
         return Response::json([
             'data'       => array_map(
