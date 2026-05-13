@@ -14,6 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
+use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
 use PHPUnit\Framework\TestCase;
@@ -21,13 +22,15 @@ use PHPUnit\Framework\TestCase;
 final class LoginUserHandlerTest extends TestCase
 {
     private UserRepositoryInterface $repository;
+    private PasswordHasher $hasher;
 
     protected function setUp(): void
     {
         $this->repository = new InMemoryUserRepository();
+        $this->hasher     = new PasswordHasher('');
 
         $roleRepo = new InMemoryUserRoleRepository();
-        (new RegisterUserHandler($this->repository, $roleRepo))
+        (new RegisterUserHandler($this->repository, $roleRepo, $this->hasher))
             ->handle(new RegisterUser('alice@example.com', 'password123'));
     }
 
@@ -36,6 +39,7 @@ final class LoginUserHandlerTest extends TestCase
         return new LoginUserHandler(
             $this->repository,
             $tokenService ?? $this->createStub(TokenServiceInterface::class),
+            $this->hasher,
         );
     }
 

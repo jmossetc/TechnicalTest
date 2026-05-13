@@ -6,7 +6,6 @@ namespace Mossetc\TechnicalTest\Auth\Application\Handler;
 
 use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
-use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
@@ -15,12 +14,14 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Service\PasswordHasherInterface;
 
 final readonly class RegisterUserHandler
 {
     public function __construct(
         private UserRepositoryInterface $repository,
         private UserRoleRepositoryInterface $roleRepository,
+        private PasswordHasherInterface $passwordHasher,
     ) {}
 
     public function handle(RegisterUser $command): UserId
@@ -35,7 +36,7 @@ final readonly class RegisterUserHandler
         $user = new User(
             id: $userId,
             email: $email,
-            password: HashedPassword::fromPlain(new PlainPassword($command->password)),
+            password: $this->passwordHasher->hash(new PlainPassword($command->password)),
         );
 
         $this->repository->save($user);

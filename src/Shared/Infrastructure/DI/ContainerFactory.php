@@ -68,6 +68,8 @@ final class ContainerFactory
         $container->setParameter('env(JWT_SECRET)', 'behat-test-secret-key-at-least-32-chars');
         $container->setParameter('env(JWT_ISSUER)', 'http://localhost');
         $container->setParameter('env(JWT_AUDIENCE)', 'http://localhost');
+        // No pepper in tests — keeps fixture hashing consistent with HashedPassword::fromPlain()
+        $container->setParameter('env(PASSWORD_SALT)', '');
 
         // Strip out the database layer — it is not needed in tests
         $concrete = ['PDO', UserRepository::class, UserRoleRepository::class, CompanyRepository::class, ShopRepository::class];

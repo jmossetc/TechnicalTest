@@ -8,6 +8,7 @@ use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
 use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
+use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +23,7 @@ final class ListUsersHandlerTest extends TestCase
         $repo            = new InMemoryUserRepository();
         $roleRepo        = new InMemoryUserRoleRepository();
         $this->handler   = new ListUsersHandler($repo, $roleRepo);
-        $this->registrar = new RegisterUserHandler($repo, $roleRepo);
+        $this->registrar = new RegisterUserHandler($repo, $roleRepo, new PasswordHasher(''));
     }
 
     public function testReturnsEmptyPageWhenNoUsersExist(): void

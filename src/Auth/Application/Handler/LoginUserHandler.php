@@ -10,6 +10,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Service\PasswordHasherInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
 
 final readonly class LoginUserHandler
@@ -17,6 +18,7 @@ final readonly class LoginUserHandler
     public function __construct(
         private UserRepositoryInterface $repository,
         private TokenServiceInterface $tokenService,
+        private PasswordHasherInterface $passwordHasher,
     ) {}
 
     public function handle(LoginUser $command): AuthToken
@@ -24,7 +26,8 @@ final readonly class LoginUserHandler
         $email = new Email($command->email);
         $user = $this->repository->findByEmail($email);
 
-        if ($user === null || !$user->verifyPassword(new PlainPassword($command->password))) {
+        $plain = new PlainPassword($command->password);
+        if ($user === null || !$this->passwordHasher->verify($plain, $user->password)) {
             throw new InvalidCredentialsException();
         }
 

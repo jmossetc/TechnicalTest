@@ -9,6 +9,7 @@ use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
+use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +23,7 @@ final class RegisterUserHandlerTest extends TestCase
     {
         $this->repository = new InMemoryUserRepository();
         $roleRepository   = new InMemoryUserRoleRepository();
-        $this->handler    = new RegisterUserHandler($this->repository, $roleRepository);
+        $this->handler    = new RegisterUserHandler($this->repository, $roleRepository, new PasswordHasher(''));
     }
 
     public function testRegistersNewUser(): void
