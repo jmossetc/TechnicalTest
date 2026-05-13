@@ -14,7 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
 use Mossetc\TechnicalTest\Auth\Presentation\Controller\RegisterUserController;
@@ -82,7 +82,7 @@ final class RegisterUserControllerTest extends TestCase
         return new RegisterUserController(
             new RegisterUserHandler($this->userRepo, new PasswordHasher('')),
             $this->makeAuth(),
-            new UserAuthorization($this->userRepo),
+            new UserAuthorizationService($this->userRepo),
             $shopRepo ?? $this->createStub(ShopRepositoryInterface::class),
         );
     }

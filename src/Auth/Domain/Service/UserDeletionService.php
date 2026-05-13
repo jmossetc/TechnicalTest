@@ -6,11 +6,11 @@ use Mossetc\TechnicalTest\Auth\Domain\Exception\UserNotFoundException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 
-final readonly class UserDeletion
+final readonly class UserDeletionService
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
-        private UserAuthorization $authorizationService,
+        private UserRepositoryInterface  $userRepository,
+        private UserAuthorizationService $authorizationService,
     ) {
     }
 

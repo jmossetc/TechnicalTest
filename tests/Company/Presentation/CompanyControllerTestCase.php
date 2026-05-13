@@ -14,7 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Company\Application\Command\CreateCompany;
 use Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler;
@@ -42,12 +42,12 @@ abstract class CompanyControllerTestCase extends TestCase
         return new JwtAuthMiddleware($svc);
     }
 
-    protected function makeAuthzAsAdmin(): UserAuthorization
+    protected function makeAuthzAsAdmin(): UserAuthorizationService
     {
         return $this->makeAuthzWithRole(Role::Admin);
     }
 
-    protected function makeAuthzWithRole(Role $role, ?string $companyId = null): UserAuthorization
+    protected function makeAuthzWithRole(Role $role, ?string $companyId = null): UserAuthorizationService
     {
         $caller = new User(
             id:        $this->callerId,
@@ -62,7 +62,7 @@ abstract class CompanyControllerTestCase extends TestCase
         $repo = $this->createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturn($caller);
 
-        return new UserAuthorization($repo);
+        return new UserAuthorizationService($repo);
     }
 
     protected function seedCompany(string $name = 'Test Company'): CompanyId

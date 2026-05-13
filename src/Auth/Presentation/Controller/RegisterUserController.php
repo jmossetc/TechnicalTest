@@ -11,7 +11,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
@@ -24,10 +24,10 @@ use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
 final readonly class RegisterUserController implements ControllerInterface
 {
     public function __construct(
-        private RegisterUserHandler    $handler,
-        private JwtAuthMiddleware      $auth,
-        private UserAuthorization      $authorizationService,
-        private ShopRepositoryInterface $shopRepository,
+        private RegisterUserHandler      $handler,
+        private JwtAuthMiddleware        $auth,
+        private UserAuthorizationService $authorizationService,
+        private ShopRepositoryInterface  $shopRepository,
     ) {}
 
     public function __invoke(Request $request): Response

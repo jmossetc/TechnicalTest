@@ -10,7 +10,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserNotFoundException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserDeletion;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserDeletionService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
@@ -23,7 +23,7 @@ final readonly class DeleteUserController implements ControllerInterface
     public function __construct(
         private JwtAuthMiddleware       $auth,
         private UserRepositoryInterface $userRepository,
-        private UserDeletion            $userDeletionService,
+        private UserDeletionService     $userDeletionService,
     ) {}
 
     public function __invoke(Request $request): Response

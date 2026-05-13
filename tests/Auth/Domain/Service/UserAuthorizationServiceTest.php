@@ -14,7 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use PHPUnit\Framework\TestCase;
 
 final class UserAuthorizationServiceTest extends TestCase
@@ -319,7 +319,7 @@ final class UserAuthorizationServiceTest extends TestCase
         ?string $callerCompanyId = null,
         ?string $callerShopId = null,
         bool $isUserActive = true,
-    ): UserAuthorization {
+    ): UserAuthorizationService {
         $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId, $isUserActive);
 
         $repo = $this->createStub(UserRepositoryInterface::class);
@@ -327,7 +327,7 @@ final class UserAuthorizationServiceTest extends TestCase
             static fn(UserId $id): ?User => $caller->id->equals($id) ? $caller : null,
         );
 
-        return new UserAuthorization($repo);
+        return new UserAuthorizationService($repo);
     }
 
     private function makeUser(

@@ -11,7 +11,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 
-final readonly class UserAuthorization
+final readonly class UserAuthorizationService
 {
     public function __construct(private UserRepositoryInterface $userRepository) {}
 

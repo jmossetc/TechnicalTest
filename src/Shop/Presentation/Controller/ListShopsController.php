@@ -7,7 +7,7 @@ namespace Mossetc\TechnicalTest\Shop\Presentation\Controller;
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shop\Application\Command\ListShops;
 use Mossetc\TechnicalTest\Shop\Application\Handler\ListShopsHandler;
@@ -21,9 +21,9 @@ use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
 final readonly class ListShopsController implements ControllerInterface
 {
     public function __construct(
-        private JwtAuthMiddleware $auth,
-        private UserAuthorization $authorization,
-        private ListShopsHandler $handler,
+        private JwtAuthMiddleware        $auth,
+        private UserAuthorizationService $authorization,
+        private ListShopsHandler         $handler,
     ) {}
 
     public function __invoke(Request $request): Response

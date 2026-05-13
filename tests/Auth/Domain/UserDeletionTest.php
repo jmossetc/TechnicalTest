@@ -14,8 +14,8 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserDeletion;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserDeletionService;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -34,9 +34,9 @@ final class UserDeletionTest extends TestCase
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function service(): UserDeletion
+    private function service(): UserDeletionService
     {
-        return new UserDeletion($this->repository, new UserAuthorization($this->repository));
+        return new UserDeletionService($this->repository, new UserAuthorizationService($this->repository));
     }
 
     private function seed(UserId $id, Role $role, ?string $companyId = null, ?string $shopId = null): void
