@@ -1,0 +1,7 @@
+.git
+.github
+vendor
+build
+docker-compose*.yml
+.env*
+.php-cs-fixer*
