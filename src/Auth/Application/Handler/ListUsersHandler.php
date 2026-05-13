@@ -7,37 +7,32 @@ namespace Mossetc\TechnicalTest\Auth\Application\Handler;
 use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
 use Mossetc\TechnicalTest\Auth\Application\DTO\PaginatedUsers;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
 
 final readonly class ListUsersHandler
 {
-    public function __construct(
-        private UserRepositoryInterface $repository,
-        private UserRoleRepositoryInterface $roleRepository,
-    ) {}
+    public function __construct(private UserRepositoryInterface $repository) {}
 
-    public function handle(ListUsers $query): PaginatedUsers
+    public function handle(ListUsers $command): PaginatedUsers
     {
-        $offset = ($query->page - 1) * $query->limit;
+        $offset = ($command->page - 1) * $command->limit;
+        $scope  = $command->scope;
 
-        if ($query->scope->isCompanies()) {
-            $ids   = $this->roleRepository->findUserIdsByCompanyIds($query->scope->ids);
-            $users = $this->repository->findPaginatedByIds($ids, $query->limit, $offset);
-            $total = $this->repository->countByIds($ids);
-        } elseif ($query->scope->isShops()) {
-            $ids   = $this->roleRepository->findUserIdsByShopIds($query->scope->ids);
-            $users = $this->repository->findPaginatedByIds($ids, $query->limit, $offset);
-            $total = $this->repository->countByIds($ids);
+        if ($scope->isCompanies()) {
+            $users = $this->repository->findPaginatedByCompanyIds($scope->ids, $command->limit, $offset);
+            $total = $this->repository->countByCompanyIds($scope->ids);
+        } elseif ($scope->isShops()) {
+            $users = $this->repository->findPaginatedByShopIds($scope->ids, $scope->scopeCompanyId, $command->limit, $offset);
+            $total = $this->repository->countByShopIds($scope->ids, $scope->scopeCompanyId);
         } else {
-            $users = $this->repository->findPaginated($query->limit, $offset);
+            $users = $this->repository->findPaginated($command->limit, $offset);
             $total = $this->repository->count();
         }
 
         return new PaginatedUsers(
             users: $users,
             total: $total,
-            page: $query->page,
-            limit: $query->limit,
+            page:  $command->page,
+            limit: $command->limit,
         );
     }
 }

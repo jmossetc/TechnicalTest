@@ -4,36 +4,33 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Domain\Service;
 
+use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
-use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
-use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 
 final readonly class UserAuthorization
 {
-    public function __construct(private UserRoleRepositoryInterface $roleRepository) {}
+    public function __construct(private UserRepositoryInterface $userRepository) {}
 
     /**
-     * Assert that $callerId may register a new account with the given role and scope.
+     * Assert that $callerId may register a new account.
+     *
+     * For shop_manager targets, $targetCompanyId must be the shop's company (resolved by caller).
      *
      * @throws ForbiddenException
      */
     public function authorizeRegistration(
         UserId $callerId,
-        ?Role $targetRole,
+        Role $targetRole,
         ?string $targetCompanyId,
         ?string $targetShopId,
     ): void {
-        $callerRoles = $this->roleRepository->findByUserId($callerId);
+        $caller = $this->loadCaller($callerId);
 
-        if ($callerRoles === []) {
-            throw new ForbiddenException('You do not have permission to create accounts');
-        }
-
-        $caller = $this->resolveCallerProfile($callerRoles);
-
-        if ($caller['isAdmin']) {
+        if ($caller->role === Role::Admin) {
             return;
         }
 
@@ -41,127 +38,108 @@ final readonly class UserAuthorization
             throw new ForbiddenException('Only admins can create admin accounts');
         }
 
-        if ($caller['managedCompanyIds'] !== []) {
-            if ($targetRole === Role::CompanyManager) {
-                if ($targetCompanyId !== null && in_array($targetCompanyId, $caller['managedCompanyIds'], true)) {
+        if ($caller->role === Role::CompanyAdmin) {
+            if ($targetRole === Role::CompanyAdmin) {
+                if ($targetCompanyId !== null && $targetCompanyId === $caller->companyId) {
                     return;
                 }
-                throw new ForbiddenException('You can only create company managers for your own companies');
+                throw new ForbiddenException('You can only create company admins for your own company');
             }
 
-            if ($targetRole === Role::ShopManager && $targetShopId !== null) {
-                if ($this->shopBelongsToAnyCompany($targetShopId, $caller['managedCompanyIds'])) {
+            if ($targetRole === Role::ShopManager) {
+                if ($targetCompanyId !== null && $targetCompanyId === $caller->companyId) {
                     return;
                 }
-                throw new ForbiddenException('You can only create shop managers for shops belonging to your companies');
+                throw new ForbiddenException('You can only create shop managers for shops belonging to your company');
             }
 
-            if ($targetRole === null) {
+            if ($targetRole === Role::Employee) {
                 return;
             }
         }
 
-        if ($caller['managedShopIds'] !== []) {
-            if ($targetRole === Role::ShopManager && $targetShopId !== null) {
-                if (in_array($targetShopId, $caller['managedShopIds'], true)) {
+        if ($caller->role === Role::ShopManager) {
+            if ($targetRole === Role::CompanyAdmin) {
+                throw new ForbiddenException('Shop managers cannot create company admin accounts');
+            }
+
+            if ($targetRole === Role::ShopManager) {
+                if ($targetShopId !== null && $targetShopId === $caller->shopId) {
                     return;
                 }
-                throw new ForbiddenException('You can only create shop managers for your own shops');
+                throw new ForbiddenException('You can only create shop managers for your own shop');
             }
 
-            if ($targetRole === Role::CompanyManager) {
-                throw new ForbiddenException('Shop managers cannot create company manager accounts');
-            }
-
-            if ($targetRole === null) {
+            if ($targetRole === Role::Employee) {
                 return;
             }
         }
 
-        throw new ForbiddenException();
+        throw new ForbiddenException('You do not have permission to create accounts');
     }
 
     /**
-     * Assert that $callerId may delete the account identified by $targetId.
+     * Assert that $callerId may delete $target.
      *
      * @throws ForbiddenException
      */
-    public function authorizeDeletion(UserId $callerId, UserId $targetId): void
+    public function authorizeDeletion(UserId $callerId, User $target): void
     {
-        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
-        $target = $this->resolveTargetProfile($this->roleRepository->findByUserId($targetId));
+        $caller = $this->loadCaller($callerId);
 
-        if ($target['isAdmin']) {
-            throw new ForbiddenException('And admin account cannot be deleted');
+        if ($target->role === Role::Admin) {
+            throw new ForbiddenException('Admin accounts cannot be deleted');
         }
 
-        if ($caller['isAdmin']) {
+        if ($caller->role === Role::Admin) {
             return;
         }
 
-        if ($target['isCompanyManager']) {
-            throw new ForbiddenException('Only an admin can delete a company manager');
+        if ($target->role === Role::CompanyAdmin) {
+            throw new ForbiddenException('Only an admin can delete a company admin');
         }
 
-        if ($target['isShopManager']) {
-            if ($caller['managedCompanyIds'] !== []) {
-                foreach ($target['shopIds'] as $shopId) {
-                    if ($this->shopBelongsToAnyCompany($shopId, $caller['managedCompanyIds'])) {
-                        return;
-                    }
-                }
-                throw new ForbiddenException('You can only delete shop managers for shops belonging to your companies');
+        if ($caller->role === Role::CompanyAdmin && $caller->companyId !== null) {
+            if ($caller->companyId === $target->companyId) {
+                return;
             }
-            throw new ForbiddenException();
+            throw new ForbiddenException('You can only delete users in your own company');
         }
 
-        throw new ForbiddenException();
+        throw new ForbiddenException('You do not have permission to delete this account');
     }
 
     /**
-     * Determine what scope $callerId is allowed to list users in, applying any
-     * optional caller-supplied filters within that allowed scope.
+     * Determine what scope $callerId is allowed to list users in.
      *
-     * - Admin:           UserScope::all()              (no filter)
-     *                    UserScope::companies($ids)    (admin-supplied company filter)
-     * - CompanyManager:  UserScope::companies($managed) (no shop filter)
-     *                    UserScope::shops($filtered)   (shop filter, validated against managed companies)
-     * - ShopManager:     UserScope::shops($managed)    (always restricted to own shops)
-     *
-     * @param list<string> $requestedCompanyIds Admin-supplied filter; ignored for non-admins
-     * @param list<string> $requestedShopIds    Company-manager-supplied filter; ignored for others
-     * @throws ForbiddenException when the caller has no listing permission
+     * @param list<string> $requestedCompanyIds Admin-only filter
+     * @param list<string> $requestedShopIds    CompanyAdmin filter; restricted to their company
+     * @throws ForbiddenException
      */
     public function resolveListingScope(
         UserId $callerId,
         array $requestedCompanyIds = [],
         array $requestedShopIds = [],
     ): UserScope {
-        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
+        $caller = $this->loadCaller($callerId);
 
-        if ($caller['isAdmin']) {
+        if ($caller->role === Role::Admin) {
             return $requestedCompanyIds !== []
                 ? UserScope::companies($requestedCompanyIds)
                 : UserScope::all();
         }
 
-        if ($caller['managedCompanyIds'] !== []) {
+        if ($caller->role === Role::CompanyAdmin && $caller->companyId !== null) {
             if ($requestedShopIds !== []) {
-                $validShopIds = array_values(array_filter(
-                    $requestedShopIds,
-                    fn(string $shopId): bool => $this->shopBelongsToAnyCompany($shopId, $caller['managedCompanyIds']),
-                ));
-
-                if ($validShopIds !== []) {
-                    return UserScope::shops($validShopIds);
-                }
+                // scopeCompanyId constrains the query so cross-company shops are never returned
+                return UserScope::shops($requestedShopIds, $caller->companyId);
             }
 
-            return UserScope::companies($caller['managedCompanyIds']);
+            return UserScope::companies([$caller->companyId]);
         }
 
-        if ($caller['managedShopIds'] !== []) {
-            return UserScope::shops($caller['managedShopIds']);
+        if ($caller->role === Role::ShopManager && $caller->shopId !== null) {
+            return UserScope::shops([$caller->shopId]);
         }
 
         throw new ForbiddenException('You do not have permission to list users');
@@ -169,34 +147,30 @@ final readonly class UserAuthorization
 
     /**
      * Assert that $callerId is an admin.
-     * Used for operations restricted exclusively to admins (e.g. company create/delete/list).
      *
      * @throws ForbiddenException
      */
     public function authorizeAdminOnlyAction(UserId $callerId): void
     {
-        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
-
-        if (!$caller['isAdmin']) {
+        if ($this->loadCaller($callerId)->role !== Role::Admin) {
             throw new ForbiddenException('Only admins can perform this action');
         }
     }
 
     /**
      * Assert that $callerId may read or edit the given company.
-     * Allowed for admins and for company managers who manage that specific company.
      *
      * @throws ForbiddenException
      */
     public function authorizeCompanyAccess(UserId $callerId, string $companyId): void
     {
-        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
+        $caller = $this->loadCaller($callerId);
 
-        if ($caller['isAdmin']) {
+        if ($caller->role === Role::Admin) {
             return;
         }
 
-        if (in_array($companyId, $caller['managedCompanyIds'], true)) {
+        if ($caller->role === Role::CompanyAdmin && $caller->companyId === $companyId) {
             return;
         }
 
@@ -205,23 +179,22 @@ final readonly class UserAuthorization
 
     /**
      * Assert that $callerId may read or edit the given shop.
-     * Allowed for admins, company managers of the shop's company, and the shop's own manager.
      *
      * @throws ForbiddenException
      */
     public function authorizeShopAccess(UserId $callerId, string $shopId, string $companyId): void
     {
-        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
+        $caller = $this->loadCaller($callerId);
 
-        if ($caller['isAdmin']) {
+        if ($caller->role === Role::Admin) {
             return;
         }
 
-        if (in_array($companyId, $caller['managedCompanyIds'], true)) {
+        if ($caller->role === Role::CompanyAdmin && $caller->companyId === $companyId) {
             return;
         }
 
-        if (in_array($shopId, $caller['managedShopIds'], true)) {
+        if ($caller->role === Role::ShopManager && $caller->shopId === $shopId) {
             return;
         }
 
@@ -230,75 +203,14 @@ final readonly class UserAuthorization
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    /**
-     * Summarize a user's own role set into the three capabilities used by both
-     * authorizeRegistration and authorizeDeletion.
-     *
-     * @param  list<\Mossetc\TechnicalTest\Auth\Domain\Model\UserRole> $roles
-     * @return array{isAdmin: bool, managedCompanyIds: list<string>, managedShopIds: list<string>}
-     */
-    private function resolveCallerProfile(array $roles): array
+    private function loadCaller(UserId $id): User
     {
-        $isAdmin           = false;
-        $managedCompanyIds = [];
-        $managedShopIds    = [];
+        $user = $this->userRepository->findById($id);
 
-        foreach ($roles as $role) {
-            if ($role->role === Role::Admin) {
-                $isAdmin = true;
-            }
-            if ($role->role === Role::CompanyManager && $role->companyId !== null) {
-                $managedCompanyIds[] = $role->companyId;
-            }
-            if ($role->role === Role::ShopManager && $role->shopId !== null) {
-                $managedShopIds[] = $role->shopId;
-            }
+        if ($user === null || !$user->isActive) {
+            throw new ForbiddenException('Caller not found or inactive');
         }
 
-        return ['isAdmin' => $isAdmin, 'managedCompanyIds' => $managedCompanyIds, 'managedShopIds' => $managedShopIds];
-    }
-
-    /**
-     * Summarize a target user's role set into the shape used by authorizeDeletion.
-     *
-     * @param  list<\Mossetc\TechnicalTest\Auth\Domain\Model\UserRole> $roles
-     * @return array{isAdmin: bool, isCompanyManager: bool, isShopManager: bool, shopIds: list<string>}
-     */
-    private function resolveTargetProfile(array $roles): array
-    {
-        $isAdmin          = false;
-        $isCompanyManager = false;
-        $isShopManager    = false;
-        $shopIds          = [];
-
-        foreach ($roles as $role) {
-            if ($role->role === Role::Admin) {
-                $isAdmin = true;
-            }
-            if ($role->role === Role::CompanyManager) {
-                $isCompanyManager = true;
-            }
-            if ($role->role === Role::ShopManager) {
-                $isShopManager = true;
-                if ($role->shopId !== null) {
-                    $shopIds[] = $role->shopId;
-                }
-            }
-        }
-
-        return ['isAdmin' => $isAdmin, 'isCompanyManager' => $isCompanyManager, 'isShopManager' => $isShopManager, 'shopIds' => $shopIds];
-    }
-
-    /**
-     * Returns true when $shopId's owning company is among $managedCompanyIds.
-     * Encapsulates the findCompanyIdByShopId + in_array pair used in both public methods.
-     *
-     * @param list<string> $managedCompanyIds
-     */
-    private function shopBelongsToAnyCompany(string $shopId, array $managedCompanyIds): bool
-    {
-        $shopCompanyId = $this->roleRepository->findCompanyIdByShopId($shopId);
-
-        return $shopCompanyId !== null && in_array($shopCompanyId, $managedCompanyIds, true);
+        return $user;
     }
 }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Presentation\Controller;
 
 use InvalidArgumentException;
-use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
@@ -49,7 +49,7 @@ final readonly class DeleteUserController implements ControllerInterface
         }
 
         try {
-            $this->authorizationService->authorizeDeletion($callerId, $targetId);
+            $this->authorizationService->authorizeDeletion($callerId, $target);
         } catch (ForbiddenException $e) {
             return Response::error($e->getMessage(), 403);
         }

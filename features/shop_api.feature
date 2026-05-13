@@ -18,14 +18,14 @@ Feature: Shop API
 
   Scenario: Company manager creates a shop in their company
     Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I create a shop with name "West End" for company "11111111-1111-4111-8111-111111111111"
     Then the response status should be 201
 
   Scenario: Company manager cannot create a shop in another company
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I create a shop with name "Intruder" for company "22222222-2222-4222-8222-222222222222"
     Then the response status should be 403
 
@@ -69,7 +69,7 @@ Feature: Shop API
 
   Scenario: Company manager lists shops in their company
     Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     And I create a shop with name "Shop One" for company "11111111-1111-4111-8111-111111111111"
     When I list shops for company "11111111-1111-4111-8111-111111111111"
     Then the response status should be 200
@@ -78,7 +78,7 @@ Feature: Shop API
   Scenario: Company manager cannot list shops of another company
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I list shops for company "22222222-2222-4222-8222-222222222222"
     Then the response status should be 403
 
@@ -120,7 +120,7 @@ Feature: Shop API
   Scenario: Company manager gets a shop in their company
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I get the shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
     Then the response status should be 200
 
@@ -135,7 +135,7 @@ Feature: Shop API
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
     And a shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb" exists for company "22222222-2222-4222-8222-222222222222"
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I get the shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
     Then the response status should be 403
 
@@ -175,7 +175,7 @@ Feature: Shop API
   Scenario: Company manager updates a shop in their company
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I update the shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" with name "Updated"
     Then the response status should be 200
 
@@ -190,7 +190,7 @@ Feature: Shop API
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
     And a shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb" exists for company "22222222-2222-4222-8222-222222222222"
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I update the shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb" with name "Hacked"
     Then the response status should be 403
 
@@ -233,7 +233,7 @@ Feature: Shop API
   Scenario: Company manager deletes a shop in their company
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I delete the shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
     Then the response status should be 200
 
@@ -241,7 +241,7 @@ Feature: Shop API
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
     And a shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb" exists for company "22222222-2222-4222-8222-222222222222"
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I delete the shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
     Then the response status should be 403
 

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Shared\Infrastructure\DI;
 
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository;
 use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
 use Mossetc\TechnicalTest\Company\Infrastructure\Repository\CompanyRepository;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
@@ -51,39 +49,27 @@ final class ContainerFactory
         return $container;
     }
 
-    /**
-     * Builds a container suitable for testing: removes PDO infrastructure and
-     * registers the given repository as a synthetic service so it is injected
-     * wherever UserRepositoryInterface is required.
-     */
     public static function buildForTest(
         UserRepositoryInterface $repository,
-        UserRoleRepositoryInterface $roleRepository,
         CompanyRepositoryInterface $companyRepository,
         ShopRepositoryInterface $shopRepository,
     ): ContainerInterface {
         $container = self::create();
 
-        // Provide test JWT credentials so the JwtConfig validation passes
         $container->setParameter('env(JWT_SECRET)', 'behat-test-secret-key-at-least-32-chars');
         $container->setParameter('env(JWT_ISSUER)', 'http://localhost');
         $container->setParameter('env(JWT_AUDIENCE)', 'http://localhost');
-        // No pepper in tests — keeps fixture hashing consistent with HashedPassword::fromPlain()
         $container->setParameter('env(PASSWORD_SALT)', '');
 
-        // Strip out the database layer — it is not needed in tests
-        $concrete = ['PDO', UserRepository::class, UserRoleRepository::class, CompanyRepository::class, ShopRepository::class];
+        $concrete = ['PDO', UserRepository::class, CompanyRepository::class, ShopRepository::class];
         foreach ($concrete as $id) {
             if ($container->hasDefinition($id)) {
                 $container->removeDefinition($id);
             }
         }
 
-        // Replace aliases with synthetic placeholders that will be satisfied
-        // by the test doubles after compilation
         $interfaces = [
             UserRepositoryInterface::class,
-            UserRoleRepositoryInterface::class,
             CompanyRepositoryInterface::class,
             ShopRepositoryInterface::class,
         ];
@@ -91,15 +77,11 @@ final class ContainerFactory
             if ($container->hasAlias($iface)) {
                 $container->removeAlias($iface);
             }
-            $container->setDefinition(
-                $iface,
-                (new Definition($iface))->setSynthetic(true),
-            );
+            $container->setDefinition($iface, (new Definition($iface))->setSynthetic(true));
         }
 
         $container->compile(resolveEnvPlaceholders: true);
         $container->set(UserRepositoryInterface::class, $repository);
-        $container->set(UserRoleRepositoryInterface::class, $roleRepository);
         $container->set(CompanyRepositoryInterface::class, $companyRepository);
         $container->set(ShopRepositoryInterface::class, $shopRepository);
 

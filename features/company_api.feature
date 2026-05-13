@@ -16,7 +16,7 @@ Feature: Company API
 
   Scenario: Company manager cannot create a company
     Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I create a company with name "New Corp"
     Then the response status should be 403
 
@@ -49,7 +49,7 @@ Feature: Company API
 
   Scenario: Company manager cannot list all companies
     Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I list companies
     Then the response status should be 403
 
@@ -108,14 +108,14 @@ Feature: Company API
 
   Scenario: Company manager gets their own company
     Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I get the company "11111111-1111-4111-8111-111111111111"
     Then the response status should be 200
 
   Scenario: Company manager cannot get another company
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I get the company "22222222-2222-4222-8222-222222222222"
     Then the response status should be 403
 
@@ -144,14 +144,14 @@ Feature: Company API
 
   Scenario: Company manager updates their own company
     Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I update the company "11111111-1111-4111-8111-111111111111" with name "Updated Name"
     Then the response status should be 200
 
   Scenario: Company manager cannot update another company
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I update the company "22222222-2222-4222-8222-222222222222" with name "Hacked"
     Then the response status should be 403
 
@@ -182,7 +182,7 @@ Feature: Company API
 
   Scenario: Company manager cannot delete a company
     Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
     When I delete the company "11111111-1111-4111-8111-111111111111"
     Then the response status should be 403
 

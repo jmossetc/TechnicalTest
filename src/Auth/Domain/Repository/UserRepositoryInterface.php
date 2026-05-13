@@ -16,23 +16,32 @@ interface UserRepositoryInterface
 
     public function findById(UserId $id): ?User;
 
-    /**
-     * @return list<User>
-     */
+    public function delete(UserId $id): void;
+
+    public function updateLastLogin(UserId $id): void;
+
+    // ── Listing ───────────────────────────────────────────────────────────────
+
+    /** @return list<User> */
     public function findPaginated(int $limit, int $offset): array;
 
     public function count(): int;
 
-    public function delete(UserId $id): void;
-
     /**
-     * @param  list<string> $ids
+     * @param  list<string> $companyIds
      * @return list<User>
      */
-    public function findPaginatedByIds(array $ids, int $limit, int $offset): array;
+    public function findPaginatedByCompanyIds(array $companyIds, int $limit, int $offset): array;
+
+    /** @param list<string> $companyIds */
+    public function countByCompanyIds(array $companyIds): int;
 
     /**
-     * @param list<string> $ids
+     * @param  list<string> $shopIds
+     * @return list<User>
      */
-    public function countByIds(array $ids): int;
+    public function findPaginatedByShopIds(array $shopIds, ?string $companyId, int $limit, int $offset): array;
+
+    /** @param list<string> $shopIds */
+    public function countByShopIds(array $shopIds, ?string $companyId): int;
 }

@@ -6,8 +6,11 @@ namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Domain;
 
 use DateTimeImmutable;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\FirstName;
 use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\LastName;
 use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use PHPUnit\Framework\TestCase;
@@ -17,22 +20,32 @@ final class UserTest extends TestCase
     private function makeUser(string $email = 'user@example.com', string $password = 'password123'): User
     {
         return new User(
-            id: UserId::generate(),
-            email: new Email($email),
-            password: HashedPassword::fromPlain(new PlainPassword($password)),
+            id:        UserId::generate(),
+            email:     new Email($email),
+            password:  HashedPassword::fromPlain(new PlainPassword($password)),
+            firstName: new FirstName('Alice'),
+            lastName:  new LastName('Smith'),
         );
     }
 
     public function testHoldsExpectedProperties(): void
     {
-        $id = UserId::generate();
+        $id    = UserId::generate();
         $email = new Email('alice@example.com');
-        $password = HashedPassword::fromPlain(new PlainPassword('password123'));
 
-        $user = new User(id: $id, email: $email, password: $password);
+        $user = new User(
+            id:        $id,
+            email:     $email,
+            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Alice'),
+            lastName:  new LastName('Smith'),
+        );
 
         $this->assertTrue($user->id->equals($id));
         $this->assertTrue($user->email->equals($email));
+        $this->assertSame('Alice', $user->firstName->value);
+        $this->assertSame('Smith', $user->lastName->value);
+        $this->assertSame(Role::Employee, $user->role);
     }
 
     public function testVerifiesCorrectPassword(): void
@@ -57,8 +70,6 @@ final class UserTest extends TestCase
 
         $this->assertGreaterThanOrEqual($before, $user->createdAt);
         $this->assertLessThanOrEqual($after, $user->createdAt);
-        $this->assertGreaterThanOrEqual($before, $user->updatedAt);
-        $this->assertLessThanOrEqual($after, $user->updatedAt);
     }
 
     public function testDeletedAtIsNullByDefault(): void
@@ -66,23 +77,27 @@ final class UserTest extends TestCase
         $this->assertNull($this->makeUser()->deletedAt);
     }
 
-    public function testAcceptsExplicitTimestamps(): void
+    public function testIsActiveByDefault(): void
     {
-        $created = new DateTimeImmutable('2024-01-01 10:00:00');
-        $updated = new DateTimeImmutable('2024-06-15 12:30:00');
-        $deleted = new DateTimeImmutable('2024-12-01 09:00:00');
+        $this->assertTrue($this->makeUser()->isActive);
+    }
 
+    public function testRoleDefaultsToEmployee(): void
+    {
+        $this->assertSame(Role::Employee, $this->makeUser()->role);
+    }
+
+    public function testAcceptsExplicitRole(): void
+    {
         $user = new User(
-            id: UserId::generate(),
-            email: new Email('alice@example.com'),
-            password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            createdAt: $created,
-            updatedAt: $updated,
-            deletedAt: $deleted,
+            id:        UserId::generate(),
+            email:     new Email('admin@example.com'),
+            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Admin'),
+            lastName:  new LastName('User'),
+            role:      Role::Admin,
         );
 
-        $this->assertSame($created, $user->createdAt);
-        $this->assertSame($updated, $user->updatedAt);
-        $this->assertSame($deleted, $user->deletedAt);
+        $this->assertSame(Role::Admin, $user->role);
     }
 }

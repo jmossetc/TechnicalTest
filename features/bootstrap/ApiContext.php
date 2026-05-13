@@ -3,9 +3,14 @@
 declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\FirstName;
+use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\LastName;
+use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
 use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
@@ -21,42 +26,26 @@ use PHPUnit\Framework\Assert;
 final class ApiContext implements Context
 {
     private Router $router;
-
     private InMemoryUserRepository $userRepository;
-
-    private InMemoryUserRoleRepository $roleRepository;
-
     private InMemoryCompanyRepository $companyRepository;
-
     private InMemoryShopRepository $shopRepository;
 
     private ?Response $lastResponse = null;
-
-    private string $lastUserId = '';
-
-    private string $token = '';
-
-    /** ID of a target user created for deletion tests. */
-    private string $targetUserId = '';
-
-    /** Token for a bootstrapped admin user, used for registration calls. */
-    private string $adminToken = '';
-
-    /** ID of the last created company, for assertions. */
+    private string $lastUserId    = '';
+    private string $token         = '';
+    private string $targetUserId  = '';
+    private string $adminToken    = '';
     private string $lastCompanyId = '';
-
-    /** ID of the last created shop, for assertions. */
-    private string $lastShopId = '';
+    private string $lastShopId    = '';
 
     public function __construct()
     {
         $this->userRepository    = new InMemoryUserRepository();
-        $this->roleRepository    = new InMemoryUserRoleRepository();
         $this->companyRepository = new InMemoryCompanyRepository();
         $this->shopRepository    = new InMemoryShopRepository();
+
         $container = ContainerFactory::buildForTest(
             $this->userRepository,
-            $this->roleRepository,
             $this->companyRepository,
             $this->shopRepository,
         );
@@ -78,7 +67,7 @@ final class ApiContext implements Context
     {
         $this->ensureAdminToken();
 
-        $response = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->adminToken);
+        $response = $this->doPost('/api/users', $this->regBody($email, $password), $this->adminToken);
 
         Assert::assertSame(201, $response->status(), 'Registration failed unexpectedly');
 
@@ -87,29 +76,23 @@ final class ApiContext implements Context
     }
 
     /**
-     * Registers the user if not already registered (409 is tolerated), then logs in.
-     *
      * @Given I am logged in as :email with password :password
      */
     public function iAmLoggedInAs(string $email, string $password): void
     {
         $this->ensureAdminToken();
 
-        $regResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->adminToken);
+        $regResponse = $this->doPost('/api/users', $this->regBody($email, $password), $this->adminToken);
 
         if ($regResponse->status() === 201) {
             $id = $this->bodyOf($regResponse)['id'] ?? null;
             $this->lastUserId = is_string($id) ? $id : '';
         }
 
-        Assert::assertContains(
-            $regResponse->status(),
-            [201, 409],
-            "Registration step expected 201 or 409, got {$regResponse->status()}",
-        );
+        Assert::assertContains($regResponse->status(), [201, 409],
+            "Registration step expected 201 or 409, got {$regResponse->status()}");
 
         $loginResponse = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
-
         Assert::assertSame(200, $loginResponse->status(), 'Login failed unexpectedly');
 
         $token = $this->bodyOf($loginResponse)['token'] ?? null;
@@ -117,12 +100,11 @@ final class ApiContext implements Context
     }
 
     /**
-     * @Given a target user exists with role company_manager for company :companyId
+     * @Given a target user exists with role company_admin for company :companyId
      */
-    public function aTargetUserExistsWithRoleCompanyManagerForCompany(string $companyId): void
+    public function aTargetUserExistsWithRoleCompanyAdminForCompany(string $companyId): void
     {
-        $userId = $this->seedUser("target-cm-{$companyId}@internal.test", 'Target1234!');
-        $this->roleRepository->grantRole($userId, new UserRole(Role::CompanyManager, companyId: $companyId));
+        $userId = $this->seedUser("target-ca-{$companyId}@internal.test", 'Target1234!', Role::CompanyAdmin, $companyId);
         $this->targetUserId = $userId->value;
     }
 
@@ -131,8 +113,8 @@ final class ApiContext implements Context
      */
     public function aTargetUserExistsWithRoleShopManagerForShop(string $shopId): void
     {
-        $userId = $this->seedUser("target-sm-{$shopId}@internal.test", 'Target1234!');
-        $this->roleRepository->grantRole($userId, new UserRole(Role::ShopManager, shopId: $shopId));
+        $companyId = $this->shopCompanyId($shopId);
+        $userId    = $this->seedUser("target-sm-{$shopId}@internal.test", 'Target1234!', Role::ShopManager, $companyId, $shopId);
         $this->targetUserId = $userId->value;
     }
 
@@ -141,8 +123,7 @@ final class ApiContext implements Context
      */
     public function aTargetUserExistsWithRoleAdmin(): void
     {
-        $userId = $this->seedUser('target-admin@internal.test', 'Target1234!');
-        $this->roleRepository->grantRole($userId, new UserRole(Role::Admin));
+        $userId = $this->seedUser('target-admin@internal.test', 'Target1234!', Role::Admin);
         $this->targetUserId = $userId->value;
     }
 
@@ -151,7 +132,7 @@ final class ApiContext implements Context
      */
     public function aTargetUserExistsWithNoRole(): void
     {
-        $userId = $this->seedUser('target-norole@internal.test', 'Target1234!');
+        $userId = $this->seedUser('target-employee@internal.test', 'Target1234!', Role::Employee);
         $this->targetUserId = $userId->value;
     }
 
@@ -161,7 +142,7 @@ final class ApiContext implements Context
     public function aCompanyExists(string $companyId): void
     {
         $this->companyRepository->save(new Company(
-            id: new CompanyId($companyId),
+            id:   new CompanyId($companyId),
             name: new CompanyName("Company {$companyId}"),
         ));
     }
@@ -171,7 +152,6 @@ final class ApiContext implements Context
      */
     public function aShopExistsForCompany(string $shopId, string $companyId): void
     {
-        $this->roleRepository->registerShop($shopId, $companyId);
         $this->shopRepository->save(new Shop(
             id:        new ShopId($shopId),
             companyId: new CompanyId($companyId),
@@ -189,16 +169,13 @@ final class ApiContext implements Context
     }
 
     /**
-     * @Given I am logged in as company manager of :companyId
+     * @Given I am logged in as company admin of :companyId
      */
-    public function iAmLoggedInAsCompanyManagerOf(string $companyId): void
+    public function iAmLoggedInAsCompanyAdminOf(string $companyId): void
     {
-        $email    = "cm-{$companyId}@internal.test";
+        $email    = "ca-{$companyId}@internal.test";
         $password = 'Manager1234!';
-
-        $userId = $this->seedUser($email, $password);
-        $this->roleRepository->grantRole($userId, new UserRole(Role::CompanyManager, companyId: $companyId));
-
+        $this->seedUser($email, $password, Role::CompanyAdmin, $companyId);
         $this->token = $this->loginAndGetToken($email, $password);
     }
 
@@ -207,12 +184,10 @@ final class ApiContext implements Context
      */
     public function iAmLoggedInAsShopManagerOf(string $shopId): void
     {
-        $email    = "sm-{$shopId}@internal.test";
-        $password = 'Manager1234!';
-
-        $userId = $this->seedUser($email, $password);
-        $this->roleRepository->grantRole($userId, new UserRole(Role::ShopManager, shopId: $shopId));
-
+        $email     = "sm-{$shopId}@internal.test";
+        $password  = 'Manager1234!';
+        $companyId = $this->shopCompanyId($shopId);
+        $this->seedUser($email, $password, Role::ShopManager, $companyId, $shopId);
         $this->token = $this->loginAndGetToken($email, $password);
     }
 
@@ -221,10 +196,9 @@ final class ApiContext implements Context
      */
     public function iAmLoggedInAsAUserWithNoRole(): void
     {
-        $email    = 'norole@internal.test';
+        $email    = 'employee@internal.test';
         $password = 'NoRole1234!';
-
-        $this->seedUser($email, $password);
+        $this->seedUser($email, $password, Role::Employee);
         $this->token = $this->loginAndGetToken($email, $password);
     }
 
@@ -235,7 +209,7 @@ final class ApiContext implements Context
      */
     public function iRegisterWithoutAuthenticationWithEmailAndPassword(string $email, string $password): void
     {
-        $this->lastResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password]);
+        $this->lastResponse = $this->doPost('/api/users', $this->regBody($email, $password));
     }
 
     /**
@@ -244,8 +218,7 @@ final class ApiContext implements Context
     public function iRegisterWithEmailAndPassword(string $email, string $password): void
     {
         $this->ensureAdminToken();
-
-        $this->lastResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->adminToken);
+        $this->lastResponse = $this->doPost('/api/users', $this->regBody($email, $password), $this->adminToken);
 
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
@@ -258,7 +231,7 @@ final class ApiContext implements Context
      */
     public function iRegisterWithCurrentTokenEmailAndPassword(string $email, string $password): void
     {
-        $this->lastResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->token);
+        $this->lastResponse = $this->doPost('/api/users', $this->regBody($email, $password), $this->token);
 
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
@@ -271,11 +244,7 @@ final class ApiContext implements Context
      */
     public function iRegisterAUserWithRole(string $email, string $password, string $role): void
     {
-        $this->lastResponse = $this->doPost('/api/users', [
-            'email'    => $email,
-            'password' => $password,
-            'role'     => $role,
-        ], $this->token);
+        $this->lastResponse = $this->doPost('/api/users', $this->regBody($email, $password, ['role' => $role]), $this->token);
 
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
@@ -289,12 +258,10 @@ final class ApiContext implements Context
     public function aUserIsRegisteredWithRoleForCompany(string $email, string $password, string $role, string $companyId): void
     {
         $this->ensureAdminToken();
-        $response = $this->doPost('/api/users', [
-            'email'      => $email,
-            'password'   => $password,
+        $response = $this->doPost('/api/users', $this->regBody($email, $password, [
             'role'       => $role,
             'company_id' => $companyId,
-        ], $this->adminToken);
+        ]), $this->adminToken);
 
         Assert::assertSame(201, $response->status(), "Background registration of {$email} (company) failed");
     }
@@ -305,12 +272,10 @@ final class ApiContext implements Context
     public function aUserIsRegisteredWithRoleForShop(string $email, string $password, string $role, string $shopId): void
     {
         $this->ensureAdminToken();
-        $response = $this->doPost('/api/users', [
-            'email'    => $email,
-            'password' => $password,
-            'role'     => $role,
-            'shop_id'  => $shopId,
-        ], $this->adminToken);
+        $response = $this->doPost('/api/users', $this->regBody($email, $password, [
+            'role'    => $role,
+            'shop_id' => $shopId,
+        ]), $this->adminToken);
 
         Assert::assertSame(201, $response->status(), "Background registration of {$email} (shop) failed");
     }
@@ -320,12 +285,10 @@ final class ApiContext implements Context
      */
     public function iRegisterAUserWithRoleForCompany(string $email, string $password, string $role, string $companyId): void
     {
-        $this->lastResponse = $this->doPost('/api/users', [
-            'email'      => $email,
-            'password'   => $password,
+        $this->lastResponse = $this->doPost('/api/users', $this->regBody($email, $password, [
             'role'       => $role,
             'company_id' => $companyId,
-        ], $this->token);
+        ]), $this->token);
 
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
@@ -338,12 +301,10 @@ final class ApiContext implements Context
      */
     public function iRegisterAUserWithRoleForShop(string $email, string $password, string $role, string $shopId): void
     {
-        $this->lastResponse = $this->doPost('/api/users', [
-            'email'    => $email,
-            'password' => $password,
-            'role'     => $role,
-            'shop_id'  => $shopId,
-        ], $this->token);
+        $this->lastResponse = $this->doPost('/api/users', $this->regBody($email, $password, [
+            'role'    => $role,
+            'shop_id' => $shopId,
+        ]), $this->token);
 
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
@@ -372,69 +333,50 @@ final class ApiContext implements Context
         $this->lastResponse = $this->doGet("/api/users/{$this->lastUserId}");
     }
 
-    /**
-     * @When I fetch my profile
-     */
+    /** @When I fetch my profile */
     public function iFetchMyProfile(): void
     {
         $this->lastResponse = $this->doGet("/api/users/{$this->lastUserId}", $this->token);
     }
 
-    /**
-     * @When I fetch the user with id :id
-     */
+    /** @When I fetch the user with id :id */
     public function iFetchTheUserWithId(string $id): void
     {
         $this->lastResponse = $this->doGet("/api/users/{$id}", $this->token);
     }
 
-    /**
-     * @When I list users
-     */
+    /** @When I list users */
     public function iListUsers(): void
     {
         $this->lastResponse = $this->doGet('/api/users', $this->token);
     }
 
-    /**
-     * @When I list users on page :page with limit :limit
-     */
+    /** @When I list users on page :page with limit :limit */
     public function iListUsersOnPageWithLimit(int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet(
-            '/api/users',
-            $this->token,
-            ['page' => (string) $page, 'limit' => (string) $limit],
-        );
+        $this->lastResponse = $this->doGet('/api/users', $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit]);
     }
 
-    /**
-     * @When I list users filtered by company :companyId
-     */
+    /** @When I list users filtered by company :companyId */
     public function iListUsersFilteredByCompany(string $companyId): void
     {
         $this->lastResponse = $this->doGet('/api/users', $this->token, ['company_ids' => $companyId]);
     }
 
-    /**
-     * @When I list users filtered by shop :shopId
-     */
+    /** @When I list users filtered by shop :shopId */
     public function iListUsersFilteredByShop(string $shopId): void
     {
         $this->lastResponse = $this->doGet('/api/users', $this->token, ['shop_ids' => $shopId]);
     }
 
-    /**
-     * @When I delete the target user
-     */
+    /** @When I delete the target user */
     public function iDeleteTheTargetUser(): void
     {
         $this->lastResponse = $this->doDelete("/api/users/{$this->targetUserId}", $this->token);
     }
 
-    /**
-     * @When I delete user :userId
-     */
+    /** @When I delete user :userId */
     public function iDeleteUser(string $userId): void
     {
         $this->lastResponse = $this->doDelete("/api/users/{$userId}", $this->token);
@@ -442,18 +384,14 @@ final class ApiContext implements Context
 
     // ── Then ──────────────────────────────────────────────────────────────────
 
-    /**
-     * @Then the response status should be :status
-     */
+    /** @Then the response status should be :status */
     public function theResponseStatusShouldBe(int $status): void
     {
         Assert::assertNotNull($this->lastResponse, 'No request has been made yet');
         Assert::assertSame($status, $this->lastResponse->status());
     }
 
-    /**
-     * @Then the response should contain field :field
-     */
+    /** @Then the response should contain field :field */
     public function theResponseShouldContainField(string $field): void
     {
         $body = $this->bodyOf($this->response());
@@ -461,9 +399,7 @@ final class ApiContext implements Context
         Assert::assertNotEmpty($body[$field], "Response field '{$field}' is empty");
     }
 
-    /**
-     * @Then the response field :field should equal :value
-     */
+    /** @Then the response field :field should equal :value */
     public function theResponseFieldShouldEqual(string $field, string $value): void
     {
         $body = $this->bodyOf($this->response());
@@ -471,11 +407,7 @@ final class ApiContext implements Context
         Assert::assertSame($value, $body[$field]);
     }
 
-    /**
-     * Supports dot-notation for nested fields, e.g. "pagination.total".
-     *
-     * @Then the response :path should equal :value
-     */
+    /** @Then the response :path should equal :value */
     public function theResponsePathShouldEqual(string $path, string $value): void
     {
         $parts  = explode('.', $path);
@@ -490,9 +422,7 @@ final class ApiContext implements Context
         Assert::assertSame($value, (string) $cursor, "Response path '{$path}' does not equal '{$value}'");
     }
 
-    /**
-     * @Then the :field array should have :count item(s)
-     */
+    /** @Then the :field array should have :count item(s) */
     public function theArrayShouldHaveItems(string $field, int $count): void
     {
         $body = $this->bodyOf($this->response());
@@ -501,197 +431,162 @@ final class ApiContext implements Context
         Assert::assertCount($count, $body[$field]);
     }
 
-    /**
-     * @Then the first :field item :key should equal :value
-     */
+    /** @Then the first :field item :key should equal :value */
     public function theFirstArrayItemKeyShouldEqual(string $field, string $key, string $value): void
     {
         $body = $this->bodyOf($this->response());
         Assert::assertArrayHasKey($field, $body);
         Assert::assertIsArray($body[$field]);
         Assert::assertNotEmpty($body[$field], "'{$field}' array is empty");
-
         $first = $body[$field][0] ?? null;
         Assert::assertIsArray($first);
         Assert::assertArrayHasKey($key, $first);
         Assert::assertSame($value, $first[$key]);
     }
 
-    // ── Shop When ────────────────────────────────────────────────────────────
+    // ── Company / Shop When steps (unchanged passthrough) ─────────────────────
 
-    /**
-     * @When I create a shop with name :name for company :companyId
-     */
+    /** @When I create a shop with name :name for company :companyId */
     public function iCreateAShopWithNameForCompany(string $name, string $companyId): void
     {
         $this->lastResponse = $this->doPost("/api/companies/{$companyId}/shops", ['name' => $name], $this->token);
-
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
             $this->lastShopId = $id;
         }
     }
 
-    /**
-     * @When I list shops for company :companyId
-     */
+    /** @When I list shops for company :companyId */
     public function iListShopsForCompany(string $companyId): void
     {
         $this->lastResponse = $this->doGet("/api/companies/{$companyId}/shops", $this->token);
     }
 
-    /**
-     * @When I list shops for company :companyId on page :page with limit :limit
-     */
+    /** @When I list shops for company :companyId on page :page with limit :limit */
     public function iListShopsForCompanyOnPageWithLimit(string $companyId, int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet(
-            "/api/companies/{$companyId}/shops",
-            $this->token,
-            ['page' => (string) $page, 'limit' => (string) $limit],
-        );
+        $this->lastResponse = $this->doGet("/api/companies/{$companyId}/shops", $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit]);
     }
 
-    /**
-     * @When I get the shop :shopId
-     */
+    /** @When I get the shop :shopId */
     public function iGetTheShop(string $shopId): void
     {
         $this->lastResponse = $this->doGet("/api/shops/{$shopId}", $this->token);
     }
 
-    /**
-     * @When I get the last created shop
-     */
+    /** @When I get the last created shop */
     public function iGetTheLastCreatedShop(): void
     {
         $this->lastResponse = $this->doGet("/api/shops/{$this->lastShopId}", $this->token);
     }
 
-    /**
-     * @When I update the shop :shopId with name :name
-     */
+    /** @When I update the shop :shopId with name :name */
     public function iUpdateTheShopWithName(string $shopId, string $name): void
     {
         $this->lastResponse = $this->doPatch("/api/shops/{$shopId}", ['name' => $name], $this->token);
     }
 
-    /**
-     * @When I update the last created shop with name :name
-     */
+    /** @When I update the last created shop with name :name */
     public function iUpdateTheLastCreatedShopWithName(string $name): void
     {
         $this->lastResponse = $this->doPatch("/api/shops/{$this->lastShopId}", ['name' => $name], $this->token);
     }
 
-    /**
-     * @When I delete the shop :shopId
-     */
+    /** @When I delete the shop :shopId */
     public function iDeleteTheShop(string $shopId): void
     {
         $this->lastResponse = $this->doDelete("/api/shops/{$shopId}", $this->token);
     }
 
-    /**
-     * @When I delete the last created shop
-     */
+    /** @When I delete the last created shop */
     public function iDeleteTheLastCreatedShop(): void
     {
         $this->lastResponse = $this->doDelete("/api/shops/{$this->lastShopId}", $this->token);
     }
 
-    // ── Company When ─────────────────────────────────────────────────────────
-
-    /**
-     * @When I create a company with name :name
-     */
+    /** @When I create a company with name :name */
     public function iCreateACompanyWithName(string $name): void
     {
         $this->lastResponse = $this->doPost('/api/companies', ['name' => $name], $this->token);
-
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
             $this->lastCompanyId = $id;
         }
     }
 
-    /**
-     * @When I list companies
-     */
+    /** @When I list companies */
     public function iListCompanies(): void
     {
         $this->lastResponse = $this->doGet('/api/companies', $this->token);
     }
 
-    /**
-     * @When I list companies on page :page with limit :limit
-     */
+    /** @When I list companies on page :page with limit :limit */
     public function iListCompaniesOnPageWithLimit(int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet(
-            '/api/companies',
-            $this->token,
-            ['page' => (string) $page, 'limit' => (string) $limit],
-        );
+        $this->lastResponse = $this->doGet('/api/companies', $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit]);
     }
 
-    /**
-     * @When I list companies filtered by name :name
-     */
+    /** @When I list companies filtered by name :name */
     public function iListCompaniesFilteredByName(string $name): void
     {
         $this->lastResponse = $this->doGet('/api/companies', $this->token, ['name' => $name]);
     }
 
-    /**
-     * @When I get the company :companyId
-     */
+    /** @When I get the company :companyId */
     public function iGetTheCompany(string $companyId): void
     {
         $this->lastResponse = $this->doGet("/api/companies/{$companyId}", $this->token);
     }
 
-    /**
-     * @When I get the last created company
-     */
+    /** @When I get the last created company */
     public function iGetTheLastCreatedCompany(): void
     {
         $this->lastResponse = $this->doGet("/api/companies/{$this->lastCompanyId}", $this->token);
     }
 
-    /**
-     * @When I update the company :companyId with name :name
-     */
+    /** @When I update the company :companyId with name :name */
     public function iUpdateTheCompanyWithName(string $companyId, string $name): void
     {
         $this->lastResponse = $this->doPatch("/api/companies/{$companyId}", ['name' => $name], $this->token);
     }
 
-    /**
-     * @When I update the last created company with name :name
-     */
+    /** @When I update the last created company with name :name */
     public function iUpdateTheLastCreatedCompanyWithName(string $name): void
     {
         $this->lastResponse = $this->doPatch("/api/companies/{$this->lastCompanyId}", ['name' => $name], $this->token);
     }
 
-    /**
-     * @When I delete the company :companyId
-     */
+    /** @When I delete the company :companyId */
     public function iDeleteTheCompany(string $companyId): void
     {
         $this->lastResponse = $this->doDelete("/api/companies/{$companyId}", $this->token);
     }
 
-    /**
-     * @When I delete the last created company
-     */
+    /** @When I delete the last created company */
     public function iDeleteTheLastCreatedCompany(): void
     {
         $this->lastResponse = $this->doDelete("/api/companies/{$this->lastCompanyId}", $this->token);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * Build registration body with sensible first/last name defaults.
+     *
+     * @param array<string, string> $extra
+     * @return array<string, string>
+     */
+    private function regBody(string $email, string $password, array $extra = []): array
+    {
+        return array_merge([
+            'email'      => $email,
+            'password'   => $password,
+            'first_name' => 'Test',
+            'last_name'  => 'User',
+        ], $extra);
+    }
 
     /** @param array<string, mixed> $body */
     private function doPost(string $path, array $body, string $token = ''): Response
@@ -702,60 +597,17 @@ final class ApiContext implements Context
         }
 
         return $this->router->dispatch(new Request(
-            method: 'POST',
-            path: $path,
-            headers: $headers,
-            body: $body,
+            method: 'POST', path: $path, headers: $headers, body: $body,
         ));
     }
 
-    /**
-     * Bootstraps an admin user by directly seeding the in-memory repositories
-     * and obtains a JWT token via the login endpoint.
-     */
-    private function ensureAdminToken(): void
-    {
-        if ($this->adminToken !== '') {
-            return;
-        }
-
-        $adminEmail    = 'behat-admin@internal.test';
-        $adminPassword = 'Admin1234!';
-
-        // Seed the admin user directly into the in-memory stores
-        $userId = UserId::generate();
-        $user = new \Mossetc\TechnicalTest\Auth\Domain\Model\User(
-            id: $userId,
-            email: new \Mossetc\TechnicalTest\Auth\Domain\Model\Email($adminEmail),
-            password: \Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword::fromPlain(
-                new \Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword($adminPassword),
-            ),
-        );
-
-        $this->userRepository->save($user);
-        $this->roleRepository->grantRole($userId, new UserRole(Role::Admin));
-
-        // Log in to obtain a JWT
-        $loginResponse = $this->doPost('/api/auth/login', ['email' => $adminEmail, 'password' => $adminPassword]);
-        Assert::assertSame(200, $loginResponse->status(), 'Admin login failed');
-
-        $token = $this->bodyOf($loginResponse)['token'] ?? null;
-        $this->adminToken = is_string($token) ? $token : '';
-    }
-
-    /**
-     * @param array<string, string> $query
-     */
+    /** @param array<string, string> $query */
     private function doGet(string $path, string $token = '', array $query = []): Response
     {
         $headers = $token !== '' ? ['Authorization' => "Bearer {$token}"] : [];
 
         return $this->router->dispatch(new Request(
-            method: 'GET',
-            path: $path,
-            headers: $headers,
-            body: [],
-            query: $query,
+            method: 'GET', path: $path, headers: $headers, body: [], query: $query,
         ));
     }
 
@@ -768,10 +620,7 @@ final class ApiContext implements Context
         }
 
         return $this->router->dispatch(new Request(
-            method: 'PATCH',
-            path: $path,
-            headers: $headers,
-            body: $body,
+            method: 'PATCH', path: $path, headers: $headers, body: $body,
         ));
     }
 
@@ -780,10 +629,7 @@ final class ApiContext implements Context
         $headers = $token !== '' ? ['Authorization' => "Bearer {$token}"] : [];
 
         return $this->router->dispatch(new Request(
-            method: 'DELETE',
-            path: $path,
-            headers: $headers,
-            body: [],
+            method: 'DELETE', path: $path, headers: $headers, body: [],
         ));
     }
 
@@ -802,28 +648,54 @@ final class ApiContext implements Context
         return $this->lastResponse;
     }
 
-    /**
-     * Seeds a user directly into the in-memory repository and returns the UserId.
-     */
-    private function seedUser(string $email, string $password): UserId
+    private function ensureAdminToken(): void
     {
-        $userId = UserId::generate();
-        $user = new \Mossetc\TechnicalTest\Auth\Domain\Model\User(
-            id: $userId,
-            email: new \Mossetc\TechnicalTest\Auth\Domain\Model\Email($email),
-            password: \Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword::fromPlain(
-                new \Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword($password),
-            ),
-        );
+        if ($this->adminToken !== '') {
+            return;
+        }
 
-        $this->userRepository->save($user);
+        $email    = 'behat-admin@internal.test';
+        $password = 'Admin1234!';
+
+        $userId = UserId::generate();
+        $this->userRepository->save(new User(
+            id:        $userId,
+            email:     new Email($email),
+            password:  HashedPassword::fromPlain(new PlainPassword($password)),
+            firstName: new FirstName('Behat'),
+            lastName:  new LastName('Admin'),
+            role:      Role::Admin,
+        ));
+
+        $loginResponse = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
+        Assert::assertSame(200, $loginResponse->status(), 'Admin login failed');
+
+        $token = $this->bodyOf($loginResponse)['token'] ?? null;
+        $this->adminToken = is_string($token) ? $token : '';
+    }
+
+    private function seedUser(
+        string $email,
+        string $password,
+        Role $role = Role::Employee,
+        ?string $companyId = null,
+        ?string $shopId = null,
+    ): UserId {
+        $userId = UserId::generate();
+        $this->userRepository->save(new User(
+            id:        $userId,
+            email:     new Email($email),
+            password:  HashedPassword::fromPlain(new PlainPassword($password)),
+            firstName: new FirstName('Test'),
+            lastName:  new LastName('User'),
+            role:      $role,
+            companyId: $companyId,
+            shopId:    $shopId,
+        ));
 
         return $userId;
     }
 
-    /**
-     * Logs in via the HTTP layer and returns the JWT token.
-     */
     private function loginAndGetToken(string $email, string $password): string
     {
         $response = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
@@ -832,5 +704,12 @@ final class ApiContext implements Context
         $token = $this->bodyOf($response)['token'] ?? null;
 
         return is_string($token) ? $token : '';
+    }
+
+    private function shopCompanyId(string $shopId): ?string
+    {
+        $shop = $this->shopRepository->findById(new ShopId($shopId));
+
+        return $shop?->companyId->value;
     }
 }

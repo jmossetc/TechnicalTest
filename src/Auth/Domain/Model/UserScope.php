@@ -8,12 +8,11 @@ namespace Mossetc\TechnicalTest\Auth\Domain\Model;
  * Describes what subset of users a caller is permitted to see.
  *
  * Three variants, constructed via named factory methods:
- *   UserScope::all()            – no restriction (admins)
- *   UserScope::companies($ids)  – users associated with these companies
- *   UserScope::shops($ids)      – users associated with these shops
- *
- * The parameterless constructor (new UserScope()) produces the "all" variant
- * and may be used as a PHP 8.1+ default-parameter expression.
+ *   UserScope::all()                          – no restriction (admins)
+ *   UserScope::companies($ids)                – users whose company_id is in $ids
+ *   UserScope::shops($ids)                    – users whose shop_id is in $ids
+ *   UserScope::shops($ids, $scopeCompanyId)   – same, plus AND company_id = $scopeCompanyId
+ *                                               (used when a company_admin filters by shops)
  */
 final readonly class UserScope
 {
@@ -26,6 +25,7 @@ final readonly class UserScope
     public function __construct(
         public string $kind = 'all',
         array $ids = [],
+        public ?string $scopeCompanyId = null,
     ) {
         $this->ids = $ids;
     }
@@ -46,9 +46,9 @@ final readonly class UserScope
     /**
      * @param list<string> $ids
      */
-    public static function shops(array $ids): self
+    public static function shops(array $ids, ?string $companyId = null): self
     {
-        return new self('shops', $ids);
+        return new self('shops', $ids, $companyId);
     }
 
     public function isAll(): bool

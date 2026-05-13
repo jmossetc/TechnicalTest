@@ -8,15 +8,14 @@ use Mossetc\TechnicalTest\Auth\Application\Command\LoginUser;
 use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\LoginUserHandler;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
+use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\AuthToken;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
-use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
 use PHPUnit\Framework\TestCase;
 
 final class LoginUserHandlerTest extends TestCase
@@ -29,9 +28,8 @@ final class LoginUserHandlerTest extends TestCase
         $this->repository = new InMemoryUserRepository();
         $this->hasher     = new PasswordHasher('');
 
-        $roleRepo = new InMemoryUserRoleRepository();
-        (new RegisterUserHandler($this->repository, $roleRepo, $this->hasher))
-            ->handle(new RegisterUser('alice@example.com', 'password123'));
+        (new RegisterUserHandler($this->repository, $this->hasher))
+            ->handle(new RegisterUser('alice@example.com', 'password123', 'Alice', 'Smith'));
     }
 
     private function makeHandler(?TokenServiceInterface $tokenService = null): LoginUserHandler
@@ -45,12 +43,11 @@ final class LoginUserHandlerTest extends TestCase
 
     public function testReturnsTokenOnSuccess(): void
     {
-        $expectedToken = new AuthToken('some.jwt.token');
-        $tokenService  = $this->createMock(TokenServiceInterface::class);
-        $tokenService->expects($this->once())->method('issue')->willReturn($expectedToken);
+        $expected     = new AuthToken('some.jwt.token');
+        $tokenService = $this->createMock(TokenServiceInterface::class);
+        $tokenService->expects($this->once())->method('issue')->willReturn($expected);
 
-        $token = $this->makeHandler($tokenService)
-            ->handle(new LoginUser('alice@example.com', 'password123'));
+        $token = $this->makeHandler($tokenService)->handle(new LoginUser('alice@example.com', 'password123'));
 
         $this->assertSame('some.jwt.token', $token->value);
     }
@@ -67,8 +64,7 @@ final class LoginUserHandlerTest extends TestCase
             )
             ->willReturn(new AuthToken('tok'));
 
-        $this->makeHandler($tokenService)
-            ->handle(new LoginUser('alice@example.com', 'password123'));
+        $this->makeHandler($tokenService)->handle(new LoginUser('alice@example.com', 'password123'));
     }
 
     public function testThrowsOnUnknownEmail(): void
@@ -88,7 +84,18 @@ final class LoginUserHandlerTest extends TestCase
         $tokenService = $this->createMock(TokenServiceInterface::class);
         $tokenService->expects($this->once())->method('issue')->willReturn(new AuthToken('tok'));
 
-        $this->makeHandler($tokenService)
-            ->handle(new LoginUser('ALICE@EXAMPLE.COM', 'password123'));
+        $this->makeHandler($tokenService)->handle(new LoginUser('ALICE@EXAMPLE.COM', 'password123'));
+    }
+
+    public function testUpdatesLastLoginOnSuccess(): void
+    {
+        $tokenService = $this->createStub(TokenServiceInterface::class);
+        $tokenService->method('issue')->willReturn(new AuthToken('tok'));
+
+        $this->makeHandler($tokenService)->handle(new LoginUser('alice@example.com', 'password123'));
+
+        $user = $this->repository->findByEmail(new Email('alice@example.com'));
+        $this->assertNotNull($user);
+        $this->assertNotNull($user->lastLoginAt);
     }
 }

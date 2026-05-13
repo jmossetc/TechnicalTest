@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Application;
 
-use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
-use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
-use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
-use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\FirstName;
+use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\LastName;
+use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
 use PHPUnit\Framework\TestCase;
 
@@ -32,328 +37,258 @@ final class UserAuthorizationServiceTest extends TestCase
 
     public function testAdminCanRegisterAdmin(): void
     {
-        $this->service([new UserRole(Role::Admin)])
+        $this->service(callerRole: Role::Admin)
             ->authorizeRegistration($this->callerId, Role::Admin, null, null);
-
         $this->addToAssertionCount(1);
     }
 
-    public function testAdminCanRegisterCompanyManager(): void
+    public function testAdminCanRegisterCompanyAdmin(): void
     {
-        $this->service([new UserRole(Role::Admin)])
-            ->authorizeRegistration($this->callerId, Role::CompanyManager, self::COMPANY_A, null);
-
+        $this->service(callerRole: Role::Admin)
+            ->authorizeRegistration($this->callerId, Role::CompanyAdmin, self::COMPANY_A, null);
         $this->addToAssertionCount(1);
     }
 
     public function testAdminCanRegisterShopManager(): void
     {
-        $this->service([new UserRole(Role::Admin)])
-            ->authorizeRegistration($this->callerId, Role::ShopManager, null, self::SHOP_A1);
-
+        $this->service(callerRole: Role::Admin)
+            ->authorizeRegistration($this->callerId, Role::ShopManager, self::COMPANY_A, self::SHOP_A1);
         $this->addToAssertionCount(1);
     }
 
-    public function testAdminCanRegisterPlainUser(): void
+    public function testAdminCanRegisterEmployee(): void
     {
-        $this->service([new UserRole(Role::Admin)])
-            ->authorizeRegistration($this->callerId, null, null, null);
-
+        $this->service(callerRole: Role::Admin)
+            ->authorizeRegistration($this->callerId, Role::Employee, null, null);
         $this->addToAssertionCount(1);
     }
 
-    public function testUserWithNoRolesCannotRegisterAnyone(): void
+    public function testEmployeeCannotRegisterAnyone(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service([])
-            ->authorizeRegistration($this->callerId, null, null, null);
+        $this->service(callerRole: Role::Employee)
+            ->authorizeRegistration($this->callerId, Role::Employee, null, null);
     }
 
-    public function testCompanyManagerCanRegisterCompanyManagerForOwnCompany(): void
+    public function testCompanyAdminCanRegisterCompanyAdminForOwnCompany(): void
     {
-        $this->service([new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)])
-            ->authorizeRegistration($this->callerId, Role::CompanyManager, self::COMPANY_A, null);
-
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeRegistration($this->callerId, Role::CompanyAdmin, self::COMPANY_A, null);
         $this->addToAssertionCount(1);
     }
 
-    public function testCompanyManagerCannotRegisterCompanyManagerForOtherCompany(): void
+    public function testCompanyAdminCannotRegisterCompanyAdminForOtherCompany(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service([new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)])
-            ->authorizeRegistration($this->callerId, Role::CompanyManager, self::COMPANY_B, null);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeRegistration($this->callerId, Role::CompanyAdmin, self::COMPANY_B, null);
     }
 
-    public function testCompanyManagerCanRegisterShopManagerForShopInOwnCompany(): void
+    public function testCompanyAdminCanRegisterShopManagerForOwnCompany(): void
     {
-        $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            shopCompanyMap: [self::SHOP_A1 => self::COMPANY_A],
-        )->authorizeRegistration($this->callerId, Role::ShopManager, null, self::SHOP_A1);
-
+        // targetCompanyId = shop's company (already resolved by controller)
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeRegistration($this->callerId, Role::ShopManager, self::COMPANY_A, self::SHOP_A1);
         $this->addToAssertionCount(1);
     }
 
-    public function testCompanyManagerCannotRegisterShopManagerForShopInOtherCompany(): void
+    public function testCompanyAdminCannotRegisterShopManagerForOtherCompany(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            shopCompanyMap: [self::SHOP_B1 => self::COMPANY_B],
-        )->authorizeRegistration($this->callerId, Role::ShopManager, null, self::SHOP_B1);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeRegistration($this->callerId, Role::ShopManager, self::COMPANY_B, self::SHOP_B1);
     }
 
-    public function testCompanyManagerCannotRegisterAdmin(): void
+    public function testCompanyAdminCannotRegisterAdmin(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service([new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)])
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
             ->authorizeRegistration($this->callerId, Role::Admin, null, null);
     }
 
-    public function testCompanyManagerCanRegisterPlainUser(): void
+    public function testCompanyAdminCanRegisterEmployee(): void
     {
-        $this->service([new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)])
-            ->authorizeRegistration($this->callerId, null, null, null);
-
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeRegistration($this->callerId, Role::Employee, null, null);
         $this->addToAssertionCount(1);
     }
 
     public function testShopManagerCanRegisterShopManagerForOwnShop(): void
     {
-        $this->service([new UserRole(Role::ShopManager, shopId: self::SHOP_A1)])
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
             ->authorizeRegistration($this->callerId, Role::ShopManager, null, self::SHOP_A1);
-
         $this->addToAssertionCount(1);
     }
 
     public function testShopManagerCannotRegisterShopManagerForOtherShop(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service([new UserRole(Role::ShopManager, shopId: self::SHOP_A1)])
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
             ->authorizeRegistration($this->callerId, Role::ShopManager, null, self::SHOP_B1);
     }
 
-    public function testShopManagerCannotRegisterCompanyManager(): void
+    public function testShopManagerCannotRegisterCompanyAdmin(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service([new UserRole(Role::ShopManager, shopId: self::SHOP_A1)])
-            ->authorizeRegistration($this->callerId, Role::CompanyManager, self::COMPANY_A, null);
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
+            ->authorizeRegistration($this->callerId, Role::CompanyAdmin, self::COMPANY_A, null);
     }
 
-    public function testShopManagerCannotRegisterAdmin(): void
+    public function testShopManagerCanRegisterEmployee(): void
     {
-        $this->expectException(ForbiddenException::class);
-        $this->service([new UserRole(Role::ShopManager, shopId: self::SHOP_A1)])
-            ->authorizeRegistration($this->callerId, Role::Admin, null, null);
-    }
-
-    public function testShopManagerCanRegisterPlainUser(): void
-    {
-        $this->service([new UserRole(Role::ShopManager, shopId: self::SHOP_A1)])
-            ->authorizeRegistration($this->callerId, null, null, null);
-
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
+            ->authorizeRegistration($this->callerId, Role::Employee, null, null);
         $this->addToAssertionCount(1);
     }
 
     // ── authorizeDeletion ─────────────────────────────────────────────────────
 
-    public function testAdminCanDeletePlainUser(): void
+    public function testAdminCanDeleteEmployee(): void
     {
-        $this->service(callerRoles: [new UserRole(Role::Admin)], targetRoles: [])
-            ->authorizeDeletion($this->callerId, $this->targetId);
-
+        $target = $this->makeUser($this->targetId, Role::Employee);
+        $this->service(callerRole: Role::Admin)->authorizeDeletion($this->callerId, $target);
         $this->addToAssertionCount(1);
     }
 
     public function testAdminCanDeleteShopManager(): void
     {
-        $this->service(
-            callerRoles: [new UserRole(Role::Admin)],
-            targetRoles: [new UserRole(Role::ShopManager, shopId: self::SHOP_A1)],
-        )->authorizeDeletion($this->callerId, $this->targetId);
-
+        $target = $this->makeUser($this->targetId, Role::ShopManager, shopId: self::SHOP_A1);
+        $this->service(callerRole: Role::Admin)->authorizeDeletion($this->callerId, $target);
         $this->addToAssertionCount(1);
     }
 
-    public function testAdminCanDeleteCompanyManager(): void
+    public function testAdminCanDeleteCompanyAdmin(): void
     {
-        $this->service(
-            callerRoles: [new UserRole(Role::Admin)],
-            targetRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-        )->authorizeDeletion($this->callerId, $this->targetId);
-
+        $target = $this->makeUser($this->targetId, Role::CompanyAdmin, companyId: self::COMPANY_A);
+        $this->service(callerRole: Role::Admin)->authorizeDeletion($this->callerId, $target);
         $this->addToAssertionCount(1);
     }
 
     public function testNobodyCanDeleteAdmin(): void
     {
+        $target = $this->makeUser($this->targetId, Role::Admin);
         $this->expectException(ForbiddenException::class);
-        $this->service(
-            callerRoles: [new UserRole(Role::Admin)],
-            targetRoles: [new UserRole(Role::Admin)],
-        )->authorizeDeletion($this->callerId, $this->targetId);
+        $this->service(callerRole: Role::Admin)->authorizeDeletion($this->callerId, $target);
     }
 
-    public function testCompanyManagerCanDeleteShopManagerInOwnCompany(): void
+    public function testCompanyAdminCanDeleteShopManagerInOwnCompany(): void
     {
-        $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            targetRoles: [new UserRole(Role::ShopManager, shopId: self::SHOP_A1)],
-            shopCompanyMap: [self::SHOP_A1 => self::COMPANY_A],
-        )->authorizeDeletion($this->callerId, $this->targetId);
-
+        $target = $this->makeUser($this->targetId, Role::ShopManager, companyId: self::COMPANY_A, shopId: self::SHOP_A1);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeDeletion($this->callerId, $target);
         $this->addToAssertionCount(1);
     }
 
-    public function testCompanyManagerCannotDeleteShopManagerInOtherCompany(): void
+    public function testCompanyAdminCannotDeleteShopManagerInOtherCompany(): void
     {
+        $target = $this->makeUser($this->targetId, Role::ShopManager, companyId: self::COMPANY_B, shopId: self::SHOP_B1);
         $this->expectException(ForbiddenException::class);
-        $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            targetRoles: [new UserRole(Role::ShopManager, shopId: self::SHOP_B1)],
-            shopCompanyMap: [self::SHOP_B1 => self::COMPANY_B],
-        )->authorizeDeletion($this->callerId, $this->targetId);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeDeletion($this->callerId, $target);
     }
 
-    public function testCompanyManagerCannotDeleteCompanyManager(): void
+    public function testCompanyAdminCannotDeleteCompanyAdmin(): void
     {
+        $target = $this->makeUser($this->targetId, Role::CompanyAdmin, companyId: self::COMPANY_A);
         $this->expectException(ForbiddenException::class);
-        $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            targetRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-        )->authorizeDeletion($this->callerId, $this->targetId);
-    }
-
-    public function testCompanyManagerCannotDeleteAdmin(): void
-    {
-        $this->expectException(ForbiddenException::class);
-        $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            targetRoles: [new UserRole(Role::Admin)],
-        )->authorizeDeletion($this->callerId, $this->targetId);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeDeletion($this->callerId, $target);
     }
 
     public function testShopManagerCannotDeleteAnyone(): void
     {
+        $target = $this->makeUser($this->targetId, Role::Employee);
         $this->expectException(ForbiddenException::class);
-        $this->service(
-            callerRoles: [new UserRole(Role::ShopManager, shopId: self::SHOP_A1)],
-            targetRoles: [],
-        )->authorizeDeletion($this->callerId, $this->targetId);
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
+            ->authorizeDeletion($this->callerId, $target);
     }
 
-    public function testPlainUserCannotDeleteAnyone(): void
+    public function testEmployeeCannotDeleteAnyone(): void
     {
+        $target = $this->makeUser($this->targetId, Role::Employee);
         $this->expectException(ForbiddenException::class);
-        $this->service(callerRoles: [], targetRoles: [])
-            ->authorizeDeletion($this->callerId, $this->targetId);
+        $this->service(callerRole: Role::Employee)->authorizeDeletion($this->callerId, $target);
     }
 
     // ── resolveListingScope ───────────────────────────────────────────────────
 
     public function testAdminWithNoFilterSeesEveryone(): void
     {
-        $scope = $this->service([new UserRole(Role::Admin)])
-            ->resolveListingScope($this->callerId);
-
+        $scope = $this->service(callerRole: Role::Admin)->resolveListingScope($this->callerId);
         $this->assertTrue($scope->isAll());
     }
 
     public function testAdminWithCompanyFilterSeesThoseCompanies(): void
     {
-        $scope = $this->service([new UserRole(Role::Admin)])
+        $scope = $this->service(callerRole: Role::Admin)
             ->resolveListingScope($this->callerId, [self::COMPANY_A, self::COMPANY_B]);
-
         $this->assertTrue($scope->isCompanies());
         $this->assertSame([self::COMPANY_A, self::COMPANY_B], $scope->ids);
     }
 
-    public function testCompanyManagerSeesOwnCompanies(): void
+    public function testCompanyAdminSeesOwnCompany(): void
     {
-        $scope = $this->service([new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)])
+        $scope = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
             ->resolveListingScope($this->callerId);
-
         $this->assertTrue($scope->isCompanies());
         $this->assertSame([self::COMPANY_A], $scope->ids);
     }
 
-    public function testCompanyManagerCanFilterByValidShop(): void
+    public function testCompanyAdminCanFilterByShops(): void
     {
-        $scope = $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            shopCompanyMap: [self::SHOP_A1 => self::COMPANY_A],
-        )->resolveListingScope($this->callerId, [], [self::SHOP_A1]);
-
+        $scope = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->resolveListingScope($this->callerId, [], [self::SHOP_A1]);
         $this->assertTrue($scope->isShops());
         $this->assertSame([self::SHOP_A1], $scope->ids);
+        $this->assertSame(self::COMPANY_A, $scope->scopeCompanyId);
     }
 
-    public function testCompanyManagerShopFilterDropsShopsInOtherCompanies(): void
+    public function testShopManagerSeesOwnShop(): void
     {
-        // SHOP_B1 belongs to COMPANY_B which the caller does not manage →
-        // invalid shop is silently dropped, falls back to full company scope
-        $scope = $this->service(
-            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
-            shopCompanyMap: [self::SHOP_B1 => self::COMPANY_B],
-        )->resolveListingScope($this->callerId, [], [self::SHOP_B1]);
-
-        $this->assertTrue($scope->isCompanies());
-        $this->assertSame([self::COMPANY_A], $scope->ids);
-    }
-
-    public function testShopManagerSeesOwnShops(): void
-    {
-        $scope = $this->service([new UserRole(Role::ShopManager, shopId: self::SHOP_A1)])
+        $scope = $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
             ->resolveListingScope($this->callerId);
-
         $this->assertTrue($scope->isShops());
         $this->assertSame([self::SHOP_A1], $scope->ids);
     }
 
-    public function testUserWithNoRolesCannotListUsers(): void
+    public function testEmployeeCannotListUsers(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service([])->resolveListingScope($this->callerId);
+        $this->service(callerRole: Role::Employee)->resolveListingScope($this->callerId);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /**
-     * Build a service instance with a mock repository that returns the given
-     * roles per user ID and resolves shop→company from the optional map.
-     *
-     * @param list<UserRole>        $callerRoles
-     * @param list<UserRole>        $targetRoles
-     * @param array<string, string> $shopCompanyMap shop_id → company_id
-     */
     private function service(
-        array $callerRoles = [],
-        array $targetRoles = [],
-        array $shopCompanyMap = [],
+        Role $callerRole = Role::Employee,
+        ?string $callerCompanyId = null,
+        ?string $callerShopId = null,
     ): UserAuthorization {
-        $callerId = $this->callerId;
-        $targetId = $this->targetId;
+        $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId);
 
-        $repo = $this->createStub(UserRoleRepositoryInterface::class);
-
-        $repo->method('findByUserId')
-            ->willReturnCallback(
-                static function (UserId $id) use ($callerId, $targetId, $callerRoles, $targetRoles): array {
-                    if ($id->equals($callerId)) {
-                        return $callerRoles;
-                    }
-                    if ($id->equals($targetId)) {
-                        return $targetRoles;
-                    }
-                    return [];
-                },
-            );
-
-        $repo->method('findCompanyIdByShopId')
-            ->willReturnCallback(
-                static fn(string $shopId): ?string => $shopCompanyMap[$shopId] ?? null,
-            );
+        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo->method('findById')->willReturnCallback(
+            static fn(UserId $id): ?User => $caller->id->equals($id) ? $caller : null,
+        );
 
         return new UserAuthorization($repo);
+    }
+
+    private function makeUser(
+        UserId $id,
+        Role $role = Role::Employee,
+        ?string $companyId = null,
+        ?string $shopId = null,
+    ): User {
+        return new User(
+            id:        $id,
+            email:     new Email($id->value . '@test.test'),
+            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Test'),
+            lastName:  new LastName('User'),
+            role:      $role,
+            companyId: $companyId,
+            shopId:    $shopId,
+        );
     }
 }

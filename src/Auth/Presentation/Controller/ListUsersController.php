@@ -7,9 +7,9 @@ namespace Mossetc\TechnicalTest\Auth\Presentation\Controller;
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
 use Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler;
-use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
@@ -56,9 +56,14 @@ final readonly class ListUsersController implements ControllerInterface
 
         return Response::json([
             'data'       => array_map(
-                static fn(User $user): array => [
-                    'id'    => $user->id->value,
-                    'email' => $user->email->value,
+                static fn(User $u): array => [
+                    'id'         => $u->id->value,
+                    'email'      => $u->email->value,
+                    'first_name' => $u->firstName->value,
+                    'last_name'  => $u->lastName->value,
+                    'role'       => $u->role->value,
+                    'company_id' => $u->companyId,
+                    'shop_id'    => $u->shopId,
                 ],
                 $result->users,
             ),

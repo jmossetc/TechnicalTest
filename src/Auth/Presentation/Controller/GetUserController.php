@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Presentation\Controller;
 
 use InvalidArgumentException;
-use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
@@ -47,8 +47,18 @@ final readonly class GetUserController implements ControllerInterface
         }
 
         return Response::json([
-            'id'    => $user->id->value,
-            'email' => $user->email->value,
+            'id'            => $user->id->value,
+            'email'         => $user->email->value,
+            'first_name'    => $user->firstName->value,
+            'last_name'     => $user->lastName->value,
+            'phone_number'  => $user->phoneNumber,
+            'role'          => $user->role->value,
+            'company_id'    => $user->companyId,
+            'shop_id'       => $user->shopId,
+            'is_active'     => $user->isActive,
+            'last_login_at' => $user->lastLoginAt?->format('Y-m-d\TH:i:s\Z'),
+            'created_at'    => $user->createdAt->format('Y-m-d\TH:i:s\Z'),
+            'updated_at'    => $user->updatedAt->format('Y-m-d\TH:i:s\Z'),
         ]);
     }
 }

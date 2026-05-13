@@ -38,12 +38,7 @@ services:
   Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface:
     alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository'
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository: ~
-
-  Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface:
-    alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository'
-
-  # ── JWT ───────────────────────────────────────────────────────────────────────
+# ── JWT ───────────────────────────────────────────────────────────────────────
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtConfig:
     arguments:
