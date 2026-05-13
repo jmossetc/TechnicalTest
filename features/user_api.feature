@@ -143,6 +143,95 @@ Feature: User API
     When I register with current token email "someone@example.com" and password "secretpass"
     Then the response status should be 403
 
+  # ── Deletion (Admin) ──────────────────────────────────────────────────────────
+
+  Scenario: Admin deletes a company manager
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a target user exists with role company_manager for company "11111111-1111-4111-8111-111111111111"
+    When I delete the target user
+    Then the response status should be 200
+
+  Scenario: Admin deletes a shop manager
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And a target user exists with role shop_manager for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I delete the target user
+    Then the response status should be 200
+
+  Scenario: Admin cannot delete another admin
+    Given I am logged in as admin
+    And a target user exists with role admin
+    When I delete the target user
+    Then the response status should be 403
+
+  Scenario: Admin deletes a user with no role
+    Given I am logged in as admin
+    And a target user exists with no role
+    When I delete the target user
+    Then the response status should be 200
+
+  # ── Deletion (Company Manager) ──────────────────────────────────────────────
+
+  Scenario: Company manager deletes a shop manager of their company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And a target user exists with role shop_manager for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I delete the target user
+    Then the response status should be 200
+
+  Scenario: Company manager cannot delete a shop manager of another company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a company "22222222-2222-4222-8222-222222222222" exists
+    And a shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb" exists for company "22222222-2222-4222-8222-222222222222"
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And a target user exists with role shop_manager for shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+    When I delete the target user
+    Then the response status should be 403
+
+  Scenario: Company manager cannot delete a company manager
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And a target user exists with role company_manager for company "11111111-1111-4111-8111-111111111111"
+    When I delete the target user
+    Then the response status should be 403
+
+  Scenario: Company manager cannot delete an admin
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    And a target user exists with role admin
+    When I delete the target user
+    Then the response status should be 403
+
+  # ── Deletion (Shop Manager) ─────────────────────────────────────────────────
+
+  Scenario: Shop manager cannot delete anyone
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    And a target user exists with no role
+    When I delete the target user
+    Then the response status should be 403
+
+  # ── Deletion (No role / Unauthenticated) ────────────────────────────────────
+
+  Scenario: User with no role cannot delete anyone
+    Given I am logged in as a user with no role
+    And a target user exists with no role
+    When I delete the target user
+    Then the response status should be 403
+
+  Scenario: Deleting without authentication returns 401
+    When I delete user "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+    Then the response status should be 401
+
+  Scenario: Deleting a non-existent user returns 404
+    Given I am logged in as admin
+    When I delete user "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+    Then the response status should be 404
+
   # ── Login ─────────────────────────────────────────────────────────────────────
 
   Scenario: Logging in with valid credentials returns a token

@@ -13,3 +13,7 @@ login:
 get_user:
   path: /api/users/{id}
   methods: [GET]
+
+delete_user:
+  path: /api/users/{id}
+  methods: [DELETE]

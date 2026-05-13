@@ -49,4 +49,9 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     {
         return count($this->store);
     }
+
+    public function delete(UserId $id): void
+    {
+        unset($this->store[$id->value]);
+    }
 }

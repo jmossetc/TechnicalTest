@@ -18,4 +18,6 @@ interface UserRepositoryInterface
     public function findPaginated(int $limit, int $offset): array;
 
     public function count(): int;
+
+    public function delete(UserId $id): void;
 }

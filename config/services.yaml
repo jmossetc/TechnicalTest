@@ -66,6 +66,8 @@ services:
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Http\JwtAuthMiddleware: ~
 
+  Mossetc\TechnicalTest\Auth\Application\Service\UserAuthorizationService: ~
+
   Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler: ~
 
   Mossetc\TechnicalTest\Auth\Application\Handler\LoginUserHandler: ~
@@ -85,6 +87,9 @@ services:
     autoconfigure: true
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\ListUsersController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\DeleteUserController:
     autoconfigure: true
 
   # ── Routing ───────────────────────────────────────────────────────────────────

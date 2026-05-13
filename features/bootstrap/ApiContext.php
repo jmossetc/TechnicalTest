@@ -26,6 +26,9 @@ final class ApiContext implements Context
 
     private string $token = '';
 
+    /** ID of a target user created for deletion tests. */
+    private string $targetUserId = '';
+
     /** Token for a bootstrapped admin user, used for registration calls. */
     private string $adminToken = '';
 
@@ -88,6 +91,45 @@ final class ApiContext implements Context
 
         $token = $this->bodyOf($loginResponse)['token'] ?? null;
         $this->token = is_string($token) ? $token : '';
+    }
+
+    /**
+     * @Given a target user exists with role company_manager for company :companyId
+     */
+    public function aTargetUserExistsWithRoleCompanyManagerForCompany(string $companyId): void
+    {
+        $userId = $this->seedUser("target-cm-{$companyId}@internal.test", 'Target1234!');
+        $this->roleRepository->grantRole($userId, new UserRole(Role::CompanyManager, companyId: $companyId));
+        $this->targetUserId = $userId->value;
+    }
+
+    /**
+     * @Given a target user exists with role shop_manager for shop :shopId
+     */
+    public function aTargetUserExistsWithRoleShopManagerForShop(string $shopId): void
+    {
+        $userId = $this->seedUser("target-sm-{$shopId}@internal.test", 'Target1234!');
+        $this->roleRepository->grantRole($userId, new UserRole(Role::ShopManager, shopId: $shopId));
+        $this->targetUserId = $userId->value;
+    }
+
+    /**
+     * @Given a target user exists with role admin
+     */
+    public function aTargetUserExistsWithRoleAdmin(): void
+    {
+        $userId = $this->seedUser('target-admin@internal.test', 'Target1234!');
+        $this->roleRepository->grantRole($userId, new UserRole(Role::Admin));
+        $this->targetUserId = $userId->value;
+    }
+
+    /**
+     * @Given a target user exists with no role
+     */
+    public function aTargetUserExistsWithNoRole(): void
+    {
+        $userId = $this->seedUser('target-norole@internal.test', 'Target1234!');
+        $this->targetUserId = $userId->value;
     }
 
     /**
@@ -305,6 +347,22 @@ final class ApiContext implements Context
         );
     }
 
+    /**
+     * @When I delete the target user
+     */
+    public function iDeleteTheTargetUser(): void
+    {
+        $this->lastResponse = $this->doDelete("/api/users/{$this->targetUserId}", $this->token);
+    }
+
+    /**
+     * @When I delete user :userId
+     */
+    public function iDeleteUser(string $userId): void
+    {
+        $this->lastResponse = $this->doDelete("/api/users/{$userId}", $this->token);
+    }
+
     // ── Then ──────────────────────────────────────────────────────────────────
 
     /**
@@ -447,6 +505,18 @@ final class ApiContext implements Context
             headers: $headers,
             body: [],
             query: $query,
+        ));
+    }
+
+    private function doDelete(string $path, string $token = ''): Response
+    {
+        $headers = $token !== '' ? ['Authorization' => "Bearer {$token}"] : [];
+
+        return $this->router->dispatch(new Request(
+            method: 'DELETE',
+            path: $path,
+            headers: $headers,
+            body: [],
         ));
     }
 

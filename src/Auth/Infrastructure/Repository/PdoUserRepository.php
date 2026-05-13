@@ -91,6 +91,14 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
         return is_numeric($count) ? (int) $count : 0;
     }
 
+    public function delete(UserId $id): void
+    {
+        $stmt = $this->prepare(
+            'UPDATE users SET deleted_at = NOW() WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL',
+        );
+        $stmt->execute(['id' => $id->value]);
+    }
+
     private function prepare(string $sql): PDOStatement
     {
         $stmt = $this->pdo->prepare($sql);
