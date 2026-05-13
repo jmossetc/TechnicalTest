@@ -14,6 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserDeletion;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Auth\Presentation\Controller\DeleteUserController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -59,7 +60,7 @@ final class DeleteUserControllerTest extends TestCase
         return new DeleteUserController(
             $this->makeAuth(),
             $this->userRepo,
-            new UserAuthorization($this->userRepo),
+            new UserDeletion($this->userRepo, new UserAuthorization($this->userRepo)),
         );
     }
 

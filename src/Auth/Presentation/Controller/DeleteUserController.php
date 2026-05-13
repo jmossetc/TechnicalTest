@@ -7,9 +7,10 @@ namespace Mossetc\TechnicalTest\Auth\Presentation\Controller;
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
+use Mossetc\TechnicalTest\Auth\Domain\Exception\UserNotFoundException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserDeletion;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
@@ -22,7 +23,7 @@ final readonly class DeleteUserController implements ControllerInterface
     public function __construct(
         private JwtAuthMiddleware       $auth,
         private UserRepositoryInterface $userRepository,
-        private UserAuthorization       $authorizationService,
+        private UserDeletion            $userDeletionService,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -43,13 +44,10 @@ final readonly class DeleteUserController implements ControllerInterface
             return Response::error('Invalid user ID', 422);
         }
 
-        $target = $this->userRepository->findById($targetId);
-        if ($target === null) {
-            return Response::error('User not found', 404);
-        }
-
         try {
-            $this->authorizationService->authorizeDeletion($callerId, $target);
+            $this->userDeletionService->deleteUser($targetId, $callerId);
+        } catch (UserNotFoundException $e) {
+            return Response::error($e->getMessage(), 404);
         } catch (ForbiddenException $e) {
             return Response::error($e->getMessage(), 403);
         }
