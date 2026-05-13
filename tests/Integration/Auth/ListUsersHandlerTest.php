@@ -21,8 +21,9 @@ final class ListUsersHandlerTest extends DatabaseTestCase
         parent::setUp();
 
         $repo            = new PdoUserRepository($this->pdo);
+        $roleRepo        = new \Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository($this->pdo);
         $this->handler   = new ListUsersHandler($repo);
-        $this->registrar = new RegisterUserHandler($repo);
+        $this->registrar = new RegisterUserHandler($repo, $roleRepo);
     }
 
     public function testReturnsEmptyPageWhenNoUsersExist(): void

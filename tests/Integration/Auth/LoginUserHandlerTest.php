@@ -25,7 +25,8 @@ final class LoginUserHandlerTest extends DatabaseTestCase
         parent::setUp();
         $this->repository = new PdoUserRepository($this->pdo);
 
-        (new RegisterUserHandler($this->repository))
+        $roleRepo = new \Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository($this->pdo);
+        (new RegisterUserHandler($this->repository, $roleRepo))
             ->handle(new RegisterUser('alice@example.com', 'password123'));
     }
 

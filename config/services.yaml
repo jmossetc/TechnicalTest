@@ -38,6 +38,11 @@ services:
   Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface:
     alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository'
 
+  Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository: ~
+
+  Mossetc\TechnicalTest\Auth\Domain\UserRoleRepositoryInterface:
+    alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository'
+
   # ── JWT ───────────────────────────────────────────────────────────────────────
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtConfig:

@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
+use Mossetc\TechnicalTest\Auth\Domain\Role;
+use Mossetc\TechnicalTest\Auth\Domain\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\UserRole;
 use Mossetc\TechnicalTest\Auth\Infrastructure\DI\ContainerFactory;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Response;
@@ -13,15 +16,24 @@ final class ApiContext implements Context
 {
     private Router $router;
 
+    private InMemoryUserRepository $userRepository;
+
+    private InMemoryUserRoleRepository $roleRepository;
+
     private ?Response $lastResponse = null;
 
     private string $lastUserId = '';
 
     private string $token = '';
 
+    /** Token for a bootstrapped admin user, used for registration calls. */
+    private string $adminToken = '';
+
     public function __construct()
     {
-        $container = ContainerFactory::buildForTest(new InMemoryUserRepository());
+        $this->userRepository = new InMemoryUserRepository();
+        $this->roleRepository = new InMemoryUserRoleRepository();
+        $container = ContainerFactory::buildForTest($this->userRepository, $this->roleRepository);
 
         $router = $container->get(Router::class);
         if (!$router instanceof Router) {
@@ -38,7 +50,9 @@ final class ApiContext implements Context
      */
     public function aUserIsRegisteredWithEmailAndPassword(string $email, string $password): void
     {
-        $response = $this->doPost('/api/users', ['email' => $email, 'password' => $password]);
+        $this->ensureAdminToken();
+
+        $response = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->adminToken);
 
         Assert::assertSame(201, $response->status(), 'Registration failed unexpectedly');
 
@@ -53,7 +67,9 @@ final class ApiContext implements Context
      */
     public function iAmLoggedInAs(string $email, string $password): void
     {
-        $regResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password]);
+        $this->ensureAdminToken();
+
+        $regResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->adminToken);
 
         if ($regResponse->status() === 201) {
             $id = $this->bodyOf($regResponse)['id'] ?? null;
@@ -74,14 +90,157 @@ final class ApiContext implements Context
         $this->token = is_string($token) ? $token : '';
     }
 
+    /**
+     * @Given a company :companyId exists
+     */
+    public function aCompanyExists(string $companyId): void
+    {
+        // Just register the company in the role repository's shop-company map is not needed.
+        // Companies are only relevant for authorization lookups via findCompanyIdByShopId.
+        // No-op: the company ID is used directly in role grants and shop registrations.
+    }
+
+    /**
+     * @Given a shop :shopId exists for company :companyId
+     */
+    public function aShopExistsForCompany(string $shopId, string $companyId): void
+    {
+        $this->roleRepository->registerShop($shopId, $companyId);
+    }
+
+    /**
+     * @Given I am logged in as admin
+     */
+    public function iAmLoggedInAsAdmin(): void
+    {
+        $this->ensureAdminToken();
+        $this->token = $this->adminToken;
+    }
+
+    /**
+     * @Given I am logged in as company manager of :companyId
+     */
+    public function iAmLoggedInAsCompanyManagerOf(string $companyId): void
+    {
+        $email    = "cm-{$companyId}@internal.test";
+        $password = 'Manager1234!';
+
+        $userId = $this->seedUser($email, $password);
+        $this->roleRepository->grantRole($userId, new UserRole(Role::CompanyManager, companyId: $companyId));
+
+        $this->token = $this->loginAndGetToken($email, $password);
+    }
+
+    /**
+     * @Given I am logged in as shop manager of :shopId
+     */
+    public function iAmLoggedInAsShopManagerOf(string $shopId): void
+    {
+        $email    = "sm-{$shopId}@internal.test";
+        $password = 'Manager1234!';
+
+        $userId = $this->seedUser($email, $password);
+        $this->roleRepository->grantRole($userId, new UserRole(Role::ShopManager, shopId: $shopId));
+
+        $this->token = $this->loginAndGetToken($email, $password);
+    }
+
+    /**
+     * @Given I am logged in as a user with no role
+     */
+    public function iAmLoggedInAsAUserWithNoRole(): void
+    {
+        $email    = 'norole@internal.test';
+        $password = 'NoRole1234!';
+
+        $this->seedUser($email, $password);
+        $this->token = $this->loginAndGetToken($email, $password);
+    }
+
     // ── When ──────────────────────────────────────────────────────────────────
+
+    /**
+     * @When I register without authentication with email :email and password :password
+     */
+    public function iRegisterWithoutAuthenticationWithEmailAndPassword(string $email, string $password): void
+    {
+        $this->lastResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password]);
+    }
 
     /**
      * @When I register with email :email and password :password
      */
     public function iRegisterWithEmailAndPassword(string $email, string $password): void
     {
-        $this->lastResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password]);
+        $this->ensureAdminToken();
+
+        $this->lastResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->adminToken);
+
+        $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
+        if (is_string($id)) {
+            $this->lastUserId = $id;
+        }
+    }
+
+    /**
+     * @When I register with current token email :email and password :password
+     */
+    public function iRegisterWithCurrentTokenEmailAndPassword(string $email, string $password): void
+    {
+        $this->lastResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password], $this->token);
+
+        $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
+        if (is_string($id)) {
+            $this->lastUserId = $id;
+        }
+    }
+
+    /**
+     * @When I register a user with email :email and password :password with role :role
+     */
+    public function iRegisterAUserWithRole(string $email, string $password, string $role): void
+    {
+        $this->lastResponse = $this->doPost('/api/users', [
+            'email'    => $email,
+            'password' => $password,
+            'role'     => $role,
+        ], $this->token);
+
+        $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
+        if (is_string($id)) {
+            $this->lastUserId = $id;
+        }
+    }
+
+    /**
+     * @When I register a user with email :email and password :password with role :role for company :companyId
+     */
+    public function iRegisterAUserWithRoleForCompany(string $email, string $password, string $role, string $companyId): void
+    {
+        $this->lastResponse = $this->doPost('/api/users', [
+            'email'      => $email,
+            'password'   => $password,
+            'role'       => $role,
+            'company_id' => $companyId,
+        ], $this->token);
+
+        $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
+        if (is_string($id)) {
+            $this->lastUserId = $id;
+        }
+    }
+
+    /**
+     * @When I register a user with email :email and password :password with role :role for shop :shopId
+     */
+    public function iRegisterAUserWithRoleForShop(string $email, string $password, string $role, string $shopId): void
+    {
+        $this->lastResponse = $this->doPost('/api/users', [
+            'email'    => $email,
+            'password' => $password,
+            'role'     => $role,
+            'shop_id'  => $shopId,
+        ], $this->token);
 
         $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
         if (is_string($id)) {
@@ -226,14 +385,53 @@ final class ApiContext implements Context
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /** @param array<string, mixed> $body */
-    private function doPost(string $path, array $body): Response
+    private function doPost(string $path, array $body, string $token = ''): Response
     {
+        $headers = ['Content-Type' => 'application/json'];
+        if ($token !== '') {
+            $headers['Authorization'] = "Bearer {$token}";
+        }
+
         return $this->router->dispatch(new Request(
             method: 'POST',
             path: $path,
-            headers: ['Content-Type' => 'application/json'],
+            headers: $headers,
             body: $body,
         ));
+    }
+
+    /**
+     * Bootstraps an admin user by directly seeding the in-memory repositories
+     * and obtains a JWT token via the login endpoint.
+     */
+    private function ensureAdminToken(): void
+    {
+        if ($this->adminToken !== '') {
+            return;
+        }
+
+        $adminEmail    = 'behat-admin@internal.test';
+        $adminPassword = 'Admin1234!';
+
+        // Seed the admin user directly into the in-memory stores
+        $userId = UserId::generate();
+        $user = new \Mossetc\TechnicalTest\Auth\Domain\User(
+            id: $userId,
+            email: new \Mossetc\TechnicalTest\Auth\Domain\Email($adminEmail),
+            password: \Mossetc\TechnicalTest\Auth\Domain\HashedPassword::fromPlain(
+                new \Mossetc\TechnicalTest\Auth\Domain\PlainPassword($adminPassword),
+            ),
+        );
+
+        $this->userRepository->save($user);
+        $this->roleRepository->grantRole($userId, new UserRole(Role::Admin));
+
+        // Log in to obtain a JWT
+        $loginResponse = $this->doPost('/api/auth/login', ['email' => $adminEmail, 'password' => $adminPassword]);
+        Assert::assertSame(200, $loginResponse->status(), 'Admin login failed');
+
+        $token = $this->bodyOf($loginResponse)['token'] ?? null;
+        $this->adminToken = is_string($token) ? $token : '';
     }
 
     /**
@@ -265,5 +463,37 @@ final class ApiContext implements Context
         Assert::assertNotNull($this->lastResponse, 'No request has been made yet');
 
         return $this->lastResponse;
+    }
+
+    /**
+     * Seeds a user directly into the in-memory repository and returns the UserId.
+     */
+    private function seedUser(string $email, string $password): UserId
+    {
+        $userId = UserId::generate();
+        $user = new \Mossetc\TechnicalTest\Auth\Domain\User(
+            id: $userId,
+            email: new \Mossetc\TechnicalTest\Auth\Domain\Email($email),
+            password: \Mossetc\TechnicalTest\Auth\Domain\HashedPassword::fromPlain(
+                new \Mossetc\TechnicalTest\Auth\Domain\PlainPassword($password),
+            ),
+        );
+
+        $this->userRepository->save($user);
+
+        return $userId;
+    }
+
+    /**
+     * Logs in via the HTTP layer and returns the JWT token.
+     */
+    private function loginAndGetToken(string $email, string $password): string
+    {
+        $response = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
+        Assert::assertSame(200, $response->status(), "Login failed for {$email}");
+
+        $token = $this->bodyOf($response)['token'] ?? null;
+
+        return is_string($token) ? $token : '';
     }
 }

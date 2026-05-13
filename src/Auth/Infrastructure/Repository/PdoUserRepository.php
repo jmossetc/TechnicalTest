@@ -21,7 +21,7 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
     {
         $stmt = $this->prepare(
             'INSERT INTO users (id, email, password_hash)
-             VALUES (:id, :email, :password_hash) AS new_row
+             VALUES (UUID_TO_BIN(:id), :email, :password_hash) AS new_row
              ON DUPLICATE KEY UPDATE
                  email         = new_row.email,
                  password_hash = new_row.password_hash',
@@ -37,7 +37,7 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
     public function findByEmail(Email $email): ?User
     {
         $stmt = $this->prepare(
-            'SELECT id, email, password_hash FROM users WHERE email = :email LIMIT 1',
+            'SELECT BIN_TO_UUID(id) AS id, email, password_hash FROM users WHERE email = :email AND deleted_at IS NULL LIMIT 1',
         );
         $stmt->execute(['email' => $email->value]);
 
@@ -53,7 +53,7 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
     public function findById(UserId $id): ?User
     {
         $stmt = $this->prepare(
-            'SELECT id, email, password_hash FROM users WHERE id = :id LIMIT 1',
+            'SELECT BIN_TO_UUID(id) AS id, email, password_hash FROM users WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL LIMIT 1',
         );
         $stmt->execute(['id' => $id->value]);
 
@@ -69,7 +69,7 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
     public function findPaginated(int $limit, int $offset): array
     {
         $stmt = $this->prepare(
-            'SELECT id, email, password_hash FROM users ORDER BY email ASC LIMIT :limit OFFSET :offset',
+            'SELECT BIN_TO_UUID(id) AS id, email, password_hash FROM users WHERE deleted_at IS NULL ORDER BY email ASC LIMIT :limit OFFSET :offset',
         );
         $stmt->execute(['limit' => $limit, 'offset' => $offset]);
 
@@ -83,7 +83,7 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
 
     public function count(): int
     {
-        $stmt = $this->prepare('SELECT COUNT(*) FROM users');
+        $stmt = $this->prepare('SELECT COUNT(*) FROM users WHERE deleted_at IS NULL');
         $stmt->execute();
 
         $count = $stmt->fetchColumn();

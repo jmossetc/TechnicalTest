@@ -9,13 +9,19 @@ use Mossetc\TechnicalTest\Auth\Domain\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
 use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;
 use Mossetc\TechnicalTest\Auth\Domain\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Role;
 use Mossetc\TechnicalTest\Auth\Domain\User;
 use Mossetc\TechnicalTest\Auth\Domain\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\UserRole;
+use Mossetc\TechnicalTest\Auth\Domain\UserRoleRepositoryInterface;
 
 final readonly class RegisterUserHandler
 {
-    public function __construct(private UserRepositoryInterface $repository) {}
+    public function __construct(
+        private UserRepositoryInterface $repository,
+        private UserRoleRepositoryInterface $roleRepository,
+    ) {}
 
     public function handle(RegisterUser $command): UserId
     {
@@ -33,6 +39,16 @@ final readonly class RegisterUserHandler
         );
 
         $this->repository->save($user);
+
+        if ($command->role !== null) {
+            $role = Role::from($command->role);
+            $userRole = match ($role) {
+                Role::Admin => new UserRole(Role::Admin),
+                Role::CompanyManager => new UserRole(Role::CompanyManager, companyId: $command->companyId),
+                Role::ShopManager => new UserRole(Role::ShopManager, shopId: $command->shopId),
+            };
+            $this->roleRepository->grantRole($userId, $userRole);
+        }
 
         return $userId;
     }

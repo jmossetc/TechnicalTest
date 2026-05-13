@@ -52,6 +52,11 @@ abstract class DatabaseTestCase extends TestCase
             $this->fail("Cannot read schema file: {$path}");
         }
 
+        // Drop existing tables so schema changes are always applied cleanly.
+        $this->pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+        $this->pdo->exec('DROP TABLE IF EXISTS user_shop_roles, user_company_roles, user_admin_roles, shops, companies, users');
+        $this->pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+
         $this->pdo->exec($sql);
     }
 

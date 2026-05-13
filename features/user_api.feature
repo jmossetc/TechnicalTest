@@ -4,7 +4,11 @@ Feature: User API
 
   # ── Registration ─────────────────────────────────────────────────────────────
 
-  Scenario: Successfully registering a new user
+  Scenario: Registering without authentication returns 401
+    When I register without authentication with email "alice@example.com" and password "secretpass"
+    Then the response status should be 401
+
+  Scenario: Successfully registering a new user as admin
     When I register with email "alice@example.com" and password "secretpass"
     Then the response status should be 201
     And the response should contain field "id"
@@ -25,6 +29,119 @@ Feature: User API
   Scenario: Registering without providing an email
     When I register with email "" and password "secretpass"
     Then the response status should be 422
+
+  # ── Role-based registration (Admin) ──────────────────────────────────────────
+
+  Scenario: Admin creates a user with admin role
+    Given I am logged in as admin
+    When I register a user with email "new-admin@example.com" and password "secretpass" with role "admin"
+    Then the response status should be 201
+    And the response should contain field "id"
+
+  Scenario: Admin creates a user with company_manager role
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    When I register a user with email "cm@example.com" and password "secretpass" with role "company_manager" for company "11111111-1111-4111-8111-111111111111"
+    Then the response status should be 201
+
+  Scenario: Admin creates a user with shop_manager role
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    When I register a user with email "sm@example.com" and password "secretpass" with role "shop_manager" for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    Then the response status should be 201
+
+  Scenario: Admin creates a user without any role
+    Given I am logged in as admin
+    When I register with email "plain@example.com" and password "secretpass"
+    Then the response status should be 201
+
+  # ── Role-based registration (Company Manager) ───────────────────────────────
+
+  Scenario: Company manager creates a user for their company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I register a user with email "cm2@example.com" and password "secretpass" with role "company_manager" for company "11111111-1111-4111-8111-111111111111"
+    Then the response status should be 201
+
+  Scenario: Company manager creates a shop manager for a shop of their company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I register a user with email "sm2@example.com" and password "secretpass" with role "shop_manager" for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    Then the response status should be 201
+
+  Scenario: Company manager cannot create a user for another company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a company "22222222-2222-4222-8222-222222222222" exists
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I register a user with email "cm3@example.com" and password "secretpass" with role "company_manager" for company "22222222-2222-4222-8222-222222222222"
+    Then the response status should be 403
+
+  Scenario: Company manager cannot create a shop manager for a shop of another company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a company "22222222-2222-4222-8222-222222222222" exists
+    And a shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb" exists for company "22222222-2222-4222-8222-222222222222"
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I register a user with email "sm3@example.com" and password "secretpass" with role "shop_manager" for shop "bbbb1111-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+    Then the response status should be 403
+
+  Scenario: Company manager cannot create an admin
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I register a user with email "admin2@example.com" and password "secretpass" with role "admin"
+    Then the response status should be 403
+
+  Scenario: Company manager can create a user without any role
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I register with current token email "plain2@example.com" and password "secretpass"
+    Then the response status should be 201
+
+  # ── Role-based registration (Shop Manager) ──────────────────────────────────
+
+  Scenario: Shop manager creates a user for their shop
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I register a user with email "sm4@example.com" and password "secretpass" with role "shop_manager" for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    Then the response status should be 201
+
+  Scenario: Shop manager cannot create a user for another shop
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And a shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I register a user with email "sm5@example.com" and password "secretpass" with role "shop_manager" for shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    Then the response status should be 403
+
+  Scenario: Shop manager cannot create a company manager
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I register a user with email "cm4@example.com" and password "secretpass" with role "company_manager" for company "11111111-1111-4111-8111-111111111111"
+    Then the response status should be 403
+
+  Scenario: Shop manager cannot create an admin
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I register a user with email "admin3@example.com" and password "secretpass" with role "admin"
+    Then the response status should be 403
+
+  Scenario: Shop manager can create a user without any role
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I register with current token email "plain3@example.com" and password "secretpass"
+    Then the response status should be 201
+
+  # ── Role-based registration (No role) ───────────────────────────────────────
+
+  Scenario: User without any role cannot create accounts
+    Given I am logged in as a user with no role
+    When I register with current token email "someone@example.com" and password "secretpass"
+    Then the response status should be 403
 
   # ── Login ─────────────────────────────────────────────────────────────────────
 
@@ -80,8 +197,8 @@ Feature: User API
     Then the response status should be 200
     And the response should contain field "data"
     And the response should contain field "pagination"
-    And the "data" array should have 2 items
-    And the response "pagination.total" should equal "2"
+    And the "data" array should have 3 items
+    And the response "pagination.total" should equal "3"
 
   Scenario: Listing users respects pagination limit
     Given a user is registered with email "alice@example.com" and password "secretpass"
@@ -91,7 +208,7 @@ Feature: User API
     When I list users on page 1 with limit 2
     Then the response status should be 200
     And the "data" array should have 2 items
-    And the response "pagination.total" should equal "3"
+    And the response "pagination.total" should equal "4"
     And the response "pagination.pages" should equal "2"
 
   Scenario: Listing users second page returns remainder
@@ -101,7 +218,7 @@ Feature: User API
     And I am logged in as "alice@example.com" with password "secretpass"
     When I list users on page 2 with limit 2
     Then the response status should be 200
-    And the "data" array should have 1 item
+    And the "data" array should have 2 items
 
   Scenario: Listing users is ordered by email
     Given a user is registered with email "charlie@example.com" and password "secretpass"

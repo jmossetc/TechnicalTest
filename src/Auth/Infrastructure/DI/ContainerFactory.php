@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Infrastructure\DI;
 
 use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Domain\UserRoleRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository;
+use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -50,8 +52,10 @@ final class ContainerFactory
      * registers the given repository as a synthetic service so it is injected
      * wherever UserRepositoryInterface is required.
      */
-    public static function buildForTest(UserRepositoryInterface $repository): ContainerInterface
-    {
+    public static function buildForTest(
+        UserRepositoryInterface $repository,
+        UserRoleRepositoryInterface $roleRepository,
+    ): ContainerInterface {
         $container = self::create();
 
         // Provide test JWT credentials so the JwtConfig validation passes
@@ -60,24 +64,27 @@ final class ContainerFactory
         $container->setParameter('env(JWT_AUDIENCE)', 'http://localhost');
 
         // Strip out the database layer — it is not needed in tests
-        foreach (['PDO', PdoUserRepository::class] as $id) {
+        foreach (['PDO', PdoUserRepository::class, PdoUserRoleRepository::class] as $id) {
             if ($container->hasDefinition($id)) {
                 $container->removeDefinition($id);
             }
         }
 
-        // Replace the alias with a synthetic placeholder that will be satisfied
-        // by the test double after compilation
-        if ($container->hasAlias(UserRepositoryInterface::class)) {
-            $container->removeAlias(UserRepositoryInterface::class);
+        // Replace aliases with synthetic placeholders that will be satisfied
+        // by the test doubles after compilation
+        foreach ([UserRepositoryInterface::class, UserRoleRepositoryInterface::class] as $iface) {
+            if ($container->hasAlias($iface)) {
+                $container->removeAlias($iface);
+            }
+            $container->setDefinition(
+                $iface,
+                (new Definition($iface))->setSynthetic(true),
+            );
         }
-        $container->setDefinition(
-            UserRepositoryInterface::class,
-            (new Definition(UserRepositoryInterface::class))->setSynthetic(true),
-        );
 
         $container->compile(resolveEnvPlaceholders: true);
         $container->set(UserRepositoryInterface::class, $repository);
+        $container->set(UserRoleRepositoryInterface::class, $roleRepository);
 
         return $container;
     }
