@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Tests\Integration\Auth;
 
+use DateTimeImmutable;
 use Mossetc\TechnicalTest\Auth\Domain\Email;
 use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;
 use Mossetc\TechnicalTest\Auth\Domain\PlainPassword;
@@ -95,6 +96,22 @@ final class PdoUserRepositoryTest extends TestCase
         $this->assertNotNull($found);
         $this->assertTrue($found->verifyPassword(new PlainPassword('newpassword')));
         $this->assertFalse($found->verifyPassword(new PlainPassword('password123')));
+    }
+
+    public function testTimestampsArePresentAfterSaveAndFind(): void
+    {
+        $before = new DateTimeImmutable();
+        $user   = $this->makeUser();
+        $this->repository->save($user);
+        $after  = new DateTimeImmutable();
+
+        $found = $this->repository->findById($user->id);
+
+        $this->assertNotNull($found);
+        $this->assertGreaterThanOrEqual($before, $found->createdAt);
+        $this->assertLessThanOrEqual($after, $found->createdAt);
+        $this->assertGreaterThanOrEqual($before, $found->updatedAt);
+        $this->assertNull($found->deletedAt);
     }
 
     public function testFindsCorrectUserAmongMultiple(): void

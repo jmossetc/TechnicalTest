@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Infrastructure\Repository;
 
+use DateTimeImmutable;
 use Mossetc\TechnicalTest\Auth\Domain\Email;
 use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;
 use Mossetc\TechnicalTest\Auth\Domain\User;
@@ -15,6 +16,8 @@ use RuntimeException;
 
 final readonly class PdoUserRepository implements UserRepositoryInterface
 {
+    private const string SELECT_COLUMNS = 'BIN_TO_UUID(id) AS id, email, password_hash, created_at, updated_at, deleted_at';
+
     public function __construct(private PDO $pdo) {}
 
     public function save(User $user): void
@@ -37,39 +40,34 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
     public function findByEmail(Email $email): ?User
     {
         $stmt = $this->prepare(
-            'SELECT BIN_TO_UUID(id) AS id, email, password_hash FROM users WHERE email = :email AND deleted_at IS NULL LIMIT 1',
+            'SELECT ' . self::SELECT_COLUMNS . '
+             FROM users WHERE email = :email AND deleted_at IS NULL LIMIT 1',
         );
         $stmt->execute(['email' => $email->value]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!is_array($row)) {
-            return null;
-        }
-
-        return $this->hydrate($row);
+        return is_array($row) ? $this->hydrate($row) : null;
     }
 
     public function findById(UserId $id): ?User
     {
         $stmt = $this->prepare(
-            'SELECT BIN_TO_UUID(id) AS id, email, password_hash FROM users WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL LIMIT 1',
+            'SELECT ' . self::SELECT_COLUMNS . '
+             FROM users WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL LIMIT 1',
         );
         $stmt->execute(['id' => $id->value]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!is_array($row)) {
-            return null;
-        }
-
-        return $this->hydrate($row);
+        return is_array($row) ? $this->hydrate($row) : null;
     }
 
     public function findPaginated(int $limit, int $offset): array
     {
         $stmt = $this->prepare(
-            'SELECT BIN_TO_UUID(id) AS id, email, password_hash FROM users WHERE deleted_at IS NULL ORDER BY email ASC LIMIT :limit OFFSET :offset',
+            'SELECT ' . self::SELECT_COLUMNS . '
+             FROM users WHERE deleted_at IS NULL ORDER BY email ASC LIMIT :limit OFFSET :offset',
         );
         $stmt->execute(['limit' => $limit, 'offset' => $offset]);
 
@@ -107,7 +105,7 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
 
         $binds = implode(',', array_fill(0, count($ids), 'UUID_TO_BIN(?)'));
         $stmt  = $this->pdo->prepare(
-            "SELECT BIN_TO_UUID(id) AS id, email, password_hash
+            'SELECT ' . self::SELECT_COLUMNS . "
              FROM users WHERE id IN ({$binds}) AND deleted_at IS NULL
              ORDER BY email ASC LIMIT ? OFFSET ?",
         );
@@ -155,9 +153,12 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
     private function hydrate(array $row): User
     {
         return new User(
-            id: new UserId($this->col($row, 'id')),
-            email: new Email($this->col($row, 'email')),
-            password: HashedPassword::fromHash($this->col($row, 'password_hash')),
+            id:        new UserId($this->col($row, 'id')),
+            email:     new Email($this->col($row, 'email')),
+            password:  HashedPassword::fromHash($this->col($row, 'password_hash')),
+            createdAt: $this->parseDateTime($this->col($row, 'created_at')),
+            updatedAt: $this->parseDateTime($this->col($row, 'updated_at')),
+            deletedAt: $this->parseDateTimeNullable($row['deleted_at'] ?? null),
         );
     }
 
@@ -175,5 +176,25 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
         }
 
         return $value;
+    }
+
+    private function parseDateTime(string $value): DateTimeImmutable
+    {
+        $dt = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $value);
+
+        if ($dt === false) {
+            throw new RuntimeException("Cannot parse datetime: '{$value}'");
+        }
+
+        return $dt;
+    }
+
+    private function parseDateTimeNullable(mixed $value): ?DateTimeImmutable
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        return $this->parseDateTime($value);
     }
 }
