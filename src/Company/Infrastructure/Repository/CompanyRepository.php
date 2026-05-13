@@ -16,21 +16,47 @@ use RuntimeException;
 final readonly class CompanyRepository implements CompanyRepositoryInterface
 {
     private const string SELECT_COLUMNS =
-        'BIN_TO_UUID(id) AS id, name, created_at, updated_at, deleted_at';
+        'BIN_TO_UUID(id) AS id, name, email, phone_number, website,
+         address_line_1, address_line_2, city, postal_code, country,
+         is_active, created_at, updated_at, deleted_at';
 
     public function __construct(private PDO $pdo) {}
 
     public function save(Company $company): void
     {
         $stmt = $this->prepare(
-            'INSERT INTO companies (id, name)
-             VALUES (UUID_TO_BIN(:id), :name) AS new_row
-             ON DUPLICATE KEY UPDATE name = new_row.name',
+            'INSERT INTO companies
+                 (id, name, email, phone_number, website,
+                  address_line_1, address_line_2, city, postal_code, country, is_active)
+             VALUES
+                 (UUID_TO_BIN(:id), :name, :email, :phone_number, :website,
+                  :address_line_1, :address_line_2, :city, :postal_code, :country, :is_active)
+             AS new_row
+             ON DUPLICATE KEY UPDATE
+                 name          = new_row.name,
+                 email         = new_row.email,
+                 phone_number  = new_row.phone_number,
+                 website       = new_row.website,
+                 address_line_1 = new_row.address_line_1,
+                 address_line_2 = new_row.address_line_2,
+                 city          = new_row.city,
+                 postal_code   = new_row.postal_code,
+                 country       = new_row.country,
+                 is_active     = new_row.is_active',
         );
 
         $stmt->execute([
-            'id'   => $company->id->value,
-            'name' => $company->name->value,
+            'id'            => $company->id->value,
+            'name'          => $company->name->value,
+            'email'         => $company->email,
+            'phone_number'  => $company->phoneNumber,
+            'website'       => $company->website,
+            'address_line_1'=> $company->addressLine1,
+            'address_line_2'=> $company->addressLine2,
+            'city'          => $company->city,
+            'postal_code'   => $company->postalCode,
+            'country'       => $company->country,
+            'is_active'     => $company->isActive ? 1 : 0,
         ]);
     }
 
@@ -104,10 +130,9 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
 
     public function delete(CompanyId $id): void
     {
-        $stmt = $this->prepare(
+        $this->prepare(
             'UPDATE companies SET deleted_at = NOW() WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL',
-        );
-        $stmt->execute(['id' => $id->value]);
+        )->execute(['id' => $id->value]);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -129,11 +154,20 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
     private function hydrate(array $row): Company
     {
         return new Company(
-            id:        new CompanyId($this->col($row, 'id')),
-            name:      new CompanyName($this->col($row, 'name')),
-            createdAt: $this->parseDateTime($this->col($row, 'created_at')),
-            updatedAt: $this->parseDateTime($this->col($row, 'updated_at')),
-            deletedAt: $this->parseDateTimeNullable($row['deleted_at'] ?? null),
+            id:           new CompanyId($this->col($row, 'id')),
+            name:         new CompanyName($this->col($row, 'name')),
+            email:        $this->nullable($row['email'] ?? null),
+            phoneNumber:  $this->nullable($row['phone_number'] ?? null),
+            website:      $this->nullable($row['website'] ?? null),
+            addressLine1: $this->nullable($row['address_line_1'] ?? null),
+            addressLine2: $this->nullable($row['address_line_2'] ?? null),
+            city:         $this->nullable($row['city'] ?? null),
+            postalCode:   $this->nullable($row['postal_code'] ?? null),
+            country:      $this->nullable($row['country'] ?? null),
+            isActive:     (bool) ($row['is_active'] ?? true),
+            createdAt:    $this->parseDateTime($this->col($row, 'created_at')),
+            updatedAt:    $this->parseDateTime($this->col($row, 'updated_at')),
+            deletedAt:    $this->parseDateTimeNullable($row['deleted_at'] ?? null),
         );
     }
 
@@ -151,6 +185,11 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
         }
 
         return $value;
+    }
+
+    private function nullable(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     private function parseDateTime(string $value): DateTimeImmutable

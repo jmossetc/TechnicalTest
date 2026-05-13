@@ -22,8 +22,8 @@ use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
 final readonly class UpdateCompanyController implements ControllerInterface
 {
     public function __construct(
-        private JwtAuthMiddleware $auth,
-        private UserAuthorization $authorization,
+        private JwtAuthMiddleware    $auth,
+        private UserAuthorization    $authorization,
         private UpdateCompanyHandler $handler,
     ) {}
 
@@ -51,8 +51,23 @@ final readonly class UpdateCompanyController implements ControllerInterface
             return Response::error('name is required', 422);
         }
 
+        $isActiveRaw = $request->body['is_active'] ?? null;
+        $isActive    = is_bool($isActiveRaw) ? $isActiveRaw : null;
+
         try {
-            $this->handler->handle(new UpdateCompany($id, $name));
+            $this->handler->handle(new UpdateCompany(
+                id:           $id,
+                name:         $name,
+                email:        $request->stringBody('email') ?: null,
+                phoneNumber:  $request->stringBody('phone_number') ?: null,
+                website:      $request->stringBody('website') ?: null,
+                addressLine1: $request->stringBody('address_line_1') ?: null,
+                addressLine2: $request->stringBody('address_line_2') ?: null,
+                city:         $request->stringBody('city') ?: null,
+                postalCode:   $request->stringBody('postal_code') ?: null,
+                country:      $request->stringBody('country') ?: null,
+                isActive:     $isActive,
+            ));
         } catch (CompanyNotFoundException $e) {
             return Response::error($e->getMessage(), 404);
         } catch (CompanyAlreadyExistsException $e) {

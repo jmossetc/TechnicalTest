@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Company\Presentation\Controller;
 
 use InvalidArgumentException;
+use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
+use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorization;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Company\Application\Command\CreateCompany;
@@ -12,8 +14,6 @@ use Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler;
 use Mossetc\TechnicalTest\Company\Domain\Exception\CompanyAlreadyExistsException;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
-use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
-use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
 
@@ -21,8 +21,8 @@ use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
 final readonly class CreateCompanyController implements ControllerInterface
 {
     public function __construct(
-        private JwtAuthMiddleware $auth,
-        private UserAuthorization $authorization,
+        private JwtAuthMiddleware    $auth,
+        private UserAuthorization    $authorization,
         private CreateCompanyHandler $handler,
     ) {}
 
@@ -49,7 +49,17 @@ final readonly class CreateCompanyController implements ControllerInterface
         }
 
         try {
-            $id = $this->handler->handle(new CreateCompany($name));
+            $id = $this->handler->handle(new CreateCompany(
+                name:         $name,
+                email:        $request->stringBody('email') ?: null,
+                phoneNumber:  $request->stringBody('phone_number') ?: null,
+                website:      $request->stringBody('website') ?: null,
+                addressLine1: $request->stringBody('address_line_1') ?: null,
+                addressLine2: $request->stringBody('address_line_2') ?: null,
+                city:         $request->stringBody('city') ?: null,
+                postalCode:   $request->stringBody('postal_code') ?: null,
+                country:      $request->stringBody('country') ?: null,
+            ));
         } catch (CompanyAlreadyExistsException $e) {
             return Response::error($e->getMessage(), 409);
         } catch (InvalidArgumentException $e) {

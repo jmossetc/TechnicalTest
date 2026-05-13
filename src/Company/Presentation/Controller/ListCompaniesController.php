@@ -53,10 +53,15 @@ final readonly class ListCompaniesController implements ControllerInterface
         return Response::json([
             'data'       => array_map(
                 static fn(Company $c): array => [
-                    'id'         => $c->id->value,
-                    'name'       => $c->name->value,
-                    'created_at' => $c->createdAt->format('Y-m-d\TH:i:s\Z'),
-                    'updated_at' => $c->updatedAt->format('Y-m-d\TH:i:s\Z'),
+                    'id'            => $c->id->value,
+                    'name'          => $c->name->value,
+                    'email'         => $c->email,
+                    'phone_number'  => $c->phoneNumber,
+                    'city'          => $c->city,
+                    'country'       => $c->country,
+                    'is_active'     => $c->isActive,
+                    'created_at'    => $c->createdAt->format('Y-m-d\TH:i:s\Z'),
+                    'updated_at'    => $c->updatedAt->format('Y-m-d\TH:i:s\Z'),
                 ],
                 $result->companies,
             ),

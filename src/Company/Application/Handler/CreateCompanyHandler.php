@@ -23,10 +23,20 @@ final readonly class CreateCompanyHandler
             throw new CompanyAlreadyExistsException($name);
         }
 
-        $id      = CompanyId::generate();
-        $company = new Company(id: $id, name: $name);
+        $id = CompanyId::generate();
 
-        $this->repository->save($company);
+        $this->repository->save(new Company(
+            id:           $id,
+            name:         $name,
+            email:        $command->email,
+            phoneNumber:  $command->phoneNumber,
+            website:      $command->website,
+            addressLine1: $command->addressLine1,
+            addressLine2: $command->addressLine2,
+            city:         $command->city,
+            postalCode:   $command->postalCode,
+            country:      $command->country,
+        ));
 
         return $id;
     }

@@ -52,10 +52,19 @@ final readonly class GetCompanyController implements ControllerInterface
         }
 
         return Response::json([
-            'id'         => $company->id->value,
-            'name'       => $company->name->value,
-            'created_at' => $company->createdAt->format('Y-m-d\TH:i:s\Z'),
-            'updated_at' => $company->updatedAt->format('Y-m-d\TH:i:s\Z'),
+            'id'            => $company->id->value,
+            'name'          => $company->name->value,
+            'email'         => $company->email,
+            'phone_number'  => $company->phoneNumber,
+            'website'       => $company->website,
+            'address_line_1'=> $company->addressLine1,
+            'address_line_2'=> $company->addressLine2,
+            'city'          => $company->city,
+            'postal_code'   => $company->postalCode,
+            'country'       => $company->country,
+            'is_active'     => $company->isActive,
+            'created_at'    => $company->createdAt->format('Y-m-d\TH:i:s\Z'),
+            'updated_at'    => $company->updatedAt->format('Y-m-d\TH:i:s\Z'),
         ]);
     }
 }
