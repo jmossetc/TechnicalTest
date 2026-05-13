@@ -6,6 +6,11 @@
             "Mossetc\\TechnicalTest\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Mossetc\\TechnicalTest\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Jérémie Mosset",
@@ -17,5 +22,14 @@
         "phpunit/phpunit": "^13.1",
         "behat/behat": "^3.31",
         "phpstan/phpstan": "^2.1"
+    },
+    "require": {
+        "php": ">=8.5",
+        "lcobucci/jwt": "^5.4",
+        "ext-pdo": "*",
+        "symfony/routing": "^7.4",
+        "symfony/yaml": "^7.4",
+        "symfony/dependency-injection": "^7.4",
+        "symfony/config": "^7.4"
     }
 }

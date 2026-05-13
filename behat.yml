@@ -1,0 +1,9 @@
+default:
+  suites:
+    api:
+      paths: ['%paths.base%/features']
+      contexts:
+        - ApiContext
+  formatters:
+    pretty:
+      verbose: false
