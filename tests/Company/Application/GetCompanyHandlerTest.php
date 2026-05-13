@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mossetc\TechnicalTest\Tests\Company\Application;
+
+use InvalidArgumentException;
+use Mossetc\TechnicalTest\Company\Application\Command\CreateCompany;
+use Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler;
+use Mossetc\TechnicalTest\Company\Application\Handler\GetCompanyHandler;
+use Mossetc\TechnicalTest\Company\Domain\Exception\CompanyNotFoundException;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryCompanyRepository;
+use PHPUnit\Framework\TestCase;
+
+final class GetCompanyHandlerTest extends TestCase
+{
+    private InMemoryCompanyRepository $repository;
+    private GetCompanyHandler $handler;
+
+    protected function setUp(): void
+    {
+        $this->repository = new InMemoryCompanyRepository();
+        $this->handler    = new GetCompanyHandler($this->repository);
+    }
+
+    public function testReturnsExistingCompany(): void
+    {
+        $id = (new CreateCompanyHandler($this->repository))->handle(new CreateCompany('Acme'));
+
+        $company = $this->handler->handle($id->value);
+
+        $this->assertTrue($id->equals($company->id));
+        $this->assertSame('Acme', $company->name->value);
+    }
+
+    public function testThrowsWhenNotFound(): void
+    {
+        $this->expectException(CompanyNotFoundException::class);
+        $this->handler->handle('99999999-9999-4999-8999-999999999999');
+    }
+
+    public function testThrowsOnMalformedId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->handler->handle('not-a-uuid');
+    }
+}
