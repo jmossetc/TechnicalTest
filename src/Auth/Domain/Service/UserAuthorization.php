@@ -203,6 +203,31 @@ final readonly class UserAuthorization
         throw new ForbiddenException('You do not have permission to access this company');
     }
 
+    /**
+     * Assert that $callerId may read or edit the given shop.
+     * Allowed for admins, company managers of the shop's company, and the shop's own manager.
+     *
+     * @throws ForbiddenException
+     */
+    public function authorizeShopAccess(UserId $callerId, string $shopId, string $companyId): void
+    {
+        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
+
+        if ($caller['isAdmin']) {
+            return;
+        }
+
+        if (in_array($companyId, $caller['managedCompanyIds'], true)) {
+            return;
+        }
+
+        if (in_array($shopId, $caller['managedShopIds'], true)) {
+            return;
+        }
+
+        throw new ForbiddenException('You do not have permission to access this shop');
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /**

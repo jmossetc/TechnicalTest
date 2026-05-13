@@ -119,6 +119,34 @@ services:
   Mossetc\TechnicalTest\Company\Presentation\Controller\DeleteCompanyController:
     autoconfigure: true
 
+  # ── Shop ──────────────────────────────────────────────────────────────────────
+
+  Mossetc\TechnicalTest\Shop\Infrastructure\Repository\ShopRepository: ~
+
+  Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface:
+    alias: 'Mossetc\TechnicalTest\Shop\Infrastructure\Repository\ShopRepository'
+
+  Mossetc\TechnicalTest\Shop\Application\Handler\CreateShopHandler: ~
+  Mossetc\TechnicalTest\Shop\Application\Handler\UpdateShopHandler: ~
+  Mossetc\TechnicalTest\Shop\Application\Handler\DeleteShopHandler: ~
+  Mossetc\TechnicalTest\Shop\Application\Handler\GetShopHandler: ~
+  Mossetc\TechnicalTest\Shop\Application\Handler\ListShopsHandler: ~
+
+  Mossetc\TechnicalTest\Shop\Presentation\Controller\CreateShopController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Shop\Presentation\Controller\ListShopsController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Shop\Presentation\Controller\GetShopController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Shop\Presentation\Controller\UpdateShopController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Shop\Presentation\Controller\DeleteShopController:
+    autoconfigure: true
+
   # ── Routing ───────────────────────────────────────────────────────────────────
 
   Mossetc\TechnicalTest\Shared\Infrastructure\Http\RouteLoader: ~

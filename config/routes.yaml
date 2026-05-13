@@ -39,3 +39,24 @@ update_company:
 delete_company:
   path: /api/companies/{id}
   methods: [DELETE]
+
+# Shop endpoints
+create_shop:
+  path: /api/companies/{companyId}/shops
+  methods: [POST]
+
+list_shops:
+  path: /api/companies/{companyId}/shops
+  methods: [GET]
+
+get_shop:
+  path: /api/shops/{id}
+  methods: [GET]
+
+update_shop:
+  path: /api/shops/{id}
+  methods: [PATCH]
+
+delete_shop:
+  path: /api/shops/{id}
+  methods: [DELETE]

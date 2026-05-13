@@ -10,6 +10,8 @@ use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository;
 use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
 use Mossetc\TechnicalTest\Company\Infrastructure\Repository\CompanyRepository;
+use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
+use Mossetc\TechnicalTest\Shop\Infrastructure\Repository\ShopRepository;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Config\FileLocator;
@@ -58,6 +60,7 @@ final class ContainerFactory
         UserRepositoryInterface $repository,
         UserRoleRepositoryInterface $roleRepository,
         CompanyRepositoryInterface $companyRepository,
+        ShopRepositoryInterface $shopRepository,
     ): ContainerInterface {
         $container = self::create();
 
@@ -67,7 +70,8 @@ final class ContainerFactory
         $container->setParameter('env(JWT_AUDIENCE)', 'http://localhost');
 
         // Strip out the database layer — it is not needed in tests
-        foreach (['PDO', UserRepository::class, UserRoleRepository::class, CompanyRepository::class] as $id) {
+        $concrete = ['PDO', UserRepository::class, UserRoleRepository::class, CompanyRepository::class, ShopRepository::class];
+        foreach ($concrete as $id) {
             if ($container->hasDefinition($id)) {
                 $container->removeDefinition($id);
             }
@@ -79,6 +83,7 @@ final class ContainerFactory
             UserRepositoryInterface::class,
             UserRoleRepositoryInterface::class,
             CompanyRepositoryInterface::class,
+            ShopRepositoryInterface::class,
         ];
         foreach ($interfaces as $iface) {
             if ($container->hasAlias($iface)) {
@@ -94,6 +99,7 @@ final class ContainerFactory
         $container->set(UserRepositoryInterface::class, $repository);
         $container->set(UserRoleRepositoryInterface::class, $roleRepository);
         $container->set(CompanyRepositoryInterface::class, $companyRepository);
+        $container->set(ShopRepositoryInterface::class, $shopRepository);
 
         return $container;
     }

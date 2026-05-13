@@ -9,6 +9,9 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
 use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
+use Mossetc\TechnicalTest\Shop\Domain\Model\Shop;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopName;
 use Mossetc\TechnicalTest\Shared\Infrastructure\DI\ContainerFactory;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
@@ -25,6 +28,8 @@ final class ApiContext implements Context
 
     private InMemoryCompanyRepository $companyRepository;
 
+    private InMemoryShopRepository $shopRepository;
+
     private ?Response $lastResponse = null;
 
     private string $lastUserId = '';
@@ -40,15 +45,20 @@ final class ApiContext implements Context
     /** ID of the last created company, for assertions. */
     private string $lastCompanyId = '';
 
+    /** ID of the last created shop, for assertions. */
+    private string $lastShopId = '';
+
     public function __construct()
     {
         $this->userRepository    = new InMemoryUserRepository();
         $this->roleRepository    = new InMemoryUserRoleRepository();
         $this->companyRepository = new InMemoryCompanyRepository();
+        $this->shopRepository    = new InMemoryShopRepository();
         $container = ContainerFactory::buildForTest(
             $this->userRepository,
             $this->roleRepository,
             $this->companyRepository,
+            $this->shopRepository,
         );
 
         $router = $container->get(Router::class);
@@ -162,6 +172,11 @@ final class ApiContext implements Context
     public function aShopExistsForCompany(string $shopId, string $companyId): void
     {
         $this->roleRepository->registerShop($shopId, $companyId);
+        $this->shopRepository->save(new Shop(
+            id:        new ShopId($shopId),
+            companyId: new CompanyId($companyId),
+            name:      new ShopName("Shop {$shopId}"),
+        ));
     }
 
     /**
@@ -500,6 +515,89 @@ final class ApiContext implements Context
         Assert::assertIsArray($first);
         Assert::assertArrayHasKey($key, $first);
         Assert::assertSame($value, $first[$key]);
+    }
+
+    // ── Shop When ────────────────────────────────────────────────────────────
+
+    /**
+     * @When I create a shop with name :name for company :companyId
+     */
+    public function iCreateAShopWithNameForCompany(string $name, string $companyId): void
+    {
+        $this->lastResponse = $this->doPost("/api/companies/{$companyId}/shops", ['name' => $name], $this->token);
+
+        $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
+        if (is_string($id)) {
+            $this->lastShopId = $id;
+        }
+    }
+
+    /**
+     * @When I list shops for company :companyId
+     */
+    public function iListShopsForCompany(string $companyId): void
+    {
+        $this->lastResponse = $this->doGet("/api/companies/{$companyId}/shops", $this->token);
+    }
+
+    /**
+     * @When I list shops for company :companyId on page :page with limit :limit
+     */
+    public function iListShopsForCompanyOnPageWithLimit(string $companyId, int $page, int $limit): void
+    {
+        $this->lastResponse = $this->doGet(
+            "/api/companies/{$companyId}/shops",
+            $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit],
+        );
+    }
+
+    /**
+     * @When I get the shop :shopId
+     */
+    public function iGetTheShop(string $shopId): void
+    {
+        $this->lastResponse = $this->doGet("/api/shops/{$shopId}", $this->token);
+    }
+
+    /**
+     * @When I get the last created shop
+     */
+    public function iGetTheLastCreatedShop(): void
+    {
+        $this->lastResponse = $this->doGet("/api/shops/{$this->lastShopId}", $this->token);
+    }
+
+    /**
+     * @When I update the shop :shopId with name :name
+     */
+    public function iUpdateTheShopWithName(string $shopId, string $name): void
+    {
+        $this->lastResponse = $this->doPatch("/api/shops/{$shopId}", ['name' => $name], $this->token);
+    }
+
+    /**
+     * @When I update the last created shop with name :name
+     */
+    public function iUpdateTheLastCreatedShopWithName(string $name): void
+    {
+        $this->lastResponse = $this->doPatch("/api/shops/{$this->lastShopId}", ['name' => $name], $this->token);
+    }
+
+    /**
+     * @When I delete the shop :shopId
+     */
+    public function iDeleteTheShop(string $shopId): void
+    {
+        $this->lastResponse = $this->doDelete("/api/shops/{$shopId}", $this->token);
+    }
+
+    /**
+     * @When I delete the last created shop
+     */
+    public function iDeleteTheLastCreatedShop(): void
+    {
+        $this->lastResponse = $this->doDelete("/api/shops/{$this->lastShopId}", $this->token);
     }
 
     // ── Company When ─────────────────────────────────────────────────────────
