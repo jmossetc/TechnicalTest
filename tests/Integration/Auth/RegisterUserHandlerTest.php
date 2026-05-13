@@ -9,20 +9,19 @@ use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
 use Mossetc\TechnicalTest\Auth\Application\Query\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Domain\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository;
-use Mossetc\TechnicalTest\Tests\Integration\Support\DatabaseTestCase;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
+use PHPUnit\Framework\TestCase;
 
-final class RegisterUserHandlerTest extends DatabaseTestCase
+final class RegisterUserHandlerTest extends TestCase
 {
-    private PdoUserRepository $repository;
+    private InMemoryUserRepository $repository;
     private RegisterUserHandler $handler;
 
     protected function setUp(): void
     {
-        parent::setUp();
-        $this->repository = new PdoUserRepository($this->pdo);
-        $roleRepository   = new PdoUserRoleRepository($this->pdo);
+        $this->repository = new InMemoryUserRepository();
+        $roleRepository   = new InMemoryUserRoleRepository();
         $this->handler    = new RegisterUserHandler($this->repository, $roleRepository);
     }
 

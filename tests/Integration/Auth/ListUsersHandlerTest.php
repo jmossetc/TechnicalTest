@@ -8,20 +8,19 @@ use Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
 use Mossetc\TechnicalTest\Auth\Application\Query\ListUsers;
 use Mossetc\TechnicalTest\Auth\Application\Query\RegisterUser;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository;
-use Mossetc\TechnicalTest\Tests\Integration\Support\DatabaseTestCase;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
+use PHPUnit\Framework\TestCase;
 
-final class ListUsersHandlerTest extends DatabaseTestCase
+final class ListUsersHandlerTest extends TestCase
 {
     private ListUsersHandler $handler;
     private RegisterUserHandler $registrar;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $repo            = new PdoUserRepository($this->pdo);
-        $roleRepo        = new \Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository($this->pdo);
+        $repo            = new InMemoryUserRepository();
+        $roleRepo        = new InMemoryUserRoleRepository();
         $this->handler   = new ListUsersHandler($repo);
         $this->registrar = new RegisterUserHandler($repo, $roleRepo);
     }

@@ -13,19 +13,20 @@ use Mossetc\TechnicalTest\Auth\Domain\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
 use Mossetc\TechnicalTest\Auth\Domain\TokenServiceInterface;
 use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository;
-use Mossetc\TechnicalTest\Tests\Integration\Support\DatabaseTestCase;
+use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRoleRepository;
+use PHPUnit\Framework\TestCase;
 
-final class LoginUserHandlerTest extends DatabaseTestCase
+final class LoginUserHandlerTest extends TestCase
 {
-    private PdoUserRepository $repository;
+    private UserRepositoryInterface $repository;
 
     protected function setUp(): void
     {
-        parent::setUp();
-        $this->repository = new PdoUserRepository($this->pdo);
+        $this->repository = new InMemoryUserRepository();
 
-        $roleRepo = new \Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRoleRepository($this->pdo);
+        $roleRepo = new InMemoryUserRoleRepository();
         (new RegisterUserHandler($this->repository, $roleRepo))
             ->handle(new RegisterUser('alice@example.com', 'password123'));
     }

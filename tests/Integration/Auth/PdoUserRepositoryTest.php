@@ -9,17 +9,17 @@ use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;
 use Mossetc\TechnicalTest\Auth\Domain\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\User;
 use Mossetc\TechnicalTest\Auth\Domain\UserId;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository;
-use Mossetc\TechnicalTest\Tests\Integration\Support\DatabaseTestCase;
+use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
+use PHPUnit\Framework\TestCase;
 
-final class PdoUserRepositoryTest extends DatabaseTestCase
+final class PdoUserRepositoryTest extends TestCase
 {
-    private PdoUserRepository $repository;
+    private UserRepositoryInterface $repository;
 
     protected function setUp(): void
     {
-        parent::setUp();
-        $this->repository = new PdoUserRepository($this->pdo);
+        $this->repository = new InMemoryUserRepository();
     }
 
     private function makeUser(
