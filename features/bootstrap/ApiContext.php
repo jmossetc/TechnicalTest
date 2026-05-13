@@ -6,6 +6,9 @@ use Behat\Behat\Context\Context;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserRole;
+use Mossetc\TechnicalTest\Company\Domain\Model\Company;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
 use Mossetc\TechnicalTest\Shared\Infrastructure\DI\ContainerFactory;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
@@ -20,6 +23,8 @@ final class ApiContext implements Context
 
     private InMemoryUserRoleRepository $roleRepository;
 
+    private InMemoryCompanyRepository $companyRepository;
+
     private ?Response $lastResponse = null;
 
     private string $lastUserId = '';
@@ -32,11 +37,19 @@ final class ApiContext implements Context
     /** Token for a bootstrapped admin user, used for registration calls. */
     private string $adminToken = '';
 
+    /** ID of the last created company, for assertions. */
+    private string $lastCompanyId = '';
+
     public function __construct()
     {
-        $this->userRepository = new InMemoryUserRepository();
-        $this->roleRepository = new InMemoryUserRoleRepository();
-        $container = ContainerFactory::buildForTest($this->userRepository, $this->roleRepository);
+        $this->userRepository    = new InMemoryUserRepository();
+        $this->roleRepository    = new InMemoryUserRoleRepository();
+        $this->companyRepository = new InMemoryCompanyRepository();
+        $container = ContainerFactory::buildForTest(
+            $this->userRepository,
+            $this->roleRepository,
+            $this->companyRepository,
+        );
 
         $router = $container->get(Router::class);
         if (!$router instanceof Router) {
@@ -137,9 +150,10 @@ final class ApiContext implements Context
      */
     public function aCompanyExists(string $companyId): void
     {
-        // Just register the company in the role repository's shop-company map is not needed.
-        // Companies are only relevant for authorization lookups via findCompanyIdByShopId.
-        // No-op: the company ID is used directly in role grants and shop registrations.
+        $this->companyRepository->save(new Company(
+            id: new CompanyId($companyId),
+            name: new CompanyName("Company {$companyId}"),
+        ));
     }
 
     /**
@@ -488,6 +502,89 @@ final class ApiContext implements Context
         Assert::assertSame($value, $first[$key]);
     }
 
+    // ── Company When ─────────────────────────────────────────────────────────
+
+    /**
+     * @When I create a company with name :name
+     */
+    public function iCreateACompanyWithName(string $name): void
+    {
+        $this->lastResponse = $this->doPost('/api/companies', ['name' => $name], $this->token);
+
+        $id = $this->bodyOf($this->lastResponse)['id'] ?? null;
+        if (is_string($id)) {
+            $this->lastCompanyId = $id;
+        }
+    }
+
+    /**
+     * @When I list companies
+     */
+    public function iListCompanies(): void
+    {
+        $this->lastResponse = $this->doGet('/api/companies', $this->token);
+    }
+
+    /**
+     * @When I list companies on page :page with limit :limit
+     */
+    public function iListCompaniesOnPageWithLimit(int $page, int $limit): void
+    {
+        $this->lastResponse = $this->doGet(
+            '/api/companies',
+            $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit],
+        );
+    }
+
+    /**
+     * @When I get the company :companyId
+     */
+    public function iGetTheCompany(string $companyId): void
+    {
+        $this->lastResponse = $this->doGet("/api/companies/{$companyId}", $this->token);
+    }
+
+    /**
+     * @When I get the last created company
+     */
+    public function iGetTheLastCreatedCompany(): void
+    {
+        $this->lastResponse = $this->doGet("/api/companies/{$this->lastCompanyId}", $this->token);
+    }
+
+    /**
+     * @When I update the company :companyId with name :name
+     */
+    public function iUpdateTheCompanyWithName(string $companyId, string $name): void
+    {
+        $this->lastResponse = $this->doPatch("/api/companies/{$companyId}", ['name' => $name], $this->token);
+    }
+
+    /**
+     * @When I update the last created company with name :name
+     */
+    public function iUpdateTheLastCreatedCompanyWithName(string $name): void
+    {
+        $this->lastResponse = $this->doPatch("/api/companies/{$this->lastCompanyId}", ['name' => $name], $this->token);
+    }
+
+    /**
+     * @When I delete the company :companyId
+     */
+    public function iDeleteTheCompany(string $companyId): void
+    {
+        $this->lastResponse = $this->doDelete("/api/companies/{$companyId}", $this->token);
+    }
+
+    /**
+     * @When I delete the last created company
+     */
+    public function iDeleteTheLastCreatedCompany(): void
+    {
+        $this->lastResponse = $this->doDelete("/api/companies/{$this->lastCompanyId}", $this->token);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /** @param array<string, mixed> $body */
@@ -553,6 +650,22 @@ final class ApiContext implements Context
             headers: $headers,
             body: [],
             query: $query,
+        ));
+    }
+
+    /** @param array<string, mixed> $body */
+    private function doPatch(string $path, array $body, string $token = ''): Response
+    {
+        $headers = ['Content-Type' => 'application/json'];
+        if ($token !== '') {
+            $headers['Authorization'] = "Bearer {$token}";
+        }
+
+        return $this->router->dispatch(new Request(
+            method: 'PATCH',
+            path: $path,
+            headers: $headers,
+            body: $body,
         ));
     }
 

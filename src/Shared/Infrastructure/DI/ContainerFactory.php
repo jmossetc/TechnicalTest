@@ -8,6 +8,8 @@ use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository;
+use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
+use Mossetc\TechnicalTest\Company\Infrastructure\Repository\CompanyRepository;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Config\FileLocator;
@@ -55,6 +57,7 @@ final class ContainerFactory
     public static function buildForTest(
         UserRepositoryInterface $repository,
         UserRoleRepositoryInterface $roleRepository,
+        CompanyRepositoryInterface $companyRepository,
     ): ContainerInterface {
         $container = self::create();
 
@@ -64,7 +67,7 @@ final class ContainerFactory
         $container->setParameter('env(JWT_AUDIENCE)', 'http://localhost');
 
         // Strip out the database layer — it is not needed in tests
-        foreach (['PDO', UserRepository::class, UserRoleRepository::class] as $id) {
+        foreach (['PDO', UserRepository::class, UserRoleRepository::class, CompanyRepository::class] as $id) {
             if ($container->hasDefinition($id)) {
                 $container->removeDefinition($id);
             }
@@ -72,7 +75,12 @@ final class ContainerFactory
 
         // Replace aliases with synthetic placeholders that will be satisfied
         // by the test doubles after compilation
-        foreach ([UserRepositoryInterface::class, UserRoleRepositoryInterface::class] as $iface) {
+        $interfaces = [
+            UserRepositoryInterface::class,
+            UserRoleRepositoryInterface::class,
+            CompanyRepositoryInterface::class,
+        ];
+        foreach ($interfaces as $iface) {
             if ($container->hasAlias($iface)) {
                 $container->removeAlias($iface);
             }
@@ -85,6 +93,7 @@ final class ContainerFactory
         $container->compile(resolveEnvPlaceholders: true);
         $container->set(UserRepositoryInterface::class, $repository);
         $container->set(UserRoleRepositoryInterface::class, $roleRepository);
+        $container->set(CompanyRepositoryInterface::class, $companyRepository);
 
         return $container;
     }

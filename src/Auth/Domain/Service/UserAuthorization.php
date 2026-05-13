@@ -167,6 +167,42 @@ final readonly class UserAuthorization
         throw new ForbiddenException('You do not have permission to list users');
     }
 
+    /**
+     * Assert that $callerId is an admin.
+     * Used for operations restricted exclusively to admins (e.g. company create/delete/list).
+     *
+     * @throws ForbiddenException
+     */
+    public function authorizeAdminOnlyAction(UserId $callerId): void
+    {
+        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
+
+        if (!$caller['isAdmin']) {
+            throw new ForbiddenException('Only admins can perform this action');
+        }
+    }
+
+    /**
+     * Assert that $callerId may read or edit the given company.
+     * Allowed for admins and for company managers who manage that specific company.
+     *
+     * @throws ForbiddenException
+     */
+    public function authorizeCompanyAccess(UserId $callerId, string $companyId): void
+    {
+        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
+
+        if ($caller['isAdmin']) {
+            return;
+        }
+
+        if (in_array($companyId, $caller['managedCompanyIds'], true)) {
+            return;
+        }
+
+        throw new ForbiddenException('You do not have permission to access this company');
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /**

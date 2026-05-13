@@ -34,12 +34,12 @@ services:
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository: ~
 
-  Mossetc\TechnicalTest\Auth\Domain\RepositoryInterface\UserRepositoryInterface:
+  Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface:
     alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRepository'
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository: ~
 
-  Mossetc\TechnicalTest\Auth\Domain\RepositoryInterface\UserRoleRepositoryInterface:
+  Mossetc\TechnicalTest\Auth\Domain\Repository\UserRoleRepositoryInterface:
     alias: 'Mossetc\TechnicalTest\Auth\Infrastructure\Repository\UserRoleRepository'
 
   # ── JWT ───────────────────────────────────────────────────────────────────────
@@ -89,6 +89,34 @@ services:
     autoconfigure: true
 
   Mossetc\TechnicalTest\Auth\Presentation\Controller\DeleteUserController:
+    autoconfigure: true
+
+  # ── Company ───────────────────────────────────────────────────────────────────
+
+  Mossetc\TechnicalTest\Company\Infrastructure\Repository\CompanyRepository: ~
+
+  Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface:
+    alias: 'Mossetc\TechnicalTest\Company\Infrastructure\Repository\CompanyRepository'
+
+  Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler: ~
+  Mossetc\TechnicalTest\Company\Application\Handler\UpdateCompanyHandler: ~
+  Mossetc\TechnicalTest\Company\Application\Handler\DeleteCompanyHandler: ~
+  Mossetc\TechnicalTest\Company\Application\Handler\GetCompanyHandler: ~
+  Mossetc\TechnicalTest\Company\Application\Handler\ListCompaniesHandler: ~
+
+  Mossetc\TechnicalTest\Company\Presentation\Controller\CreateCompanyController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Company\Presentation\Controller\ListCompaniesController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Company\Presentation\Controller\GetCompanyController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Company\Presentation\Controller\UpdateCompanyController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Company\Presentation\Controller\DeleteCompanyController:
     autoconfigure: true
 
   # ── Routing ───────────────────────────────────────────────────────────────────
