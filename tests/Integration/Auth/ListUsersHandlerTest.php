@@ -21,7 +21,7 @@ final class ListUsersHandlerTest extends TestCase
     {
         $repo            = new InMemoryUserRepository();
         $roleRepo        = new InMemoryUserRoleRepository();
-        $this->handler   = new ListUsersHandler($repo);
+        $this->handler   = new ListUsersHandler($repo, $roleRepo);
         $this->registrar = new RegisterUserHandler($repo, $roleRepo);
     }
 

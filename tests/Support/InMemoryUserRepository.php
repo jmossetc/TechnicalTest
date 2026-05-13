@@ -52,4 +52,31 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     {
         unset($this->store[$id->value]);
     }
+
+    public function findPaginatedByIds(array $ids, int $limit, int $offset): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $users = array_values(array_filter(
+            $this->store,
+            static fn(User $u): bool => in_array($u->id->value, $ids, true),
+        ));
+        usort($users, static fn(User $a, User $b): int => strcmp($a->email->value, $b->email->value));
+
+        return array_slice($users, $offset, $limit);
+    }
+
+    public function countByIds(array $ids): int
+    {
+        if ($ids === []) {
+            return 0;
+        }
+
+        return count(array_filter(
+            $this->store,
+            static fn(User $u): bool => in_array($u->id->value, $ids, true),
+        ));
+    }
 }

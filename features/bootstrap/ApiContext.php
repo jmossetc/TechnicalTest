@@ -255,6 +255,38 @@ final class ApiContext implements Context
     }
 
     /**
+     * @Given a user is registered with email :email and password :password with role :role for company :companyId
+     */
+    public function aUserIsRegisteredWithRoleForCompany(string $email, string $password, string $role, string $companyId): void
+    {
+        $this->ensureAdminToken();
+        $response = $this->doPost('/api/users', [
+            'email'      => $email,
+            'password'   => $password,
+            'role'       => $role,
+            'company_id' => $companyId,
+        ], $this->adminToken);
+
+        Assert::assertSame(201, $response->status(), "Background registration of {$email} (company) failed");
+    }
+
+    /**
+     * @Given a user is registered with email :email and password :password with role :role for shop :shopId
+     */
+    public function aUserIsRegisteredWithRoleForShop(string $email, string $password, string $role, string $shopId): void
+    {
+        $this->ensureAdminToken();
+        $response = $this->doPost('/api/users', [
+            'email'    => $email,
+            'password' => $password,
+            'role'     => $role,
+            'shop_id'  => $shopId,
+        ], $this->adminToken);
+
+        Assert::assertSame(201, $response->status(), "Background registration of {$email} (shop) failed");
+    }
+
+    /**
      * @When I register a user with email :email and password :password with role :role for company :companyId
      */
     public function iRegisterAUserWithRoleForCompany(string $email, string $password, string $role, string $companyId): void
@@ -345,6 +377,22 @@ final class ApiContext implements Context
             $this->token,
             ['page' => (string) $page, 'limit' => (string) $limit],
         );
+    }
+
+    /**
+     * @When I list users filtered by company :companyId
+     */
+    public function iListUsersFilteredByCompany(string $companyId): void
+    {
+        $this->lastResponse = $this->doGet('/api/users', $this->token, ['company_ids' => $companyId]);
+    }
+
+    /**
+     * @When I list users filtered by shop :shopId
+     */
+    public function iListUsersFilteredByShop(string $shopId): void
+    {
+        $this->lastResponse = $this->doGet('/api/users', $this->token, ['shop_ids' => $shopId]);
     }
 
     /**

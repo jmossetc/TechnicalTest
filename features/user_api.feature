@@ -274,14 +274,19 @@ Feature: User API
 
   # ── Listing ───────────────────────────────────────────────────────────────────
 
-  Scenario: Listing users without a token
+  Scenario: Listing users without a token returns 401
     When I list users
     Then the response status should be 401
 
-  Scenario: Listing users returns data and pagination
+  Scenario: Listing users without any role returns 403
+    Given I am logged in as "alice@example.com" with password "secretpass"
+    When I list users
+    Then the response status should be 403
+
+  Scenario: Admin sees all users
     Given a user is registered with email "alice@example.com" and password "secretpass"
     And a user is registered with email "bob@example.com" and password "secretpass"
-    And I am logged in as "alice@example.com" with password "secretpass"
+    And I am logged in as admin
     When I list users
     Then the response status should be 200
     And the response should contain field "data"
@@ -289,30 +294,68 @@ Feature: User API
     And the "data" array should have 3 items
     And the response "pagination.total" should equal "3"
 
-  Scenario: Listing users respects pagination limit
+  Scenario: Admin can filter listing by company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a user is registered with email "cm@example.com" and password "secretpass" with role "company_manager" for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as admin
+    When I list users filtered by company "11111111-1111-4111-8111-111111111111"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Admin respects pagination limit
     Given a user is registered with email "alice@example.com" and password "secretpass"
     And a user is registered with email "bob@example.com" and password "secretpass"
     And a user is registered with email "charlie@example.com" and password "secretpass"
-    And I am logged in as "alice@example.com" with password "secretpass"
+    And I am logged in as admin
     When I list users on page 1 with limit 2
     Then the response status should be 200
     And the "data" array should have 2 items
     And the response "pagination.total" should equal "4"
     And the response "pagination.pages" should equal "2"
 
-  Scenario: Listing users second page returns remainder
+  Scenario: Admin second page returns remainder
     Given a user is registered with email "alice@example.com" and password "secretpass"
     And a user is registered with email "bob@example.com" and password "secretpass"
     And a user is registered with email "charlie@example.com" and password "secretpass"
-    And I am logged in as "alice@example.com" with password "secretpass"
+    And I am logged in as admin
     When I list users on page 2 with limit 2
     Then the response status should be 200
     And the "data" array should have 2 items
 
-  Scenario: Listing users is ordered by email
+  Scenario: Admin listing is ordered by email
     Given a user is registered with email "charlie@example.com" and password "secretpass"
     And a user is registered with email "alice@example.com" and password "secretpass"
-    And I am logged in as "charlie@example.com" with password "secretpass"
+    And I am logged in as admin
     When I list users
     Then the response status should be 200
     And the first "data" item "email" should equal "alice@example.com"
+
+  Scenario: Company manager sees only users in their company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a company "22222222-2222-4222-8222-222222222222" exists
+    And a user is registered with email "cm2@example.com" and password "secretpass" with role "company_manager" for company "22222222-2222-4222-8222-222222222222"
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I list users
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Company manager can filter by shop
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And a shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And a user is registered with email "sm1@example.com" and password "secretpass" with role "shop_manager" for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    And a user is registered with email "sm2@example.com" and password "secretpass" with role "shop_manager" for shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    And I am logged in as company manager of "11111111-1111-4111-8111-111111111111"
+    When I list users filtered by shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Shop manager sees only users in their shop
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And a shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And a user is registered with email "sm2@example.com" and password "secretpass" with role "shop_manager" for shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I list users
+    Then the response status should be 200
+    And the "data" array should have 1 item

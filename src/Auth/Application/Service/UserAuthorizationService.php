@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Application\Service;
 
+use Mossetc\TechnicalTest\Auth\Application\Query\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Role;
 use Mossetc\TechnicalTest\Auth\Domain\UserId;
@@ -115,6 +116,55 @@ final readonly class UserAuthorizationService
         }
 
         throw new ForbiddenException();
+    }
+
+    /**
+     * Determine what scope $callerId is allowed to list users in, applying any
+     * optional caller-supplied filters within that allowed scope.
+     *
+     * - Admin:           UserScope::all()              (no filter)
+     *                    UserScope::companies($ids)    (admin-supplied company filter)
+     * - CompanyManager:  UserScope::companies($managed) (no shop filter)
+     *                    UserScope::shops($filtered)   (shop filter, validated against managed companies)
+     * - ShopManager:     UserScope::shops($managed)    (always restricted to own shops)
+     *
+     * @param list<string> $requestedCompanyIds Admin-supplied filter; ignored for non-admins
+     * @param list<string> $requestedShopIds    Company-manager-supplied filter; ignored for others
+     * @throws ForbiddenException when the caller has no listing permission
+     */
+    public function resolveListingScope(
+        UserId $callerId,
+        array $requestedCompanyIds = [],
+        array $requestedShopIds = [],
+    ): UserScope {
+        $caller = $this->resolveCallerProfile($this->roleRepository->findByUserId($callerId));
+
+        if ($caller['isAdmin']) {
+            return $requestedCompanyIds !== []
+                ? UserScope::companies($requestedCompanyIds)
+                : UserScope::all();
+        }
+
+        if ($caller['managedCompanyIds'] !== []) {
+            if ($requestedShopIds !== []) {
+                $validShopIds = array_values(array_filter(
+                    $requestedShopIds,
+                    fn(string $shopId): bool => $this->shopBelongsToAnyCompany($shopId, $caller['managedCompanyIds']),
+                ));
+
+                if ($validShopIds !== []) {
+                    return UserScope::shops($validShopIds);
+                }
+            }
+
+            return UserScope::companies($caller['managedCompanyIds']);
+        }
+
+        if ($caller['managedShopIds'] !== []) {
+            return UserScope::shops($caller['managedShopIds']);
+        }
+
+        throw new ForbiddenException('You do not have permission to list users');
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

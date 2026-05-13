@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Tests\Unit\Auth\Application;
 
+use Mossetc\TechnicalTest\Auth\Application\Query\UserScope;
 use Mossetc\TechnicalTest\Auth\Application\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Role;
@@ -247,6 +248,73 @@ final class UserAuthorizationServiceTest extends TestCase
         $this->expectException(ForbiddenException::class);
         $this->service(callerRoles: [], targetRoles: [])
             ->authorizeDeletion($this->callerId, $this->targetId);
+    }
+
+    // ── resolveListingScope ───────────────────────────────────────────────────
+
+    public function testAdminWithNoFilterSeesEveryone(): void
+    {
+        $scope = $this->service([new UserRole(Role::Admin)])
+            ->resolveListingScope($this->callerId);
+
+        $this->assertTrue($scope->isAll());
+    }
+
+    public function testAdminWithCompanyFilterSeesThoseCompanies(): void
+    {
+        $scope = $this->service([new UserRole(Role::Admin)])
+            ->resolveListingScope($this->callerId, [self::COMPANY_A, self::COMPANY_B]);
+
+        $this->assertTrue($scope->isCompanies());
+        $this->assertSame([self::COMPANY_A, self::COMPANY_B], $scope->ids);
+    }
+
+    public function testCompanyManagerSeesOwnCompanies(): void
+    {
+        $scope = $this->service([new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)])
+            ->resolveListingScope($this->callerId);
+
+        $this->assertTrue($scope->isCompanies());
+        $this->assertSame([self::COMPANY_A], $scope->ids);
+    }
+
+    public function testCompanyManagerCanFilterByValidShop(): void
+    {
+        $scope = $this->service(
+            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
+            shopCompanyMap: [self::SHOP_A1 => self::COMPANY_A],
+        )->resolveListingScope($this->callerId, [], [self::SHOP_A1]);
+
+        $this->assertTrue($scope->isShops());
+        $this->assertSame([self::SHOP_A1], $scope->ids);
+    }
+
+    public function testCompanyManagerShopFilterDropsShopsInOtherCompanies(): void
+    {
+        // SHOP_B1 belongs to COMPANY_B which the caller does not manage →
+        // invalid shop is silently dropped, falls back to full company scope
+        $scope = $this->service(
+            callerRoles: [new UserRole(Role::CompanyManager, companyId: self::COMPANY_A)],
+            shopCompanyMap: [self::SHOP_B1 => self::COMPANY_B],
+        )->resolveListingScope($this->callerId, [], [self::SHOP_B1]);
+
+        $this->assertTrue($scope->isCompanies());
+        $this->assertSame([self::COMPANY_A], $scope->ids);
+    }
+
+    public function testShopManagerSeesOwnShops(): void
+    {
+        $scope = $this->service([new UserRole(Role::ShopManager, shopId: self::SHOP_A1)])
+            ->resolveListingScope($this->callerId);
+
+        $this->assertTrue($scope->isShops());
+        $this->assertSame([self::SHOP_A1], $scope->ids);
+    }
+
+    public function testUserWithNoRolesCannotListUsers(): void
+    {
+        $this->expectException(ForbiddenException::class);
+        $this->service([])->resolveListingScope($this->callerId);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

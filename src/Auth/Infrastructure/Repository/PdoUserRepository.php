@@ -99,6 +99,45 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
         $stmt->execute(['id' => $id->value]);
     }
 
+    public function findPaginatedByIds(array $ids, int $limit, int $offset): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $binds = implode(',', array_fill(0, count($ids), 'UUID_TO_BIN(?)'));
+        $stmt  = $this->pdo->prepare(
+            "SELECT BIN_TO_UUID(id) AS id, email, password_hash
+             FROM users WHERE id IN ({$binds}) AND deleted_at IS NULL
+             ORDER BY email ASC LIMIT ? OFFSET ?",
+        );
+        $stmt->execute([...$ids, $limit, $offset]);
+
+        $users = [];
+        while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
+            $users[] = $this->hydrate($row);
+        }
+
+        return $users;
+    }
+
+    public function countByIds(array $ids): int
+    {
+        if ($ids === []) {
+            return 0;
+        }
+
+        $binds = implode(',', array_fill(0, count($ids), 'UUID_TO_BIN(?)'));
+        $stmt  = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM users WHERE id IN ({$binds}) AND deleted_at IS NULL",
+        );
+        $stmt->execute($ids);
+
+        $count = $stmt->fetchColumn();
+
+        return is_numeric($count) ? (int) $count : 0;
+    }
+
     private function prepare(string $sql): PDOStatement
     {
         $stmt = $this->pdo->prepare($sql);

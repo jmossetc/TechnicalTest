@@ -63,6 +63,57 @@ final readonly class PdoUserRoleRepository implements UserRoleRepositoryInterfac
         };
     }
 
+    public function findUserIdsByCompanyIds(array $companyIds): array
+    {
+        if ($companyIds === []) {
+            return [];
+        }
+
+        $binds = implode(',', array_fill(0, count($companyIds), 'UUID_TO_BIN(?)'));
+        $sql   = "SELECT BIN_TO_UUID(ucr.user_id) AS user_id
+                  FROM user_company_roles ucr
+                  WHERE ucr.company_id IN ({$binds})
+                  UNION
+                  SELECT BIN_TO_UUID(usr.user_id) AS user_id
+                  FROM user_shop_roles usr
+                  JOIN shops s ON s.id = usr.shop_id
+                  WHERE s.company_id IN ({$binds}) AND s.deleted_at IS NULL";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([...$companyIds, ...$companyIds]);
+
+        $ids = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (is_array($row) && is_string($row['user_id'])) {
+                $ids[] = $row['user_id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    public function findUserIdsByShopIds(array $shopIds): array
+    {
+        if ($shopIds === []) {
+            return [];
+        }
+
+        $binds = implode(',', array_fill(0, count($shopIds), 'UUID_TO_BIN(?)'));
+        $stmt  = $this->pdo->prepare(
+            "SELECT BIN_TO_UUID(user_id) AS user_id FROM user_shop_roles WHERE shop_id IN ({$binds})",
+        );
+        $stmt->execute($shopIds);
+
+        $ids = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (is_array($row) && is_string($row['user_id'])) {
+                $ids[] = $row['user_id'];
+            }
+        }
+
+        return $ids;
+    }
+
     public function findCompanyIdByShopId(string $shopId): ?string
     {
         $stmt = $this->pdo->prepare('SELECT BIN_TO_UUID(company_id) AS company_id FROM shops WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL LIMIT 1');
