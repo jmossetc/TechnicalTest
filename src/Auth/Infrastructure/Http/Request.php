@@ -10,6 +10,7 @@ final readonly class Request
      * @param array<string, string> $headers    HTTP headers keyed by canonical header name
      * @param array<string, mixed>  $body       Decoded JSON body
      * @param array<string, string> $attributes Route parameters injected by the router
+     * @param array<string, string> $query      URL query string parameters
      */
     public function __construct(
         public string $method,
@@ -17,6 +18,7 @@ final readonly class Request
         public array $headers,
         public array $body,
         public array $attributes = [],
+        public array $query = [],
     ) {}
 
     public static function fromGlobals(): self
@@ -40,7 +42,14 @@ final readonly class Request
 
         $body = self::parseJsonBody();
 
-        return new self($method, $path, $headers, $body);
+        $query = [];
+        foreach ($_GET as $key => $value) {
+            if (is_string($key) && is_string($value)) {
+                $query[$key] = $value;
+            }
+        }
+
+        return new self($method, $path, $headers, $body, query: $query);
     }
 
     /**
@@ -50,7 +59,7 @@ final readonly class Request
      */
     public function withAttributes(array $attributes): self
     {
-        return new self($this->method, $this->path, $this->headers, $this->body, $attributes);
+        return new self($this->method, $this->path, $this->headers, $this->body, $attributes, $this->query);
     }
 
     /** Read a body key as string, returning $default when absent or non-string. */

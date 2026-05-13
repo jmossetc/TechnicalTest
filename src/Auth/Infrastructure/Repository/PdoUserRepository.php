@@ -66,6 +66,31 @@ final readonly class PdoUserRepository implements UserRepositoryInterface
         return $this->hydrate($row);
     }
 
+    public function findPaginated(int $limit, int $offset): array
+    {
+        $stmt = $this->prepare(
+            'SELECT id, email, password_hash FROM users ORDER BY email ASC LIMIT :limit OFFSET :offset',
+        );
+        $stmt->execute(['limit' => $limit, 'offset' => $offset]);
+
+        $users = [];
+        while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
+            $users[] = $this->hydrate($row);
+        }
+
+        return $users;
+    }
+
+    public function count(): int
+    {
+        $stmt = $this->prepare('SELECT COUNT(*) FROM users');
+        $stmt->execute();
+
+        $count = $stmt->fetchColumn();
+
+        return is_numeric($count) ? (int) $count : 0;
+    }
+
     private function prepare(string $sql): PDOStatement
     {
         $stmt = $this->pdo->prepare($sql);

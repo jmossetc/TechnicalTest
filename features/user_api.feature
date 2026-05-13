@@ -65,3 +65,48 @@ Feature: User API
     Given I am logged in as "alice@example.com" with password "secretpass"
     When I fetch the user with id "not-a-uuid"
     Then the response status should be 400
+
+  # ── Listing ───────────────────────────────────────────────────────────────────
+
+  Scenario: Listing users without a token
+    When I list users
+    Then the response status should be 401
+
+  Scenario: Listing users returns data and pagination
+    Given a user is registered with email "alice@example.com" and password "secretpass"
+    And a user is registered with email "bob@example.com" and password "secretpass"
+    And I am logged in as "alice@example.com" with password "secretpass"
+    When I list users
+    Then the response status should be 200
+    And the response should contain field "data"
+    And the response should contain field "pagination"
+    And the "data" array should have 2 items
+    And the response "pagination.total" should equal "2"
+
+  Scenario: Listing users respects pagination limit
+    Given a user is registered with email "alice@example.com" and password "secretpass"
+    And a user is registered with email "bob@example.com" and password "secretpass"
+    And a user is registered with email "charlie@example.com" and password "secretpass"
+    And I am logged in as "alice@example.com" with password "secretpass"
+    When I list users on page 1 with limit 2
+    Then the response status should be 200
+    And the "data" array should have 2 items
+    And the response "pagination.total" should equal "3"
+    And the response "pagination.pages" should equal "2"
+
+  Scenario: Listing users second page returns remainder
+    Given a user is registered with email "alice@example.com" and password "secretpass"
+    And a user is registered with email "bob@example.com" and password "secretpass"
+    And a user is registered with email "charlie@example.com" and password "secretpass"
+    And I am logged in as "alice@example.com" with password "secretpass"
+    When I list users on page 2 with limit 2
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Listing users is ordered by email
+    Given a user is registered with email "charlie@example.com" and password "secretpass"
+    And a user is registered with email "alice@example.com" and password "secretpass"
+    And I am logged in as "charlie@example.com" with password "secretpass"
+    When I list users
+    Then the response status should be 200
+    And the first "data" item "email" should equal "alice@example.com"

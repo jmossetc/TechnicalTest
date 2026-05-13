@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller;
 
 use InvalidArgumentException;
-use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
+use Mossetc\TechnicalTest\Auth\Application\Query\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Response;
 
+#[AsHttpController(route: 'register')]
 final readonly class RegisterUserController implements ControllerInterface
 {
     public function __construct(private RegisterUserHandler $handler) {}

@@ -47,17 +47,30 @@ final class ApiContext implements Context
     }
 
     /**
+     * Registers the user if not already registered (409 is tolerated), then logs in.
+     *
      * @Given I am logged in as :email with password :password
      */
     public function iAmLoggedInAs(string $email, string $password): void
     {
-        $this->aUserIsRegisteredWithEmailAndPassword($email, $password);
+        $regResponse = $this->doPost('/api/users', ['email' => $email, 'password' => $password]);
 
-        $response = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
+        if ($regResponse->status() === 201) {
+            $id = $this->bodyOf($regResponse)['id'] ?? null;
+            $this->lastUserId = is_string($id) ? $id : '';
+        }
 
-        Assert::assertSame(200, $response->status(), 'Login failed unexpectedly');
+        Assert::assertContains(
+            $regResponse->status(),
+            [201, 409],
+            "Registration step expected 201 or 409, got {$regResponse->status()}",
+        );
 
-        $token = $this->bodyOf($response)['token'] ?? null;
+        $loginResponse = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
+
+        Assert::assertSame(200, $loginResponse->status(), 'Login failed unexpectedly');
+
+        $token = $this->bodyOf($loginResponse)['token'] ?? null;
         $this->token = is_string($token) ? $token : '';
     }
 
@@ -113,6 +126,26 @@ final class ApiContext implements Context
         $this->lastResponse = $this->doGet("/api/users/{$id}", $this->token);
     }
 
+    /**
+     * @When I list users
+     */
+    public function iListUsers(): void
+    {
+        $this->lastResponse = $this->doGet('/api/users', $this->token);
+    }
+
+    /**
+     * @When I list users on page :page with limit :limit
+     */
+    public function iListUsersOnPageWithLimit(int $page, int $limit): void
+    {
+        $this->lastResponse = $this->doGet(
+            '/api/users',
+            $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit],
+        );
+    }
+
     // ── Then ──────────────────────────────────────────────────────────────────
 
     /**
@@ -144,6 +177,52 @@ final class ApiContext implements Context
         Assert::assertSame($value, $body[$field]);
     }
 
+    /**
+     * Supports dot-notation for nested fields, e.g. "pagination.total".
+     *
+     * @Then the response :path should equal :value
+     */
+    public function theResponsePathShouldEqual(string $path, string $value): void
+    {
+        $parts  = explode('.', $path);
+        $cursor = $this->bodyOf($this->response());
+
+        foreach ($parts as $part) {
+            Assert::assertIsArray($cursor, "Path segment '{$part}' is not an array");
+            Assert::assertArrayHasKey($part, $cursor, "Missing key '{$part}' in response");
+            $cursor = $cursor[$part];
+        }
+
+        Assert::assertSame($value, (string) $cursor, "Response path '{$path}' does not equal '{$value}'");
+    }
+
+    /**
+     * @Then the :field array should have :count item(s)
+     */
+    public function theArrayShouldHaveItems(string $field, int $count): void
+    {
+        $body = $this->bodyOf($this->response());
+        Assert::assertArrayHasKey($field, $body, "Response body is missing field '{$field}'");
+        Assert::assertIsArray($body[$field], "'{$field}' is not an array");
+        Assert::assertCount($count, $body[$field]);
+    }
+
+    /**
+     * @Then the first :field item :key should equal :value
+     */
+    public function theFirstArrayItemKeyShouldEqual(string $field, string $key, string $value): void
+    {
+        $body = $this->bodyOf($this->response());
+        Assert::assertArrayHasKey($field, $body);
+        Assert::assertIsArray($body[$field]);
+        Assert::assertNotEmpty($body[$field], "'{$field}' array is empty");
+
+        $first = $body[$field][0] ?? null;
+        Assert::assertIsArray($first);
+        Assert::assertArrayHasKey($key, $first);
+        Assert::assertSame($value, $first[$key]);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /** @param array<string, mixed> $body */
@@ -157,7 +236,10 @@ final class ApiContext implements Context
         ));
     }
 
-    private function doGet(string $path, string $token = ''): Response
+    /**
+     * @param array<string, string> $query
+     */
+    private function doGet(string $path, string $token = '', array $query = []): Response
     {
         $headers = $token !== '' ? ['Authorization' => "Bearer {$token}"] : [];
 
@@ -166,6 +248,7 @@ final class ApiContext implements Context
             path: $path,
             headers: $headers,
             body: [],
+            query: $query,
         ));
     }
 

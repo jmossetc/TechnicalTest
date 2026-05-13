@@ -11,4 +11,11 @@ interface UserRepositoryInterface
     public function findByEmail(Email $email): ?User;
 
     public function findById(UserId $id): ?User;
+
+    /**
+     * @return list<User>
+     */
+    public function findPaginated(int $limit, int $offset): array;
+
+    public function count(): int;
 }

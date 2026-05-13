@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Infrastructure\DI;
 
 use Mossetc\TechnicalTest\Auth\Domain\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Repository\PdoUserRepository;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -21,6 +23,13 @@ final class ContainerFactory
         $container = new ContainerBuilder();
         $container->setParameter('routes.config', $projectDir . '/config/routes.yaml');
         $container->setParameter('jwt.ttl', (int) (getenv('JWT_TTL') ?: 3600));
+
+        $container->registerAttributeForAutoconfiguration(
+            AsHttpController::class,
+            static function (ChildDefinition $definition, AsHttpController $attribute): void {
+                $definition->addTag('app.http_controller', ['route' => $attribute->route]);
+            },
+        );
 
         $loader = new YamlFileLoader($container, new FileLocator($projectDir . '/config'));
         $loader->load('services.yaml');

@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller;
 
 use InvalidArgumentException;
-use Mossetc\TechnicalTest\Auth\Application\Command\LoginUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\LoginUserHandler;
+use Mossetc\TechnicalTest\Auth\Application\Query\LoginUser;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Response;
 
+#[AsHttpController(route: 'login')]
 final readonly class LoginUserController implements ControllerInterface
 {
     public function __construct(private LoginUserHandler $handler) {}

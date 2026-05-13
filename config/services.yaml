@@ -65,11 +65,22 @@ services:
 
   Mossetc\TechnicalTest\Auth\Application\Handler\LoginUserHandler: ~
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\RegisterUserController: ~
+  Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler: ~
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\LoginUserController: ~
+  # autoconfigure: true makes the container read #[AsHttpController] and add the tag.
+  # To add a new controller: create the class with the attribute, add one line here.
 
-  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\GetUserController: ~
+  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\RegisterUserController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\LoginUserController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\GetUserController:
+    autoconfigure: true
+
+  Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\ListUsersController:
+    autoconfigure: true
 
   # ── Routing ───────────────────────────────────────────────────────────────────
   # RouteCollection depends on a scalar path — factory + explicit arg required.
@@ -85,3 +96,5 @@ services:
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Http\Router:
     public: true
+    arguments:
+      $controllers: !tagged_locator { tag: 'app.http_controller', index_by: 'route' }

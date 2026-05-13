@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mossetc\TechnicalTest\Auth\Application\Command;
+namespace Mossetc\TechnicalTest\Auth\Application\Query;
 
 final readonly class LoginUser
 {

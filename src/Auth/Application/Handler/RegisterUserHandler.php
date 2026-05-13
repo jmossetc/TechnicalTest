@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Application\Handler;
 
-use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
+use Mossetc\TechnicalTest\Auth\Application\Query\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Domain\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserAlreadyExistsException;
 use Mossetc\TechnicalTest\Auth\Domain\HashedPassword;

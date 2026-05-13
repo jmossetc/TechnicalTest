@@ -5,32 +5,19 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Infrastructure\Http;
 
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\ControllerInterface;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\GetUserController;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\LoginUserController;
-use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Controller\RegisterUserController;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 
-final class Router
+final readonly class Router
 {
-    /** @var array<string, ControllerInterface> */
-    private readonly array $controllers;
-
     public function __construct(
-        private readonly RouteCollection $routes,
-        RegisterUserController $register,
-        LoginUserController $login,
-        GetUserController $getUser,
-    ) {
-        $this->controllers = [
-            'register' => $register,
-            'login'    => $login,
-            'get_user' => $getUser,
-        ];
-    }
+        private RouteCollection $routes,
+        private ContainerInterface $controllers,
+    ) {}
 
     public function dispatch(Request $request): Response
     {
@@ -48,10 +35,15 @@ final class Router
             );
         }
 
-        $routeName  = is_string($match['_route'] ?? null) ? $match['_route'] : '';
-        $controller = $this->controllers[$routeName] ?? null;
+        $routeName = is_string($match['_route'] ?? null) ? $match['_route'] : '';
 
-        if ($controller === null) {
+        if (!$this->controllers->has($routeName)) {
+            return Response::error('Not Found', 404);
+        }
+
+        $controller = $this->controllers->get($routeName);
+
+        if (!$controller instanceof ControllerInterface) {
             return Response::error('Not Found', 404);
         }
 
@@ -62,6 +54,6 @@ final class Router
             }
         }
 
-        return ($controller)($request->withAttributes($attributes));
+        return $controller($request->withAttributes($attributes));
     }
 }

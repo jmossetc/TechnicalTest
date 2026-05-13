@@ -12,6 +12,7 @@ use Mossetc\TechnicalTest\Auth\Infrastructure\Http\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Http\Response;
 
+#[AsHttpController(route: 'get_user')]
 final readonly class GetUserController implements ControllerInterface
 {
     public function __construct(

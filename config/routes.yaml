@@ -2,6 +2,10 @@ register:
   path: /api/users
   methods: [POST]
 
+list_users:
+  path: /api/users
+  methods: [GET]
+
 login:
   path: /api/auth/login
   methods: [POST]

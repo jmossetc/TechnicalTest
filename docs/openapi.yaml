@@ -20,6 +20,51 @@ servers:
 paths:
 
   /api/users:
+    get:
+      operationId: listUsers
+      summary: List users with pagination
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-based)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Number of users per page
+      responses:
+        "200":
+          description: Paginated list of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+              example:
+                data:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    email: alice@example.com
+                pagination:
+                  total: 1
+                  page: 1
+                  limit: 10
+                  pages: 1
+        "401":
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     post:
       operationId: registerUser
       summary: Register a new user
@@ -206,6 +251,29 @@ components:
         email:
           type: string
           format: email
+
+    UserListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        pagination:
+          type: object
+          required: [total, page, limit, pages]
+          properties:
+            total:
+              type: integer
+              description: Total number of users in the system
+            page:
+              type: integer
+            limit:
+              type: integer
+            pages:
+              type: integer
+              description: Total number of pages
 
     ErrorResponse:
       type: object

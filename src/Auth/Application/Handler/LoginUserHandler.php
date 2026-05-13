@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Application\Handler;
 
-use Mossetc\TechnicalTest\Auth\Application\Command\LoginUser;
+use Mossetc\TechnicalTest\Auth\Application\Query\LoginUser;
 use Mossetc\TechnicalTest\Auth\Domain\AuthToken;
 use Mossetc\TechnicalTest\Auth\Domain\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidCredentialsException;
