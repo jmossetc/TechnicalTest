@@ -52,15 +52,22 @@ final readonly class GetShopController implements ControllerInterface
         }
 
         return Response::json([
-            'id'         => $shop->id->value,
-            'company_id' => $shop->companyId->value,
-            'name'       => $shop->name->value,
-            'street'     => $shop->address->street,
-            'city'       => $shop->address->city,
-            'zip'        => $shop->address->zip,
-            'country'    => $shop->address->country,
-            'created_at' => $shop->createdAt->format('Y-m-d\TH:i:s\Z'),
-            'updated_at' => $shop->updatedAt->format('Y-m-d\TH:i:s\Z'),
+            'id'            => $shop->id->value,
+            'company_id'    => $shop->companyId->value,
+            'name'          => $shop->name->value,
+            'email'         => $shop->email,
+            'phone_number'  => $shop->phoneNumber,
+            'address_line_1'=> $shop->address->addressLine1,
+            'address_line_2'=> $shop->address->addressLine2,
+            'city'          => $shop->address->city,
+            'postal_code'   => $shop->address->postalCode,
+            'country'       => $shop->address->country,
+            'latitude'      => $shop->latitude,
+            'longitude'     => $shop->longitude,
+            'is_digital'    => $shop->isDigital,
+            'is_active'     => $shop->isActive,
+            'created_at'    => $shop->createdAt->format('Y-m-d\TH:i:s\Z'),
+            'updated_at'    => $shop->updatedAt->format('Y-m-d\TH:i:s\Z'),
         ]);
     }
 }

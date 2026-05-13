@@ -19,31 +19,53 @@ final readonly class ShopRepository implements ShopRepositoryInterface
 {
     private const string SELECT_COLUMNS =
         'BIN_TO_UUID(id) AS id, BIN_TO_UUID(company_id) AS company_id, name,
-         street, city, zip, country, created_at, updated_at, deleted_at';
+         email, phone_number, address_line_1, address_line_2, city, postal_code, country,
+         latitude, longitude, is_digital, is_active, created_at, updated_at, deleted_at';
 
     public function __construct(private PDO $pdo) {}
 
     public function save(Shop $shop): void
     {
         $stmt = $this->prepare(
-            'INSERT INTO shops (id, company_id, name, street, city, zip, country)
-             VALUES (UUID_TO_BIN(:id), UUID_TO_BIN(:company_id), :name, :street, :city, :zip, :country) AS new_row
+            'INSERT INTO shops
+                 (id, company_id, name, email, phone_number,
+                  address_line_1, address_line_2, city, postal_code, country,
+                  latitude, longitude, is_digital, is_active)
+             VALUES
+                 (UUID_TO_BIN(:id), UUID_TO_BIN(:company_id), :name, :email, :phone_number,
+                  :address_line_1, :address_line_2, :city, :postal_code, :country,
+                  :latitude, :longitude, :is_digital, :is_active)
+             AS new_row
              ON DUPLICATE KEY UPDATE
-                 name    = new_row.name,
-                 street  = new_row.street,
-                 city    = new_row.city,
-                 zip     = new_row.zip,
-                 country = new_row.country',
+                 name          = new_row.name,
+                 email         = new_row.email,
+                 phone_number  = new_row.phone_number,
+                 address_line_1 = new_row.address_line_1,
+                 address_line_2 = new_row.address_line_2,
+                 city          = new_row.city,
+                 postal_code   = new_row.postal_code,
+                 country       = new_row.country,
+                 latitude      = new_row.latitude,
+                 longitude     = new_row.longitude,
+                 is_digital    = new_row.is_digital,
+                 is_active     = new_row.is_active',
         );
 
         $stmt->execute([
-            'id'         => $shop->id->value,
-            'company_id' => $shop->companyId->value,
-            'name'       => $shop->name->value,
-            'street'     => $shop->address->street,
-            'city'       => $shop->address->city,
-            'zip'        => $shop->address->zip,
-            'country'    => $shop->address->country,
+            'id'            => $shop->id->value,
+            'company_id'    => $shop->companyId->value,
+            'name'          => $shop->name->value,
+            'email'         => $shop->email,
+            'phone_number'  => $shop->phoneNumber,
+            'address_line_1'=> $shop->address->addressLine1,
+            'address_line_2'=> $shop->address->addressLine2,
+            'city'          => $shop->address->city,
+            'postal_code'   => $shop->address->postalCode,
+            'country'       => $shop->address->country,
+            'latitude'      => $shop->latitude,
+            'longitude'     => $shop->longitude,
+            'is_digital'    => $shop->isDigital ? 1 : 0,
+            'is_active'     => $shop->isActive  ? 1 : 0,
         ]);
     }
 
@@ -104,10 +126,9 @@ final readonly class ShopRepository implements ShopRepositoryInterface
 
     public function delete(ShopId $id): void
     {
-        $stmt = $this->prepare(
+        $this->prepare(
             'UPDATE shops SET deleted_at = NOW() WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL',
-        );
-        $stmt->execute(['id' => $id->value]);
+        )->execute(['id' => $id->value]);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -128,19 +149,29 @@ final readonly class ShopRepository implements ShopRepositoryInterface
      */
     private function hydrate(array $row): Shop
     {
+        $lat = $row['latitude'] ?? null;
+        $lng = $row['longitude'] ?? null;
+
         return new Shop(
-            id:        new ShopId($this->col($row, 'id')),
-            companyId: new CompanyId($this->col($row, 'company_id')),
-            name:      new ShopName($this->col($row, 'name')),
-            address:   new ShopAddress(
-                street:  $this->nullable($row['street'] ?? null),
-                city:    $this->nullable($row['city'] ?? null),
-                zip:     $this->nullable($row['zip'] ?? null),
-                country: $this->nullable($row['country'] ?? null),
+            id:          new ShopId($this->col($row, 'id')),
+            companyId:   new CompanyId($this->col($row, 'company_id')),
+            name:        new ShopName($this->col($row, 'name')),
+            address:     new ShopAddress(
+                addressLine1: $this->nullable($row['address_line_1'] ?? null),
+                addressLine2: $this->nullable($row['address_line_2'] ?? null),
+                city:         $this->nullable($row['city'] ?? null),
+                postalCode:   $this->nullable($row['postal_code'] ?? null),
+                country:      $this->nullable($row['country'] ?? null),
             ),
-            createdAt: $this->parseDateTime($this->col($row, 'created_at')),
-            updatedAt: $this->parseDateTime($this->col($row, 'updated_at')),
-            deletedAt: $this->parseDateTimeNullable($row['deleted_at'] ?? null),
+            email:       $this->nullable($row['email'] ?? null),
+            phoneNumber: $this->nullable($row['phone_number'] ?? null),
+            latitude:    is_numeric($lat) ? (float) $lat : null,
+            longitude:   is_numeric($lng) ? (float) $lng : null,
+            isDigital:   (bool) ($row['is_digital'] ?? false),
+            isActive:    (bool) ($row['is_active']  ?? true),
+            createdAt:   $this->parseDateTime($this->col($row, 'created_at')),
+            updatedAt:   $this->parseDateTime($this->col($row, 'updated_at')),
+            deletedAt:   $this->parseDateTimeNullable($row['deleted_at'] ?? null),
         );
     }
 

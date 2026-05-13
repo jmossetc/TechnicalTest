@@ -39,12 +39,25 @@ final readonly class UpdateShopHandler
             throw new ShopAlreadyExistsException($newName);
         }
 
+        // Null in command means "not provided" — preserve the existing value
         $this->repository->save(new Shop(
-            id:        $existing->id,
-            companyId: $existing->companyId,
-            name:      $newName,
-            address:   new ShopAddress($command->street, $command->city, $command->zip, $command->country),
-            createdAt: $existing->createdAt,
+            id:          $existing->id,
+            companyId:   $existing->companyId,
+            name:        $newName,
+            address:     new ShopAddress(
+                addressLine1: $command->addressLine1 ?? $existing->address->addressLine1,
+                addressLine2: $command->addressLine2 ?? $existing->address->addressLine2,
+                city:         $command->city         ?? $existing->address->city,
+                postalCode:   $command->postalCode   ?? $existing->address->postalCode,
+                country:      $command->country      ?? $existing->address->country,
+            ),
+            email:       $command->email       ?? $existing->email,
+            phoneNumber: $command->phoneNumber ?? $existing->phoneNumber,
+            latitude:    $command->latitude    ?? $existing->latitude,
+            longitude:   $command->longitude   ?? $existing->longitude,
+            isDigital:   $command->isDigital   ?? $existing->isDigital,
+            isActive:    $command->isActive    ?? $existing->isActive,
+            createdAt:   $existing->createdAt,
         ));
     }
 }

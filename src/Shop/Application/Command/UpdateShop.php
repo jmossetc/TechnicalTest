@@ -9,9 +9,16 @@ final readonly class UpdateShop
     public function __construct(
         public string $id,
         public string $name,
-        public ?string $street = null,
+        public ?string $email = null,
+        public ?string $phoneNumber = null,
+        public ?string $addressLine1 = null,
+        public ?string $addressLine2 = null,
         public ?string $city = null,
-        public ?string $zip = null,
+        public ?string $postalCode = null,
         public ?string $country = null,
+        public ?float $latitude = null,
+        public ?float $longitude = null,
+        public ?bool $isDigital = null,
+        public ?bool $isActive = null,
     ) {}
 }

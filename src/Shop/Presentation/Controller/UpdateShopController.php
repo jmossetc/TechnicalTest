@@ -61,13 +61,27 @@ final readonly class UpdateShopController implements ControllerInterface
             return Response::error('name is required', 422);
         }
 
-        $street  = $request->stringBody('street') ?: null;
-        $city    = $request->stringBody('city') ?: null;
-        $zip     = $request->stringBody('zip') ?: null;
-        $country = $request->stringBody('country') ?: null;
+        $latRaw    = $request->body['latitude']  ?? null;
+        $lngRaw    = $request->body['longitude'] ?? null;
+        $isDigital = isset($request->body['is_digital']) ? (bool) $request->body['is_digital'] : null;
+        $isActive  = isset($request->body['is_active'])  ? (bool) $request->body['is_active']  : null;
 
         try {
-            $this->handler->handle(new UpdateShop($id, $name, $street, $city, $zip, $country));
+            $this->handler->handle(new UpdateShop(
+                id:           $id,
+                name:         $name,
+                email:        $request->stringBody('email') ?: null,
+                phoneNumber:  $request->stringBody('phone_number') ?: null,
+                addressLine1: $request->stringBody('address_line_1') ?: null,
+                addressLine2: $request->stringBody('address_line_2') ?: null,
+                city:         $request->stringBody('city') ?: null,
+                postalCode:   $request->stringBody('postal_code') ?: null,
+                country:      $request->stringBody('country') ?: null,
+                latitude:     is_numeric($latRaw) ? (float) $latRaw : null,
+                longitude:    is_numeric($lngRaw) ? (float) $lngRaw : null,
+                isDigital:    $isDigital,
+                isActive:     $isActive,
+            ));
         } catch (ShopNotFoundException $e) {
             return Response::error($e->getMessage(), 404);
         } catch (ShopAlreadyExistsException $e) {
