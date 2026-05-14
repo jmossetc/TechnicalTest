@@ -17,7 +17,10 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortField;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -216,14 +219,52 @@ final class ListUsersHandlerTest extends TestCase
         $this->assertSame('alice@example.com', $result->users[0]->email->value);
     }
 
+    public function testSortByEmailDescendingReturnsReverseOrder(): void
+    {
+        $this->register('charlie@example.com');
+        $this->register('alice@example.com');
+        $this->register('bob@example.com');
+
+        $result = $this->handler->handle(new ListUsers(
+            limit: 10,
+            sort:  new UserSortCriteria(
+                field:     UserSortField::Email,
+                direction: SortDirection::Desc,
+            ),
+        ));
+
+        $emails = array_map(fn($u) => $u->email->value, $result->users);
+        $this->assertSame(['charlie@example.com', 'bob@example.com', 'alice@example.com'], $emails);
+    }
+
+    public function testSortByFirstNameAscendingReturnsAlphabeticalFirstNameOrder(): void
+    {
+        $this->register('c@example.com', firstName: 'Charlie');
+        $this->register('a@example.com', firstName: 'Alice');
+        $this->register('b@example.com', firstName: 'Bob');
+
+        $result = $this->handler->handle(new ListUsers(
+            limit: 10,
+            sort:  new UserSortCriteria(
+                field:     UserSortField::FirstName,
+                direction: SortDirection::Asc,
+            ),
+        ));
+
+        $names = array_map(fn($u) => $u->firstName->value, $result->users);
+        $this->assertSame(['Alice', 'Bob', 'Charlie'], $names);
+    }
+
     private function register(
         string $email,
         string $role = 'employee',
         ?string $companyId = null,
         ?string $shopId = null,
+        string $firstName = 'Test',
+        string $lastName  = 'User',
     ): void {
         $this->registrar->handle(
-            new RegisterUser($email, 'password123', 'Test', 'User', $role, $companyId, $shopId),
+            new RegisterUser($email, 'password123', $firstName, $lastName, $role, $companyId, $shopId),
         );
     }
 }

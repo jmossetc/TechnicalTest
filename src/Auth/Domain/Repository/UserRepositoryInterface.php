@@ -9,6 +9,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria;
 
 interface UserRepositoryInterface
 {
@@ -27,9 +28,10 @@ interface UserRepositoryInterface
     /** @return list<User> */
     public function findPaginatedByCriteria(
         UserSearchCriteria $criteria,
-        UserScope $scope,
-        int $limit,
-        int $offset,
+        UserScope          $scope,
+        UserSortCriteria   $sort,
+        int                $limit,
+        int                $offset,
     ): array;
 
     public function countByCriteria(UserSearchCriteria $criteria, UserScope $scope): int;

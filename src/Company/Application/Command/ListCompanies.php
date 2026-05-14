@@ -6,6 +6,7 @@ namespace Mossetc\TechnicalTest\Company\Application\Command;
 
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortCriteria;
 
 final readonly class ListCompanies
 {
@@ -13,6 +14,7 @@ final readonly class ListCompanies
         public int                   $page = 1,
         public int                   $limit = 10,
         public CompanySearchCriteria $criteria = new CompanySearchCriteria(),
+        public CompanySortCriteria   $sort = new CompanySortCriteria(),
     ) {
         if ($this->page < 1) {
             throw new InvalidArgumentException('Page must be at least 1');

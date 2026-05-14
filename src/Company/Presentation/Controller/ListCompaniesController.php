@@ -13,6 +13,9 @@ use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Company\Application\Command\ListCompanies;
 use Mossetc\TechnicalTest\Company\Application\Handler\ListCompaniesHandler;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortField;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -48,11 +51,12 @@ final readonly class ListCompaniesController implements ControllerInterface
 
         try {
             $criteria = $this->buildCriteria($request->query);
+            $sort     = $this->buildSort($request->query);
         } catch (InvalidArgumentException $e) {
             return Response::error($e->getMessage(), 422);
         }
 
-        $result = $this->handler->handle(new ListCompanies($page, $limit, $criteria));
+        $result = $this->handler->handle(new ListCompanies($page, $limit, $criteria, $sort));
 
         return Response::json([
             'data'       => $result->companies,
@@ -78,6 +82,29 @@ final readonly class ListCompaniesController implements ControllerInterface
             createdFrom: $this->parseDate($query['created_from'] ?? ''),
             createdTo:   $this->parseDate($query['created_to'] ?? '', endOfDay: true),
         );
+    }
+
+    /** @param array<string, string> $query */
+    private function buildSort(array $query): CompanySortCriteria
+    {
+        $field = CompanySortField::Name;
+        if (isset($query['sort_by']) && $query['sort_by'] !== '') {
+            $field = CompanySortField::tryFrom($query['sort_by'])
+                ?? throw new InvalidArgumentException(
+                    "Invalid sort_by value '{$query['sort_by']}', valid values: "
+                    . implode(', ', array_column(CompanySortField::cases(), 'value'))
+                );
+        }
+
+        $direction = SortDirection::Asc;
+        if (isset($query['sort_direction']) && $query['sort_direction'] !== '') {
+            $direction = SortDirection::tryFrom($query['sort_direction'])
+                ?? throw new InvalidArgumentException(
+                    "Invalid sort_direction value '{$query['sort_direction']}', expected asc or desc"
+                );
+        }
+
+        return new CompanySortCriteria($field, $direction);
     }
 
     private function nullableString(string $value): ?string

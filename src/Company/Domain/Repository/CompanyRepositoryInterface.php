@@ -8,6 +8,7 @@ use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortCriteria;
 
 interface CompanyRepositoryInterface
 {
@@ -18,7 +19,12 @@ interface CompanyRepositoryInterface
     public function findByName(CompanyName $name): ?Company;
 
     /** @return list<Company> */
-    public function findPaginatedByCriteria(CompanySearchCriteria $criteria, int $limit, int $offset): array;
+    public function findPaginatedByCriteria(
+        CompanySearchCriteria $criteria,
+        CompanySortCriteria   $sort,
+        int                   $limit,
+        int                   $offset,
+    ): array;
 
     public function countByCriteria(CompanySearchCriteria $criteria): int;
 

@@ -423,3 +423,21 @@ Feature: User API
     When I list users with search "role=admin"
     Then the response status should be 200
     And the "data" array should have 0 items
+
+  Scenario: Admin can sort users by email descending
+    Given I am logged in as admin
+    And a user is registered with email "alice@example.com" and password "secretpass"
+    And a user is registered with email "charlie@example.com" and password "secretpass"
+    When I list users with search "sort_by=email&sort_direction=desc"
+    Then the response status should be 200
+    And the response "data.0.email" should equal "charlie@example.com"
+
+  Scenario: Invalid sort_by value returns 422 on user list
+    Given I am logged in as admin
+    When I list users with search "sort_by=invalid_field"
+    Then the response status should be 422
+
+  Scenario: Invalid sort_direction value returns 422 on user list
+    Given I am logged in as admin
+    When I list users with search "sort_direction=upside_down"
+    Then the response status should be 422

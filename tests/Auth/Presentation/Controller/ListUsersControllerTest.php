@@ -249,4 +249,65 @@ final class ListUsersControllerTest extends TestCase
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
     }
+
+    public function testDefaultSortIsEmailAsc(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $this->userRepo->save(new User(
+            id: UserId::generate(), email: new Email('charlie@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Charlie'), lastName: new LastName('User'),
+        ));
+        $this->userRepo->save(new User(
+            id: UserId::generate(), email: new Email('alice@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Alice'), lastName: new LastName('User'),
+        ));
+
+        $emails = array_column($this->ctrl()($this->request())->data()['data'], 'email');
+        $pos_alice   = array_search('alice@example.com', $emails, true);
+        $pos_charlie = array_search('charlie@example.com', $emails, true);
+        $this->assertNotFalse($pos_alice);
+        $this->assertNotFalse($pos_charlie);
+        $this->assertLessThan($pos_charlie, $pos_alice);
+    }
+
+    public function testSortByEmailDescReturnsReverseOrder(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $this->userRepo->save(new User(
+            id: UserId::generate(), email: new Email('alice@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Alice'), lastName: new LastName('User'),
+        ));
+
+        // caller@test.test > alice@example.com alphabetically, so caller is first in desc
+        $items = $this->ctrl()($this->request(['sort_by' => 'email', 'sort_direction' => 'desc']))->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertSame('caller@test.test', $items[0]['email']);
+    }
+
+    public function testSortByFirstNameAscIsAccepted(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->request(['sort_by' => 'first_name']));
+        $this->assertSame(200, $response->status());
+    }
+
+    public function testInvalidSortByReturns422(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->request(['sort_by' => 'not_a_field']));
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testInvalidSortDirectionReturns422(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->request(['sort_direction' => 'random']));
+        $this->assertSame(422, $response->status());
+    }
 }

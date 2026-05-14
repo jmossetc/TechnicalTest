@@ -19,6 +19,7 @@ final readonly class ListUsersHandler
         $users = $this->repository->findPaginatedByCriteria(
             $command->criteria,
             $command->scope,
+            $command->sort,
             $command->limit,
             $offset,
         );

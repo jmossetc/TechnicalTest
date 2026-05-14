@@ -154,6 +154,32 @@ Feature: Company API
     When I list companies with search "created_from=2025-12-31&created_to=2025-01-01"
     Then the response status should be 422
 
+  Scenario: Admin can sort companies by name descending
+    Given I am logged in as admin
+    And I create a company with name "Alpha Corp"
+    And I create a company with name "Beta Corp"
+    When I list companies with search "sort_by=name&sort_direction=desc"
+    Then the response status should be 200
+    And the response "data.0.name" should equal "Beta Corp"
+
+  Scenario: Admin can sort companies by name ascending (explicit)
+    Given I am logged in as admin
+    And I create a company with name "Beta Corp"
+    And I create a company with name "Alpha Corp"
+    When I list companies with search "sort_by=name&sort_direction=asc"
+    Then the response status should be 200
+    And the response "data.0.name" should equal "Alpha Corp"
+
+  Scenario: Invalid sort_by value returns 422
+    Given I am logged in as admin
+    When I list companies with search "sort_by=not_a_column"
+    Then the response status should be 422
+
+  Scenario: Invalid sort_direction value returns 422
+    Given I am logged in as admin
+    When I list companies with search "sort_direction=sideways"
+    Then the response status should be 422
+
   # ── Get ───────────────────────────────────────────────────────────────────────
 
   Scenario: Admin gets a company by id

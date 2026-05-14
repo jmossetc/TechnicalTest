@@ -10,6 +10,9 @@ use Mossetc\TechnicalTest\Company\Application\Command\ListCompanies;
 use Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler;
 use Mossetc\TechnicalTest\Company\Application\Handler\ListCompaniesHandler;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortField;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryCompanyRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -118,6 +121,37 @@ final class ListCompaniesHandlerTest extends TestCase
 
         $this->assertSame([], $result->companies);
         $this->assertSame(0, $result->total);
+    }
+
+    public function testSortByNameDescendingReturnsReverseAlphabeticalOrder(): void
+    {
+        $this->create('Alpha Corp'); $this->create('Gamma Corp'); $this->create('Beta Corp');
+
+        $result = $this->handler->handle(new ListCompanies(
+            criteria: new CompanySearchCriteria(),
+            sort:     new CompanySortCriteria(
+                field:     CompanySortField::Name,
+                direction: SortDirection::Desc,
+            ),
+        ));
+
+        $names = array_map(fn($c) => $c->name->value, $result->companies);
+        $this->assertSame(['Gamma Corp', 'Beta Corp', 'Alpha Corp'], $names);
+    }
+
+    public function testSortByCreatedAtAscendingPreservesInsertionTimeOrder(): void
+    {
+        $this->create('First');
+        $this->create('Second');
+
+        $result = $this->handler->handle(new ListCompanies(
+            sort: new CompanySortCriteria(
+                field:     CompanySortField::CreatedAt,
+                direction: SortDirection::Asc,
+            ),
+        ));
+
+        $this->assertCount(2, $result->companies);
     }
 
     public function testEmailFilterReturnsMatchingCompanies(): void

@@ -12,8 +12,11 @@ use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortField;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -53,6 +56,7 @@ final readonly class ListUsersController implements ControllerInterface
 
         try {
             $criteria = $this->buildCriteria($request->query);
+            $sort     = $this->buildSort($request->query);
         } catch (InvalidArgumentException $e) {
             return Response::error($e->getMessage(), 422);
         }
@@ -60,7 +64,7 @@ final readonly class ListUsersController implements ControllerInterface
         $page  = max(1, (int) ($request->query['page'] ?? '1'));
         $limit = min(100, max(1, (int) ($request->query['limit'] ?? '10')));
 
-        $result = $this->handler->handle(new ListUsers($page, $limit, $scope, $criteria));
+        $result = $this->handler->handle(new ListUsers($page, $limit, $scope, $criteria, $sort));
 
         return Response::json([
             'data'       => $result->users,
@@ -114,6 +118,29 @@ final readonly class ListUsersController implements ControllerInterface
         );
     }
 
+    /** @param array<string, string> $query */
+    private function buildSort(array $query): UserSortCriteria
+    {
+        $field = UserSortField::Email;
+        if (isset($query['sort_by']) && $query['sort_by'] !== '') {
+            $field = UserSortField::tryFrom($query['sort_by'])
+                ?? throw new InvalidArgumentException(
+                    "Invalid sort_by value '{$query['sort_by']}', valid values: "
+                    . implode(', ', array_column(UserSortField::cases(), 'value'))
+                );
+        }
+
+        $direction = SortDirection::Asc;
+        if (isset($query['sort_direction']) && $query['sort_direction'] !== '') {
+            $direction = SortDirection::tryFrom($query['sort_direction'])
+                ?? throw new InvalidArgumentException(
+                    "Invalid sort_direction value '{$query['sort_direction']}', expected asc or desc"
+                );
+        }
+
+        return new UserSortCriteria($field, $direction);
+    }
+
     private function nullableString(string $value): ?string
     {
         return $value !== '' ? $value : null;
@@ -125,9 +152,10 @@ final readonly class ListUsersController implements ControllerInterface
             return null;
         }
 
-        $dt = DateTimeImmutable::createFromFormat('Y-m-d', $raw);
+        $dt     = DateTimeImmutable::createFromFormat('Y-m-d', $raw);
+        $errors = DateTimeImmutable::getLastErrors();
 
-        if ($dt === false) {
+        if ($dt === false || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
             throw new InvalidArgumentException("Invalid date format '{$raw}', expected Y-m-d");
         }
 

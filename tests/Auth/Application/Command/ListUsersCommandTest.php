@@ -8,6 +8,9 @@ use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortField;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 use PHPUnit\Framework\TestCase;
 
 final class ListUsersCommandTest extends TestCase
@@ -83,5 +86,24 @@ final class ListUsersCommandTest extends TestCase
         $cmd      = new ListUsers(criteria: $criteria);
 
         $this->assertSame($criteria, $cmd->criteria);
+    }
+
+    public function testDefaultSortIsEmailAsc(): void
+    {
+        $cmd = new ListUsers();
+
+        $this->assertSame(\Mossetc\TechnicalTest\Auth\Domain\Model\UserSortField::Email, $cmd->sort->field);
+        $this->assertSame(\Mossetc\TechnicalTest\Shared\Domain\SortDirection::Asc, $cmd->sort->direction);
+    }
+
+    public function testAcceptsCustomSort(): void
+    {
+        $sort = new \Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria(
+            field:     \Mossetc\TechnicalTest\Auth\Domain\Model\UserSortField::LastName,
+            direction: \Mossetc\TechnicalTest\Shared\Domain\SortDirection::Desc,
+        );
+        $cmd = new ListUsers(sort: $sort);
+
+        $this->assertSame($sort, $cmd->sort);
     }
 }

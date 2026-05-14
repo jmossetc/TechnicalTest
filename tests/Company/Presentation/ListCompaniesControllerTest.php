@@ -234,4 +234,61 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
     }
+
+    public function testDefaultSortIsNameAsc(): void
+    {
+        $this->seedCompany('Beta'); $this->seedCompany('Alpha');
+
+        $items = $this->ctrl()($this->authedRequest('GET', '/api/companies'))->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertSame('Alpha', $items[0]['name']);
+    }
+
+    public function testSortByNameDescReturnsReverseOrder(): void
+    {
+        $this->seedCompany('Alpha'); $this->seedCompany('Beta');
+
+        $items = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['sort_by' => 'name', 'sort_direction' => 'desc'],
+        ))->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertSame('Beta', $items[0]['name']);
+    }
+
+    public function testSortByCreatedAtAscIsAccepted(): void
+    {
+        $this->seedCompany('Any');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['sort_by' => 'created_at'],
+        ));
+        $this->assertSame(200, $response->status());
+    }
+
+    public function testInvalidSortByReturns422(): void
+    {
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['sort_by' => 'invalid_column'],
+        ));
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testInvalidSortDirectionReturns422(): void
+    {
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['sort_direction' => 'sideways'],
+        ));
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testEmptySortParamsUseDefaults(): void
+    {
+        $this->seedCompany('Beta'); $this->seedCompany('Alpha');
+
+        $items = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['sort_by' => '', 'sort_direction' => ''],
+        ))->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertSame('Alpha', $items[0]['name']);
+    }
 }

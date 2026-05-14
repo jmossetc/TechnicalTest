@@ -10,7 +10,10 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortField;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 
 final class InMemoryUserRepository implements UserRepositoryInterface
 {
@@ -69,15 +72,16 @@ final class InMemoryUserRepository implements UserRepositoryInterface
 
     public function findPaginatedByCriteria(
         UserSearchCriteria $criteria,
-        UserScope $scope,
-        int $limit,
-        int $offset,
+        UserScope          $scope,
+        UserSortCriteria   $sort,
+        int                $limit,
+        int                $offset,
     ): array {
         $users = array_values(array_filter(
             $this->store,
             fn(User $u): bool => $this->matchesScope($u, $scope) && $this->matchesCriteria($u, $criteria),
         ));
-        usort($users, static fn(User $a, User $b): int => strcmp($a->email->value, $b->email->value));
+        usort($users, $this->buildComparator($sort));
 
         return array_slice($users, $offset, $limit);
     }
@@ -93,6 +97,23 @@ final class InMemoryUserRepository implements UserRepositoryInterface
             $this->store,
             fn(User $u): bool => $this->matchesScope($u, $scope) && $this->matchesCriteria($u, $criteria),
         ));
+    }
+
+    /** @return callable(User, User): int */
+    private function buildComparator(UserSortCriteria $sort): callable
+    {
+        return static function (User $a, User $b) use ($sort): int {
+            $cmp = match ($sort->field) {
+                UserSortField::Email     => strcmp($a->email->value, $b->email->value),
+                UserSortField::FirstName => strcmp($a->firstName->value, $b->firstName->value),
+                UserSortField::LastName  => strcmp($a->lastName->value, $b->lastName->value),
+                UserSortField::Role      => strcmp($a->role->value, $b->role->value),
+                UserSortField::CreatedAt => $a->createdAt <=> $b->createdAt,
+                UserSortField::UpdatedAt => $a->updatedAt <=> $b->updatedAt,
+            };
+
+            return $sort->direction === SortDirection::Desc ? -$cmp : $cmp;
+        };
     }
 
     private function matchesScope(User $u, UserScope $scope): bool

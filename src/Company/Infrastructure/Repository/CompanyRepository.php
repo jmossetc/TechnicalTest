@@ -9,6 +9,7 @@ use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortCriteria;
 use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
 use PDO;
 use PDOStatement;
@@ -87,13 +88,17 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
-    public function findPaginatedByCriteria(CompanySearchCriteria $criteria, int $limit, int $offset): array
-    {
+    public function findPaginatedByCriteria(
+        CompanySearchCriteria $criteria,
+        CompanySortCriteria   $sort,
+        int                   $limit,
+        int                   $offset,
+    ): array {
         [$where, $params] = $this->buildWhereClause($criteria);
 
         $stmt = $this->pdo->prepare(
             'SELECT ' . self::SELECT_COLUMNS . "
-         FROM companies WHERE {$where} ORDER BY name ASC LIMIT ? OFFSET ?",
+         FROM companies WHERE {$where} ORDER BY {$sort->field->value} {$sort->direction->value} LIMIT ? OFFSET ?",
         );
         $stmt->execute([...$params, $limit, $offset]);
 

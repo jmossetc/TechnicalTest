@@ -7,6 +7,7 @@ namespace Mossetc\TechnicalTest\Auth\Application\Command;
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria;
 
 final readonly class ListUsers
 {
@@ -15,6 +16,7 @@ final readonly class ListUsers
         public int                $limit = 10,
         public UserScope          $scope = new UserScope(),
         public UserSearchCriteria $criteria = new UserSearchCriteria(),
+        public UserSortCriteria   $sort = new UserSortCriteria(),
     ) {
         if ($this->page < 1) {
             throw new InvalidArgumentException('Page must be at least 1');

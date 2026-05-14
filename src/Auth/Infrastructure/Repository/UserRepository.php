@@ -14,6 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortCriteria;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use PDO;
 use PDOStatement;
@@ -106,15 +107,16 @@ final readonly class UserRepository implements UserRepositoryInterface
 
     public function findPaginatedByCriteria(
         UserSearchCriteria $criteria,
-        UserScope $scope,
-        int $limit,
-        int $offset,
+        UserScope          $scope,
+        UserSortCriteria   $sort,
+        int                $limit,
+        int                $offset,
     ): array {
         [$where, $params] = $this->buildWhereClause($criteria, $scope);
 
         $stmt = $this->pdo->prepare(
             'SELECT ' . self::SELECT_COLUMNS . "
-             FROM users WHERE {$where} ORDER BY email ASC LIMIT ? OFFSET ?",
+             FROM users WHERE {$where} ORDER BY {$sort->field->value} {$sort->direction->value} LIMIT ? OFFSET ?",
         );
         $stmt->execute([...$params, $limit, $offset]);
 

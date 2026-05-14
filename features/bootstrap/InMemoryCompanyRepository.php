@@ -6,7 +6,10 @@ use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortCriteria;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySortField;
 use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 
 /**
  * In-memory implementation of CompanyRepositoryInterface for Behat scenarios.
@@ -38,10 +41,14 @@ final class InMemoryCompanyRepository implements CompanyRepositoryInterface
         return null;
     }
 
-    public function findPaginatedByCriteria(CompanySearchCriteria $criteria, int $limit, int $offset): array
-    {
+    public function findPaginatedByCriteria(
+        CompanySearchCriteria $criteria,
+        CompanySortCriteria   $sort,
+        int                   $limit,
+        int                   $offset,
+    ): array {
         $companies = array_values($this->filteredByCriteria($criteria));
-        usort($companies, static fn(Company $a, Company $b): int => strcmp($a->name->value, $b->name->value));
+        usort($companies, $this->buildComparator($sort));
 
         return array_slice($companies, $offset, $limit);
     }
@@ -49,6 +56,22 @@ final class InMemoryCompanyRepository implements CompanyRepositoryInterface
     public function countByCriteria(CompanySearchCriteria $criteria): int
     {
         return count($this->filteredByCriteria($criteria));
+    }
+
+    /** @return callable(Company, Company): int */
+    private function buildComparator(CompanySortCriteria $sort): callable
+    {
+        return static function (Company $a, Company $b) use ($sort): int {
+            $cmp = match ($sort->field) {
+                CompanySortField::Name      => strcmp($a->name->value, $b->name->value),
+                CompanySortField::City      => strcmp((string) ($a->city ?? ''), (string) ($b->city ?? '')),
+                CompanySortField::Country   => strcmp((string) ($a->country ?? ''), (string) ($b->country ?? '')),
+                CompanySortField::CreatedAt => $a->createdAt <=> $b->createdAt,
+                CompanySortField::UpdatedAt => $a->updatedAt <=> $b->updatedAt,
+            };
+
+            return $sort->direction === SortDirection::Desc ? -$cmp : $cmp;
+        };
     }
 
     public function delete(CompanyId $id): void
