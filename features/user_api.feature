@@ -359,3 +359,67 @@ Feature: User API
     When I list users
     Then the response status should be 200
     And the "data" array should have 1 item
+
+  # ── Search ───────────────────────────────────────────────────────────────────
+
+  Scenario: Admin searches users by email partial match
+    Given a user is registered with email "alice@example.com" and password "secretpass"
+    And a user is registered with email "bob@example.com" and password "secretpass"
+    And I am logged in as admin
+    When I list users with search "email=alice"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+    And the first "data" item "email" should equal "alice@example.com"
+
+  Scenario: Admin searches users by role
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a user is registered with email "cm@example.com" and password "secretpass" with role "company_admin" for company "11111111-1111-4111-8111-111111111111"
+    When I list users with search "role=company_admin"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Admin searches by is_active false returns only inactive users
+    Given I am logged in as admin
+    When I list users with search "is_active=false"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin combines email and role search
+    Given a user is registered with email "alice@example.com" and password "secretpass"
+    And I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a user is registered with email "alice-admin@example.com" and password "secretpass" with role "company_admin" for company "11111111-1111-4111-8111-111111111111"
+    When I list users with search "email=alice&role=employee"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+    And the first "data" item "email" should equal "alice@example.com"
+
+  Scenario: Invalid role returns 422
+    Given I am logged in as admin
+    When I list users with search "role=superuser"
+    Then the response status should be 422
+
+  Scenario: Invalid is_active value returns 422
+    Given I am logged in as admin
+    When I list users with search "is_active=maybe"
+    Then the response status should be 422
+
+  Scenario: Invalid date format returns 422
+    Given I am logged in as admin
+    When I list users with search "created_from=01-01-2025"
+    Then the response status should be 422
+
+  Scenario: Date range from after to returns 422
+    Given I am logged in as admin
+    When I list users with search "created_from=2025-12-01&created_to=2025-01-01"
+    Then the response status should be 422
+
+  Scenario: Shop manager cannot see admins even when searching by role
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I list users with search "role=admin"
+    Then the response status should be 200
+    And the "data" array should have 0 items

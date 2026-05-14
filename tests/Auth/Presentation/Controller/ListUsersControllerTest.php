@@ -152,4 +152,101 @@ final class ListUsersControllerTest extends TestCase
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
     }
+
+    public function testFiltersUsersByEmailParam(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $this->userRepo->save(new User(
+            id: UserId::generate(), email: new Email('alice@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Alice'), lastName: new LastName('Smith'), role: Role::Employee,
+        ));
+        $this->userRepo->save(new User(
+            id: UserId::generate(), email: new Email('bob@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Bob'), lastName: new LastName('Jones'), role: Role::Employee,
+        ));
+
+        $response = $this->ctrl()($this->request(['email' => 'alice']));
+
+        $this->assertSame(200, $response->status());
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+        $this->assertSame('alice@test.test', $items[0]['email']);
+    }
+
+    public function testFiltersUsersByRoleParam(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $this->userRepo->save(new User(
+            id: UserId::generate(), email: new Email('emp@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('E'), lastName: new LastName('Mp'), role: Role::Employee,
+        ));
+
+        $response = $this->ctrl()($this->request(['role' => 'employee']));
+
+        $this->assertSame(200, $response->status());
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+    }
+
+    public function testReturns422ForInvalidRole(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->request(['role' => 'superuser']));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testReturns422ForInvalidIsActive(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->request(['is_active' => 'maybe']));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testReturns422ForInvalidDateFormat(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->request(['created_from' => '01-01-2025']));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testReturns422WhenCreatedFromAfterCreatedTo(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        $response = $this->ctrl()($this->request([
+            'created_from' => '2025-12-01',
+            'created_to'   => '2025-01-01',
+        ]));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testFiltersUsersByIsActive(): void
+    {
+        $this->seedCaller(Role::Admin);
+        $this->userRepo->save(new User(
+            id: UserId::generate(), email: new Email('inactive@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('In'), lastName: new LastName('Active'),
+            role: Role::Employee, isActive: false,
+        ));
+
+        $response = $this->ctrl()($this->request(['is_active' => 'false']));
+
+        $this->assertSame(200, $response->status());
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+    }
 }

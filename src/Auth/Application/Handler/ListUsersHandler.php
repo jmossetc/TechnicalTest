@@ -15,18 +15,15 @@ final readonly class ListUsersHandler
     public function handle(ListUsers $command): PaginatedUsers
     {
         $offset = ($command->page - 1) * $command->limit;
-        $scope  = $command->scope;
 
-        if ($scope->isCompanies()) {
-            $users = $this->repository->findPaginatedByCompanyIds($scope->ids, $command->limit, $offset);
-            $total = $this->repository->countByCompanyIds($scope->ids);
-        } elseif ($scope->isShops()) {
-            $users = $this->repository->findPaginatedByShopIds($scope->ids, $scope->scopeCompanyId, $command->limit, $offset);
-            $total = $this->repository->countByShopIds($scope->ids, $scope->scopeCompanyId);
-        } else {
-            $users = $this->repository->findPaginated($command->limit, $offset);
-            $total = $this->repository->count();
-        }
+        $users = $this->repository->findPaginatedByCriteria(
+            $command->criteria,
+            $command->scope,
+            $command->limit,
+            $offset,
+        );
+
+        $total = $this->repository->countByCriteria($command->criteria, $command->scope);
 
         return new PaginatedUsers(
             users: $users,

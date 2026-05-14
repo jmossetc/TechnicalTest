@@ -12,10 +12,12 @@ final readonly class Response
         private int $status,
     ) {}
 
-    /** @param array<string, mixed> $data */
-    public static function json(array $data, int $status = 200): self
+    /** @param \JsonSerializable|array<string, mixed> $data */
+    public static function json(\JsonSerializable|array $data, int $status = 200): self
     {
-        return new self($data, $status);
+        $payload = $data instanceof \JsonSerializable ? $data->jsonSerialize() : $data;
+
+        return new self(self::normalize($payload), $status);
     }
 
     public static function error(string $message, int $status = 400): self
@@ -39,5 +41,31 @@ final readonly class Response
     public function data(): array
     {
         return $this->data;
+    }
+
+    /** @return array<string, mixed> */
+    private static function normalize(mixed $data): array
+    {
+        if (!is_array($data)) {
+            return [];
+        }
+        $result = [];
+        foreach ($data as $key => $value) {
+            if (is_string($key)) {
+                $result[$key] = self::normalizeValue($value);
+            }
+        }
+        return $result;
+    }
+
+    private static function normalizeValue(mixed $value): mixed
+    {
+        if ($value instanceof \JsonSerializable) {
+            return self::normalize($value->jsonSerialize());
+        }
+        if (is_array($value)) {
+            return array_map(self::normalizeValue(...), $value);
+        }
+        return $value;
     }
 }

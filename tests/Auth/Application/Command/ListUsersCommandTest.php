@@ -7,6 +7,7 @@ namespace Mossetc\TechnicalTest\Tests\Auth\Application\Command;
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
 use PHPUnit\Framework\TestCase;
 
 final class ListUsersCommandTest extends TestCase
@@ -64,5 +65,23 @@ final class ListUsersCommandTest extends TestCase
     {
         $cmd = new ListUsers(limit: 100);
         $this->assertSame(100, $cmd->limit);
+    }
+
+    public function testDefaultCriteriaIsEmpty(): void
+    {
+        $cmd = new ListUsers();
+
+        $this->assertNull($cmd->criteria->email);
+        $this->assertNull($cmd->criteria->role);
+        $this->assertNull($cmd->criteria->isActive);
+        $this->assertNull($cmd->criteria->createdFrom);
+    }
+
+    public function testAcceptsCustomCriteria(): void
+    {
+        $criteria = new UserSearchCriteria(email: 'ali');
+        $cmd      = new ListUsers(criteria: $criteria);
+
+        $this->assertSame($criteria, $cmd->criteria);
     }
 }

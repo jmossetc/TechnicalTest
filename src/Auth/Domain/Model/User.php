@@ -6,7 +6,7 @@ namespace Mossetc\TechnicalTest\Auth\Domain\Model;
 
 use DateTimeImmutable;
 
-final readonly class User
+final readonly class User implements \JsonSerializable
 {
     public function __construct(
         public UserId $id,
@@ -28,5 +28,24 @@ final readonly class User
     public function verifyPassword(PlainPassword $password): bool
     {
         return $this->password->verify($password);
+    }
+
+    /** @return array<string, mixed> */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id'            => $this->id->value,
+            'email'         => $this->email->value,
+            'first_name'    => $this->firstName->value,
+            'last_name'     => $this->lastName->value,
+            'phone_number'  => $this->phoneNumber,
+            'role'          => $this->role->value,
+            'company_id'    => $this->companyId,
+            'shop_id'       => $this->shopId,
+            'is_active'     => $this->isActive,
+            'last_login_at' => $this->lastLoginAt?->format('Y-m-d\TH:i:s\Z'),
+            'created_at'    => $this->createdAt->format('Y-m-d\TH:i:s\Z'),
+            'updated_at'    => $this->updatedAt->format('Y-m-d\TH:i:s\Z'),
+        ];
     }
 }

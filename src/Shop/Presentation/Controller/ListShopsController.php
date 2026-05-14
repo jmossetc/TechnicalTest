@@ -54,24 +54,7 @@ final readonly class ListShopsController implements ControllerInterface
         }
 
         return Response::json([
-            'data'       => array_map(
-                static fn(Shop $s): array => [
-                    'id'          => $s->id->value,
-                    'company_id'  => $s->companyId->value,
-                    'name'        => $s->name->value,
-                    'email'       => $s->email,
-                    'city'        => $s->address->city,
-                    'postal_code' => $s->address->postalCode,
-                    'country'     => $s->address->country,
-                    'latitude'    => $s->latitude,
-                    'longitude'   => $s->longitude,
-                    'is_digital'  => $s->isDigital,
-                    'is_active'   => $s->isActive,
-                    'created_at'  => $s->createdAt->format('Y-m-d\TH:i:s\Z'),
-                    'updated_at'  => $s->updatedAt->format('Y-m-d\TH:i:s\Z'),
-                ],
-                $result->shops,
-            ),
+            'data'       => $result->shops,
             'pagination' => [
                 'total' => $result->total,
                 'page'  => $result->page,

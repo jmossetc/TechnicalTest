@@ -370,6 +370,16 @@ final class ApiContext implements Context
         $this->lastResponse = $this->doGet('/api/users', $this->token, ['shop_ids' => $shopId]);
     }
 
+    /**
+     * @When I list users with search :params
+     */
+    public function iListUsersWithSearch(string $params): void
+    {
+        parse_str($params, $query);
+        /** @var array<string, string> $query */
+        $this->lastResponse = $this->doGet('/api/users', $this->token ?: $this->adminToken, $query);
+    }
+
     /** @When I delete the target user */
     public function iDeleteTheTargetUser(): void
     {

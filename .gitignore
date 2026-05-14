@@ -2,3 +2,8 @@
 /.idea
 .phpunit.result.cache
 tests/coverage-report/
+/.claude
+coverage-report
+CLAUDE.md
+/.junie
+/docs

@@ -12,6 +12,8 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\LastName;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use PDO;
 use PDOStatement;
@@ -102,70 +104,13 @@ final readonly class UserRepository implements UserRepositoryInterface
         )->execute(['id' => $id->value]);
     }
 
-    public function findPaginated(int $limit, int $offset): array
-    {
-        $stmt = $this->prepare(
-            'SELECT ' . self::SELECT_COLUMNS . '
-             FROM users WHERE deleted_at IS NULL ORDER BY email ASC LIMIT :limit OFFSET :offset',
-        );
-        $stmt->execute(['limit' => $limit, 'offset' => $offset]);
-
-        return $this->fetchAll($stmt);
-    }
-
-    public function count(): int
-    {
-        return $this->scalar('SELECT COUNT(*) FROM users WHERE deleted_at IS NULL');
-    }
-
-    public function findPaginatedByCompanyIds(array $companyIds, int $limit, int $offset): array
-    {
-        if ($companyIds === []) {
-            return [];
-        }
-
-        $in   = $this->uuidPlaceholders($companyIds);
-        $stmt = $this->pdo->prepare(
-            'SELECT ' . self::SELECT_COLUMNS . "
-             FROM users WHERE company_id IN ({$in}) AND deleted_at IS NULL
-             ORDER BY email ASC LIMIT ? OFFSET ?",
-        );
-        $stmt->execute([...$companyIds, $limit, $offset]);
-
-        return $this->fetchAll($stmt);
-    }
-
-    public function countByCompanyIds(array $companyIds): int
-    {
-        if ($companyIds === []) {
-            return 0;
-        }
-
-        $in   = $this->uuidPlaceholders($companyIds);
-        $stmt = $this->pdo->prepare(
-            "SELECT COUNT(*) FROM users WHERE company_id IN ({$in}) AND deleted_at IS NULL",
-        );
-        $stmt->execute($companyIds);
-
-        $count = $stmt->fetchColumn();
-
-        return is_numeric($count) ? (int) $count : 0;
-    }
-
-    public function findPaginatedByShopIds(array $shopIds, ?string $companyId, int $limit, int $offset): array
-    {
-        if ($shopIds === []) {
-            return [];
-        }
-
-        $in     = $this->uuidPlaceholders($shopIds);
-        $params = $shopIds;
-        $where  = "shop_id IN ({$in}) AND deleted_at IS NULL";
-
-        if ($companyId !== null) {
-            $where   .= ' AND company_id = UUID_TO_BIN(?)';
-            $params[] = $companyId;
-        }
+    public function findPaginatedByCriteria(
+        UserSearchCriteria $criteria,
+        UserScope $scope,
+        int $limit,
+        int $offset,
+    ): array {
+        [$where, $params] = $this->buildWhereClause($criteria, $scope);
 
         $stmt = $this->pdo->prepare(
             'SELECT ' . self::SELECT_COLUMNS . "
@@ -176,20 +121,9 @@ final readonly class UserRepository implements UserRepositoryInterface
         return $this->fetchAll($stmt);
     }
 
-    public function countByShopIds(array $shopIds, ?string $companyId): int
+    public function countByCriteria(UserSearchCriteria $criteria, UserScope $scope): int
     {
-        if ($shopIds === []) {
-            return 0;
-        }
-
-        $in     = $this->uuidPlaceholders($shopIds);
-        $params = $shopIds;
-        $where  = "shop_id IN ({$in}) AND deleted_at IS NULL";
-
-        if ($companyId !== null) {
-            $where   .= ' AND company_id = UUID_TO_BIN(?)';
-            $params[] = $companyId;
-        }
+        [$where, $params] = $this->buildWhereClause($criteria, $scope);
 
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE {$where}");
         $stmt->execute($params);
@@ -197,6 +131,91 @@ final readonly class UserRepository implements UserRepositoryInterface
         $count = $stmt->fetchColumn();
 
         return is_numeric($count) ? (int) $count : 0;
+    }
+
+    /**
+     * @return array{string, list<mixed>}
+     */
+    private function buildWhereClause(UserSearchCriteria $criteria, UserScope $scope): array
+    {
+        $conditions = ['deleted_at IS NULL'];
+        /** @var list<mixed> $params */
+        $params = [];
+
+        if ($scope->isCompanies()) {
+            if ($scope->ids === []) {
+                $conditions[] = '1=0';
+            } else {
+                $in           = implode(',', array_fill(0, count($scope->ids), 'UUID_TO_BIN(?)'));
+                $conditions[] = "company_id IN ({$in})";
+                array_push($params, ...$scope->ids);
+            }
+        } elseif ($scope->isShops()) {
+            if ($scope->ids === []) {
+                $conditions[] = '1=0';
+            } else {
+                $in           = implode(',', array_fill(0, count($scope->ids), 'UUID_TO_BIN(?)'));
+                $conditions[] = "shop_id IN ({$in})";
+                array_push($params, ...$scope->ids);
+
+                if ($scope->scopeCompanyId !== null) {
+                    $conditions[] = 'company_id = UUID_TO_BIN(?)';
+                    $params[]     = $scope->scopeCompanyId;
+                }
+            }
+        }
+
+        if ($criteria->email !== null) {
+            $conditions[] = 'LOWER(email) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->email . '%';
+        }
+
+        if ($criteria->firstName !== null) {
+            $conditions[] = 'LOWER(first_name) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->firstName . '%';
+        }
+
+        if ($criteria->lastName !== null) {
+            $conditions[] = 'LOWER(last_name) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->lastName . '%';
+        }
+
+        if ($criteria->phoneNumber !== null) {
+            $conditions[] = 'LOWER(phone_number) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->phoneNumber . '%';
+        }
+
+        if ($criteria->role !== null) {
+            $conditions[] = 'role = ?';
+            $params[]     = $criteria->role->value;
+        }
+
+        if ($criteria->isActive !== null) {
+            $conditions[] = 'is_active = ?';
+            $params[]     = $criteria->isActive ? 1 : 0;
+        }
+
+        if ($criteria->createdFrom !== null) {
+            $conditions[] = 'created_at >= ?';
+            $params[]     = $criteria->createdFrom->format('Y-m-d H:i:s');
+        }
+
+        if ($criteria->createdTo !== null) {
+            $conditions[] = 'created_at <= ?';
+            $params[]     = $criteria->createdTo->format('Y-m-d H:i:s');
+        }
+
+        if ($criteria->lastLoginFrom !== null) {
+            $conditions[] = 'last_login_at >= ?';
+            $params[]     = $criteria->lastLoginFrom->format('Y-m-d H:i:s');
+        }
+
+        if ($criteria->lastLoginTo !== null) {
+            $conditions[] = 'last_login_at <= ?';
+            $params[]     = $criteria->lastLoginTo->format('Y-m-d H:i:s');
+        }
+
+        return [implode(' AND ', $conditions), $params];
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -212,15 +231,6 @@ final readonly class UserRepository implements UserRepositoryInterface
         return $stmt;
     }
 
-    private function scalar(string $sql): int
-    {
-        $stmt = $this->prepare($sql);
-        $stmt->execute();
-        $count = $stmt->fetchColumn();
-
-        return is_numeric($count) ? (int) $count : 0;
-    }
-
     /** @return list<User> */
     private function fetchAll(PDOStatement $stmt): array
     {
@@ -230,12 +240,6 @@ final readonly class UserRepository implements UserRepositoryInterface
         }
 
         return $users;
-    }
-
-    /** @param list<string> $ids */
-    private function uuidPlaceholders(array $ids): string
-    {
-        return implode(',', array_fill(0, count($ids), 'UUID_TO_BIN(?)'));
     }
 
     /**

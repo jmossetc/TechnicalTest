@@ -8,7 +8,15 @@ use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
 use Mossetc\TechnicalTest\Auth\Application\Command\RegisterUser;
 use Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler;
 use Mossetc\TechnicalTest\Auth\Application\Handler\RegisterUserHandler;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
+use Mossetc\TechnicalTest\Auth\Domain\Model\FirstName;
+use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\LastName;
+use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\User;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
 use PHPUnit\Framework\TestCase;
@@ -130,6 +138,82 @@ final class ListUsersHandlerTest extends TestCase
 
         $this->assertSame([], $result->users);
         $this->assertSame(1, $result->total);
+    }
+
+    public function testFiltersUsersByEmailPartialMatch(): void
+    {
+        $this->register('alice@example.com');
+        $this->register('bob@example.com');
+
+        $criteria = new UserSearchCriteria(email: 'alice');
+        $result   = $this->handler->handle(new ListUsers(criteria: $criteria));
+
+        $this->assertCount(1, $result->users);
+        $this->assertSame('alice@example.com', $result->users[0]->email->value);
+    }
+
+    public function testFiltersUsersByRole(): void
+    {
+        $this->register('admin@example.com', 'admin');
+        $this->register('emp@example.com', 'employee');
+
+        $criteria = new UserSearchCriteria(role: \Mossetc\TechnicalTest\Auth\Domain\Model\Role::Employee);
+        $result   = $this->handler->handle(new ListUsers(criteria: $criteria));
+
+        $this->assertCount(1, $result->users);
+        $this->assertSame('emp@example.com', $result->users[0]->email->value);
+    }
+
+    public function testFiltersUsersByIsActive(): void
+    {
+        $this->register('active@example.com');
+        $inactive = new User(
+            id:        UserId::generate(),
+            email:     new Email('inactive@example.com'),
+            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('In'),
+            lastName:  new LastName('Active'),
+            isActive:  false,
+        );
+        $this->repository->save($inactive);
+
+        $criteria = new UserSearchCriteria(isActive: false);
+        $result   = $this->handler->handle(new ListUsers(criteria: $criteria));
+
+        $this->assertCount(1, $result->users);
+        $this->assertSame('inactive@example.com', $result->users[0]->email->value);
+    }
+
+    public function testCombinesEmailAndRoleCriteria(): void
+    {
+        $this->register('alice@example.com', 'employee');
+        $this->register('alice-admin@example.com', 'admin');
+        $this->register('bob@example.com', 'employee');
+
+        $criteria = new UserSearchCriteria(
+            email: 'alice',
+            role:  \Mossetc\TechnicalTest\Auth\Domain\Model\Role::Employee,
+        );
+        $result = $this->handler->handle(new ListUsers(criteria: $criteria));
+
+        $this->assertCount(1, $result->users);
+        $this->assertSame('alice@example.com', $result->users[0]->email->value);
+    }
+
+    public function testCriteriaAndScopeAreBothApplied(): void
+    {
+        $company = '11111111-1111-4111-8111-111111111111';
+        $this->register('alice@example.com', 'employee', $company);
+        $this->register('bob@example.com', 'employee');
+        $this->register('admin@example.com', 'admin', $company);
+
+        $criteria = new UserSearchCriteria(email: 'alice');
+        $result   = $this->handler->handle(
+            new ListUsers(scope: UserScope::companies([$company]), criteria: $criteria)
+        );
+
+        $this->assertCount(1, $result->users);
+        $this->assertSame('alice@example.com', $result->users[0]->email->value);
     }
 
     private function register(

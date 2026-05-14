@@ -6,13 +6,15 @@ namespace Mossetc\TechnicalTest\Auth\Application\Command;
 
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
 
 final readonly class ListUsers
 {
     public function __construct(
-        public int $page = 1,
-        public int $limit = 10,
-        public UserScope $scope = new UserScope(),
+        public int                $page = 1,
+        public int                $limit = 10,
+        public UserScope          $scope = new UserScope(),
+        public UserSearchCriteria $criteria = new UserSearchCriteria(),
     ) {
         if ($this->page < 1) {
             throw new InvalidArgumentException('Page must be at least 1');

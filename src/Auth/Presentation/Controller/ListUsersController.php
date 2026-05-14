@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Presentation\Controller;
 
+use DateTimeImmutable;
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Auth\Application\Command\ListUsers;
 use Mossetc\TechnicalTest\Auth\Application\Handler\ListUsersHandler;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
-use Mossetc\TechnicalTest\Auth\Domain\Model\User;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
@@ -49,24 +51,19 @@ final readonly class ListUsersController implements ControllerInterface
             return Response::error($e->getMessage(), 403);
         }
 
+        try {
+            $criteria = $this->buildCriteria($request->query);
+        } catch (InvalidArgumentException $e) {
+            return Response::error($e->getMessage(), 422);
+        }
+
         $page  = max(1, (int) ($request->query['page'] ?? '1'));
         $limit = min(100, max(1, (int) ($request->query['limit'] ?? '10')));
 
-        $result = $this->handler->handle(new ListUsers($page, $limit, $scope));
+        $result = $this->handler->handle(new ListUsers($page, $limit, $scope, $criteria));
 
         return Response::json([
-            'data'       => array_map(
-                static fn(User $u): array => [
-                    'id'         => $u->id->value,
-                    'email'      => $u->email->value,
-                    'first_name' => $u->firstName->value,
-                    'last_name'  => $u->lastName->value,
-                    'role'       => $u->role->value,
-                    'company_id' => $u->companyId,
-                    'shop_id'    => $u->shopId,
-                ],
-                $result->users,
-            ),
+            'data'       => $result->users,
             'pagination' => [
                 'total' => $result->total,
                 'page'  => $result->page,
@@ -74,6 +71,67 @@ final readonly class ListUsersController implements ControllerInterface
                 'pages' => $result->pages(),
             ],
         ]);
+    }
+
+    /** @param array<string, string> $query */
+    private function buildCriteria(array $query): UserSearchCriteria
+    {
+        $email       = $this->nullableString($query['email'] ?? '');
+        $firstName   = $this->nullableString($query['first_name'] ?? '');
+        $lastName    = $this->nullableString($query['last_name'] ?? '');
+        $phoneNumber = $this->nullableString($query['phone_number'] ?? '');
+
+        $role = null;
+        if (isset($query['role']) && $query['role'] !== '') {
+            $role = Role::tryFrom($query['role']);
+            if ($role === null) {
+                throw new InvalidArgumentException("Invalid role '{$query['role']}'");
+            }
+        }
+
+        $isActive = null;
+        if (isset($query['is_active']) && $query['is_active'] !== '') {
+            $isActive = match ($query['is_active']) {
+                'true', '1'  => true,
+                'false', '0' => false,
+                default      => throw new InvalidArgumentException(
+                    "Invalid is_active value '{$query['is_active']}', expected true/false/1/0"
+                ),
+            };
+        }
+
+        return new UserSearchCriteria(
+            email:         $email,
+            firstName:     $firstName,
+            lastName:      $lastName,
+            phoneNumber:   $phoneNumber,
+            role:          $role,
+            isActive:      $isActive,
+            createdFrom:   $this->parseDate($query['created_from'] ?? ''),
+            createdTo:     $this->parseDate($query['created_to'] ?? '', endOfDay: true),
+            lastLoginFrom: $this->parseDate($query['last_login_from'] ?? ''),
+            lastLoginTo:   $this->parseDate($query['last_login_to'] ?? '', endOfDay: true),
+        );
+    }
+
+    private function nullableString(string $value): ?string
+    {
+        return $value !== '' ? $value : null;
+    }
+
+    private function parseDate(string $raw, bool $endOfDay = false): ?DateTimeImmutable
+    {
+        if ($raw === '') {
+            return null;
+        }
+
+        $dt = DateTimeImmutable::createFromFormat('Y-m-d', $raw);
+
+        if ($dt === false) {
+            throw new InvalidArgumentException("Invalid date format '{$raw}', expected Y-m-d");
+        }
+
+        return $endOfDay ? $dt->setTime(23, 59, 59) : $dt->setTime(0, 0, 0);
     }
 
     /** @return list<string> */

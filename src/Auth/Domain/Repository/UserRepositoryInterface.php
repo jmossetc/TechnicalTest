@@ -7,6 +7,8 @@ namespace Mossetc\TechnicalTest\Auth\Domain\Repository;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Email;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserSearchCriteria;
 
 interface UserRepositoryInterface
 {
@@ -23,25 +25,12 @@ interface UserRepositoryInterface
     // ── Listing ───────────────────────────────────────────────────────────────
 
     /** @return list<User> */
-    public function findPaginated(int $limit, int $offset): array;
+    public function findPaginatedByCriteria(
+        UserSearchCriteria $criteria,
+        UserScope $scope,
+        int $limit,
+        int $offset,
+    ): array;
 
-    public function count(): int;
-
-    /**
-     * @param  list<string> $companyIds
-     * @return list<User>
-     */
-    public function findPaginatedByCompanyIds(array $companyIds, int $limit, int $offset): array;
-
-    /** @param list<string> $companyIds */
-    public function countByCompanyIds(array $companyIds): int;
-
-    /**
-     * @param  list<string> $shopIds
-     * @return list<User>
-     */
-    public function findPaginatedByShopIds(array $shopIds, ?string $companyId, int $limit, int $offset): array;
-
-    /** @param list<string> $shopIds */
-    public function countByShopIds(array $shopIds, ?string $companyId): int;
+    public function countByCriteria(UserSearchCriteria $criteria, UserScope $scope): int;
 }

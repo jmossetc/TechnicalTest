@@ -38,7 +38,6 @@ final readonly class UpdateCompanyHandler
             throw new CompanyAlreadyExistsException($newName);
         }
 
-        // Null in command means "not provided" — preserve the existing value
         $this->repository->save(new Company(
             id:           $existing->id,
             name:         $newName,
