@@ -1,35 +1,4 @@
 -- ─────────────────────────────────────────────────────────────────────────────
---  Users
--- ─────────────────────────────────────────────────────────────────────────────
-
-CREATE TABLE IF NOT EXISTS users
-(
-    id            BINARY(16)                                                  NOT NULL,
-    email         VARCHAR(255)                                                NOT NULL UNIQUE,
-    first_name    VARCHAR(255)                                                NOT NULL,
-    last_name     VARCHAR(255)                                                NOT NULL,
-    phone_number  VARCHAR(20)                                                 NULL,
-    role          ENUM ('admin', 'company_admin', 'shop_manager', 'employee') NOT NULL,
-    company_id    BINARY(16)                                                  NULL,
-    shop_id       BINARY(16)                                                  NULL,
-    is_active     BOOLEAN                                                     NOT NULL DEFAULT TRUE,
-    last_login_at TIMESTAMP                                                   NULL,
-    password_hash VARCHAR(255)                                                NOT NULL,
-    created_at    TIMESTAMP                                                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP                                                   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at    TIMESTAMP                                                   NULL     DEFAULT NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY users_email_idx (email),
-    KEY idx_users_deleted_at (deleted_at),
-    CONSTRAINT fk_users_company
-        FOREIGN KEY (company_id) REFERENCES companies (id),
-    CONSTRAINT fk_users_shop
-        FOREIGN KEY (shop_id) REFERENCES shops (id)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci;
-
--- ─────────────────────────────────────────────────────────────────────────────
 --  Companies
 -- ─────────────────────────────────────────────────────────────────────────────
 
@@ -57,10 +26,7 @@ CREATE TABLE IF NOT EXISTS companies
   COLLATE = utf8mb4_unicode_ci;
 
 -- ─────────────────────────────────────────────────────────────────────────────
---  Shops  (many-to-one with Company)
---
---  A company can own any number of shops.
---  Deleting a company cascades to all its shops.
+--  Shops
 -- ─────────────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS shops
@@ -91,6 +57,37 @@ CREATE TABLE IF NOT EXISTS shops
     CONSTRAINT fk_shops_company
         FOREIGN KEY (company_id) REFERENCES companies (id)
             ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+--  Users
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS users
+(
+    id            BINARY(16)                                                  NOT NULL,
+    email         VARCHAR(255)                                                NOT NULL UNIQUE,
+    first_name    VARCHAR(255)                                                NOT NULL,
+    last_name     VARCHAR(255)                                                NOT NULL,
+    phone_number  VARCHAR(20)                                                 NULL,
+    role          ENUM ('admin', 'company_admin', 'shop_manager', 'employee') NOT NULL,
+    company_id    BINARY(16)                                                  NULL,
+    shop_id       BINARY(16)                                                  NULL,
+    is_active     BOOLEAN                                                     NOT NULL DEFAULT TRUE,
+    last_login_at TIMESTAMP                                                   NULL,
+    password_hash VARCHAR(255)                                                NOT NULL,
+    created_at    TIMESTAMP                                                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP                                                   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at    TIMESTAMP                                                   NULL     DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY users_email_idx (email),
+    KEY idx_users_deleted_at (deleted_at),
+    CONSTRAINT fk_users_company
+        FOREIGN KEY (company_id) REFERENCES companies (id),
+    CONSTRAINT fk_users_shop
+        FOREIGN KEY (shop_id) REFERENCES shops (id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
