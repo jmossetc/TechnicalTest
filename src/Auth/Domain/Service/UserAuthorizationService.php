@@ -142,6 +142,39 @@ final readonly class UserAuthorizationService
     }
 
     /**
+     * Assert that $callerId may read $target's profile.
+     *
+     * Rules: self always; Admin always; CompanyAdmin may read ShopManagers and
+     * Employees within their own company; everyone else may only read themselves.
+     *
+     * @throws ForbiddenException
+     */
+    public function authorizeUserRead(UserId $callerId, User $target): void
+    {
+        if ($callerId->equals($target->id)) {
+            return;
+        }
+
+        $caller = $this->loadCaller($callerId);
+
+        if ($caller->role === Role::Admin) {
+            return;
+        }
+
+        if ($caller->role === Role::CompanyAdmin && $caller->companyId !== null) {
+            if (
+                in_array($target->role, [Role::ShopManager, Role::Employee], true)
+                && $target->companyId === $caller->companyId
+            ) {
+                return;
+            }
+            throw new ForbiddenException('You do not have permission to view this user');
+        }
+
+        throw new ForbiddenException('You do not have permission to view this user');
+    }
+
+    /**
      * Assert that $callerId is an admin.
      *
      * @throws ForbiddenException

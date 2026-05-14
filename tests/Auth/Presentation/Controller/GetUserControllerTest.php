@@ -14,6 +14,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 use Mossetc\TechnicalTest\Auth\Domain\Service\TokenServiceInterface;
+use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Auth\Presentation\Controller\GetUserController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -37,10 +38,10 @@ final class GetUserControllerTest extends TestCase
         );
     }
 
-    private function makeAuth(): JwtAuthMiddleware
+    private function makeAuth(?UserId $callerId = null): JwtAuthMiddleware
     {
         $svc = $this->createStub(TokenServiceInterface::class);
-        $svc->method('validate')->willReturn($this->userId);
+        $svc->method('validate')->willReturn($callerId ?? $this->userId);
 
         return new JwtAuthMiddleware($svc);
     }
@@ -53,6 +54,14 @@ final class GetUserControllerTest extends TestCase
         return $repo;
     }
 
+    private function makeAuthorization(User $caller): UserAuthorizationService
+    {
+        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo->method('findById')->willReturn($caller);
+
+        return new UserAuthorizationService($repo);
+    }
+
     private function authedRequest(string $id): Request
     {
         return new Request('GET', "/api/users/{$id}", ['Authorization' => 'Bearer tok'], [], ['id' => $id]);
@@ -60,7 +69,11 @@ final class GetUserControllerTest extends TestCase
 
     public function testReturnsUserDataOnSuccess(): void
     {
-        $ctrl     = new GetUserController($this->makeRepo($this->user), $this->makeAuth());
+        $ctrl     = new GetUserController(
+            $this->makeRepo($this->user),
+            $this->makeAuth(),
+            $this->makeAuthorization($this->user),
+        );
         $response = $ctrl($this->authedRequest($this->userId->value));
 
         $this->assertSame(200, $response->status());
@@ -75,8 +88,11 @@ final class GetUserControllerTest extends TestCase
 
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
-        // No Authorization header → JwtAuthMiddleware throws InvalidArgumentException → 401
-        $ctrl     = new GetUserController($this->makeRepo($this->user), $this->makeAuth());
+        $ctrl     = new GetUserController(
+            $this->makeRepo($this->user),
+            $this->makeAuth(),
+            $this->makeAuthorization($this->user),
+        );
         $response = $ctrl(new Request('GET', "/api/users/{$this->userId->value}", [], [], ['id' => $this->userId->value]));
 
         $this->assertSame(401, $response->status());
@@ -84,7 +100,11 @@ final class GetUserControllerTest extends TestCase
 
     public function testReturns400ForMalformedId(): void
     {
-        $ctrl     = new GetUserController($this->makeRepo(null), $this->makeAuth());
+        $ctrl     = new GetUserController(
+            $this->makeRepo(null),
+            $this->makeAuth(),
+            $this->makeAuthorization($this->user),
+        );
         $response = $ctrl($this->authedRequest('not-a-uuid'));
 
         $this->assertSame(400, $response->status());
@@ -92,9 +112,44 @@ final class GetUserControllerTest extends TestCase
 
     public function testReturns404WhenUserNotFound(): void
     {
-        $ctrl     = new GetUserController($this->makeRepo(null), $this->makeAuth());
+        $ctrl     = new GetUserController(
+            $this->makeRepo(null),
+            $this->makeAuth(),
+            $this->makeAuthorization($this->user),
+        );
         $response = $ctrl($this->authedRequest('550e8400-e29b-41d4-a716-446655440000'));
 
         $this->assertSame(404, $response->status());
+    }
+
+    public function testReturns403WhenCallerIsNotAuthorized(): void
+    {
+        $targetId   = UserId::generate();
+        $target     = new User(
+            id:        $targetId,
+            email:     new Email('bob@example.com'),
+            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Bob'),
+            lastName:  new LastName('Jones'),
+            role:      Role::Employee,
+        );
+        $callerId   = UserId::generate();
+        $caller     = new User(
+            id:        $callerId,
+            email:     new Email('shopmanager@example.com'),
+            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            firstName: new FirstName('Shop'),
+            lastName:  new LastName('Manager'),
+            role:      Role::ShopManager,
+        );
+
+        $ctrl     = new GetUserController(
+            $this->makeRepo($target),
+            $this->makeAuth($callerId),
+            $this->makeAuthorization($caller),
+        );
+        $response = $ctrl($this->authedRequest($targetId->value));
+
+        $this->assertSame(403, $response->status());
     }
 }

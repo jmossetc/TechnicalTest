@@ -217,6 +217,72 @@ final class UserAuthorizationServiceTest extends TestCase
         $this->service(callerRole: Role::Employee)->authorizeDeletion($this->callerId, $target);
     }
 
+    // ── authorizeUserRead ─────────────────────────────────────────────────────
+
+    public function testAnyoneCanReadOwnProfile(): void
+    {
+        foreach ([Role::Admin, Role::CompanyAdmin, Role::ShopManager, Role::Employee] as $role) {
+            $this->service(callerRole: $role)
+                ->authorizeUserRead($this->callerId, $this->makeUser($this->callerId, $role));
+        }
+        $this->addToAssertionCount(1);
+    }
+
+    public function testAdminCanReadAnyUser(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, companyId: self::COMPANY_B);
+        $this->service(callerRole: Role::Admin)->authorizeUserRead($this->callerId, $target);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCompanyAdminCanReadShopManagerInOwnCompany(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::ShopManager, companyId: self::COMPANY_A, shopId: self::SHOP_A1);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeUserRead($this->callerId, $target);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCompanyAdminCanReadEmployeeInOwnCompany(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, companyId: self::COMPANY_A);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeUserRead($this->callerId, $target);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCompanyAdminCannotReadShopManagerInOtherCompany(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::ShopManager, companyId: self::COMPANY_B, shopId: self::SHOP_B1);
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeUserRead($this->callerId, $target);
+    }
+
+    public function testCompanyAdminCannotReadOtherCompanyAdmin(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::CompanyAdmin, companyId: self::COMPANY_A);
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->authorizeUserRead($this->callerId, $target);
+    }
+
+    public function testShopManagerCannotReadAnotherUser(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, companyId: self::COMPANY_A);
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
+            ->authorizeUserRead($this->callerId, $target);
+    }
+
+    public function testEmployeeCannotReadAnotherUser(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, companyId: self::COMPANY_A);
+        $this->expectException(ForbiddenException::class);
+        $this->service(callerRole: Role::Employee)
+            ->authorizeUserRead($this->callerId, $target);
+    }
+
     // ── resolveListingScope ───────────────────────────────────────────────────
 
     public function testAdminWithNoFilterSeesEveryone(): void
