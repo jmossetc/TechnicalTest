@@ -51,42 +51,59 @@ Feature: Shop API
 
   # ── List ──────────────────────────────────────────────────────────────────────
 
-  Scenario: Admin lists shops for a company
+  Scenario: Admin lists all shops
     Given I am logged in as admin
     And a company "11111111-1111-4111-8111-111111111111" exists
     And I create a shop with name "Alpha" for company "11111111-1111-4111-8111-111111111111"
     And I create a shop with name "Beta" for company "11111111-1111-4111-8111-111111111111"
-    When I list shops for company "11111111-1111-4111-8111-111111111111"
+    When I list shops
     Then the response status should be 200
     And the response should contain field "data"
     And the response should contain field "pagination"
     And the "data" array should have 2 items
 
-  Scenario: Listing shops without authentication returns 401
-    Given a company "11111111-1111-4111-8111-111111111111" exists
-    When I list shops for company "11111111-1111-4111-8111-111111111111"
-    Then the response status should be 401
-
-  Scenario: Company manager lists shops in their company
-    Given a company "11111111-1111-4111-8111-111111111111" exists
-    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
-    And I create a shop with name "Shop One" for company "11111111-1111-4111-8111-111111111111"
+  Scenario: Admin lists shops filtered by company_id
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a company "22222222-2222-4222-8222-222222222222" exists
+    And I create a shop with name "Alpha" for company "11111111-1111-4111-8111-111111111111"
+    And I create a shop with name "Beta" for company "22222222-2222-4222-8222-222222222222"
     When I list shops for company "11111111-1111-4111-8111-111111111111"
     Then the response status should be 200
     And the "data" array should have 1 item
+    And the response "pagination.total" should equal "1"
 
-  Scenario: Company manager cannot list shops of another company
+  Scenario: Listing shops without authentication returns 401
+    When I list shops
+    Then the response status should be 401
+
+  Scenario: Company admin lists shops and sees only their own company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
+    And I create a shop with name "Shop One" for company "11111111-1111-4111-8111-111111111111"
+    When I list shops
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Company admin company_id filter is ignored and own shops returned
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a company "22222222-2222-4222-8222-222222222222" exists
     And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
+    And I create a shop with name "Own Shop" for company "11111111-1111-4111-8111-111111111111"
     When I list shops for company "22222222-2222-4222-8222-222222222222"
-    Then the response status should be 403
+    Then the response status should be 200
+    And the "data" array should have 1 item
 
   Scenario: Shop manager cannot list shops
     Given a company "11111111-1111-4111-8111-111111111111" exists
     And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
     And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
-    When I list shops for company "11111111-1111-4111-8111-111111111111"
+    When I list shops
+    Then the response status should be 403
+
+  Scenario: Employee cannot list shops
+    Given I am logged in as a user with no role
+    When I list shops
     Then the response status should be 403
 
   Scenario: Admin can paginate shop listing
@@ -95,10 +112,63 @@ Feature: Shop API
     And I create a shop with name "Alpha" for company "11111111-1111-4111-8111-111111111111"
     And I create a shop with name "Beta" for company "11111111-1111-4111-8111-111111111111"
     And I create a shop with name "Gamma" for company "11111111-1111-4111-8111-111111111111"
-    When I list shops for company "11111111-1111-4111-8111-111111111111" on page 1 with limit 2
+    When I list shops on page 1 with limit 2
     Then the response status should be 200
     And the "data" array should have 2 items
     And the response "pagination.total" should equal "3"
+
+  Scenario: Admin can filter shops by name
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And I create a shop with name "Flagship Store" for company "11111111-1111-4111-8111-111111111111"
+    And I create a shop with name "Corner Shop" for company "11111111-1111-4111-8111-111111111111"
+    When I list shops with search "name=Flagship"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Admin can filter shops by city
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And I create a shop with name "Alpha" for company "11111111-1111-4111-8111-111111111111"
+    When I list shops with search "city=Paris"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin can filter shops by is_digital true
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And I create a shop with name "Physical" for company "11111111-1111-4111-8111-111111111111"
+    When I list shops with search "is_digital=true"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin can filter shops by is_digital false
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And I create a shop with name "Physical" for company "11111111-1111-4111-8111-111111111111"
+    When I list shops with search "is_digital=false"
+    Then the response status should be 200
+    And the "data" array should have 1 item
+
+  Scenario: Invalid is_digital value returns 422
+    Given I am logged in as admin
+    When I list shops with search "is_digital=maybe"
+    Then the response status should be 422
+
+  Scenario: Invalid created_from date format returns 422
+    Given I am logged in as admin
+    When I list shops with search "created_from=not-a-date"
+    Then the response status should be 422
+
+  Scenario: Invalid created_to date format returns 422
+    Given I am logged in as admin
+    When I list shops with search "created_to=32-13-2025"
+    Then the response status should be 422
+
+  Scenario: created_from after created_to returns 422
+    Given I am logged in as admin
+    When I list shops with search "created_from=2025-12-31&created_to=2025-01-01"
+    Then the response status should be 422
 
   # ── Get ───────────────────────────────────────────────────────────────────────
 

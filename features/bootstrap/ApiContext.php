@@ -469,14 +469,36 @@ final class ApiContext implements Context
     /** @When I list shops for company :companyId */
     public function iListShopsForCompany(string $companyId): void
     {
-        $this->lastResponse = $this->doGet("/api/companies/{$companyId}/shops", $this->token);
+        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken,
+            ['company_id' => $companyId]);
     }
 
     /** @When I list shops for company :companyId on page :page with limit :limit */
     public function iListShopsForCompanyOnPageWithLimit(string $companyId, int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet("/api/companies/{$companyId}/shops", $this->token,
+        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken,
+            ['company_id' => $companyId, 'page' => (string) $page, 'limit' => (string) $limit]);
+    }
+
+    /** @When I list shops */
+    public function iListShops(): void
+    {
+        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken);
+    }
+
+    /** @When I list shops on page :page with limit :limit */
+    public function iListShopsOnPageWithLimit(int $page, int $limit): void
+    {
+        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken,
             ['page' => (string) $page, 'limit' => (string) $limit]);
+    }
+
+    /** @When I list shops with search :params */
+    public function iListShopsWithSearch(string $params): void
+    {
+        parse_str($params, $query);
+        /** @var array<string, string> $query */
+        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken, $query);
     }
 
     /** @When I get the shop :shopId */

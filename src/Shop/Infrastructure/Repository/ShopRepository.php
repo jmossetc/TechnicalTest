@@ -10,6 +10,7 @@ use Mossetc\TechnicalTest\Shop\Domain\Model\Shop;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopAddress;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopName;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
 use PDO;
 use PDOStatement;
@@ -95,14 +96,15 @@ final readonly class ShopRepository implements ShopRepositoryInterface
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
-    public function findPaginatedByCompany(CompanyId $companyId, int $limit, int $offset): array
+    public function findPaginatedByCriteria(ShopSearchCriteria $criteria, int $limit, int $offset): array
     {
+        [$where, $params] = $this->buildWhereClause($criteria);
+
         $stmt = $this->prepare(
-            'SELECT ' . self::SELECT_COLUMNS . '
-             FROM shops WHERE company_id = UUID_TO_BIN(:company_id) AND deleted_at IS NULL
-             ORDER BY name ASC LIMIT :limit OFFSET :offset',
+            'SELECT ' . self::SELECT_COLUMNS . "
+             FROM shops WHERE {$where} ORDER BY name ASC LIMIT ? OFFSET ?",
         );
-        $stmt->execute(['company_id' => $companyId->value, 'limit' => $limit, 'offset' => $offset]);
+        $stmt->execute([...$params, $limit, $offset]);
 
         $shops = [];
         while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
@@ -112,16 +114,78 @@ final readonly class ShopRepository implements ShopRepositoryInterface
         return $shops;
     }
 
-    public function countByCompany(CompanyId $companyId): int
+    public function countByCriteria(ShopSearchCriteria $criteria): int
     {
-        $stmt = $this->prepare(
-            'SELECT COUNT(*) FROM shops WHERE company_id = UUID_TO_BIN(:company_id) AND deleted_at IS NULL',
-        );
-        $stmt->execute(['company_id' => $companyId->value]);
+        [$where, $params] = $this->buildWhereClause($criteria);
+
+        $stmt = $this->prepare("SELECT COUNT(*) FROM shops WHERE {$where}");
+        $stmt->execute($params);
 
         $count = $stmt->fetchColumn();
 
         return is_numeric($count) ? (int) $count : 0;
+    }
+
+    /**
+     * @return array{string, list<mixed>}
+     */
+    private function buildWhereClause(ShopSearchCriteria $criteria): array
+    {
+        $conditions = ['deleted_at IS NULL'];
+        /** @var list<mixed> $params */
+        $params = [];
+
+        if ($criteria->companyId !== null) {
+            $conditions[] = 'company_id = UUID_TO_BIN(?)';
+            $params[]     = $criteria->companyId;
+        }
+
+        if ($criteria->name !== null) {
+            $conditions[] = 'LOWER(name) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->name . '%';
+        }
+
+        if ($criteria->email !== null) {
+            $conditions[] = 'LOWER(email) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->email . '%';
+        }
+
+        if ($criteria->phoneNumber !== null) {
+            $conditions[] = 'LOWER(phone_number) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->phoneNumber . '%';
+        }
+
+        if ($criteria->city !== null) {
+            $conditions[] = 'LOWER(city) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->city . '%';
+        }
+
+        if ($criteria->postalCode !== null) {
+            $conditions[] = 'LOWER(postal_code) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->postalCode . '%';
+        }
+
+        if ($criteria->country !== null) {
+            $conditions[] = 'LOWER(country) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->country . '%';
+        }
+
+        if ($criteria->isDigital !== null) {
+            $conditions[] = 'is_digital = ?';
+            $params[]     = $criteria->isDigital ? 1 : 0;
+        }
+
+        if ($criteria->createdFrom !== null) {
+            $conditions[] = 'created_at >= ?';
+            $params[]     = $criteria->createdFrom->format('Y-m-d H:i:s');
+        }
+
+        if ($criteria->createdTo !== null) {
+            $conditions[] = 'created_at <= ?';
+            $params[]     = $criteria->createdTo->format('Y-m-d H:i:s');
+        }
+
+        return [implode(' AND ', $conditions), $params];
     }
 
     public function delete(ShopId $id): void

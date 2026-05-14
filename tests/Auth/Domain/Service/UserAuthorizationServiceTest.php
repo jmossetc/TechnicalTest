@@ -312,6 +312,56 @@ final class UserAuthorizationServiceTest extends TestCase
         $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_B1)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
     }
 
+    // ── resolveShopListingCompanyId ──────────────────────────────────────────────
+
+    public function testAdminCanListAllShopsWithoutFilter(): void
+    {
+        $result = $this->service(callerRole: Role::Admin)
+            ->resolveShopListingCompanyId($this->callerId, null);
+
+        $this->assertNull($result);
+    }
+
+    public function testAdminCanFilterShopsByCompanyId(): void
+    {
+        $result = $this->service(callerRole: Role::Admin)
+            ->resolveShopListingCompanyId($this->callerId, self::COMPANY_A);
+
+        $this->assertSame(self::COMPANY_A, $result);
+    }
+
+    public function testCompanyAdminGetsTheirOwnCompanyId(): void
+    {
+        $result = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->resolveShopListingCompanyId($this->callerId, null);
+
+        $this->assertSame(self::COMPANY_A, $result);
+    }
+
+    public function testCompanyAdminRequestedCompanyIdIsIgnored(): void
+    {
+        $result = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
+            ->resolveShopListingCompanyId($this->callerId, self::COMPANY_B);
+
+        $this->assertSame(self::COMPANY_A, $result);
+    }
+
+    public function testShopManagerCannotListShops(): void
+    {
+        $this->expectException(ForbiddenException::class);
+
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
+            ->resolveShopListingCompanyId($this->callerId, null);
+    }
+
+    public function testEmployeeCannotListShops(): void
+    {
+        $this->expectException(ForbiddenException::class);
+
+        $this->service(callerRole: Role::Employee)
+            ->resolveShopListingCompanyId($this->callerId, null);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function service(

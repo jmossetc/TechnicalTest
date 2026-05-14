@@ -46,7 +46,7 @@ create_shop:
   methods: [POST]
 
 list_shops:
-  path: /api/companies/{companyId}/shops
+  path: /api/shops
   methods: [GET]
 
 get_shop:

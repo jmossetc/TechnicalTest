@@ -174,6 +174,30 @@ final readonly class UserAuthorizationService
     }
 
     /**
+     * Determine the company_id scope for shop listing.
+     *
+     * Admin      → returns $requestedCompanyId (null = all companies)
+     * CompanyAdmin → returns their own companyId (ignores $requestedCompanyId)
+     * Others     → throws ForbiddenException
+     *
+     * @throws ForbiddenException
+     */
+    public function resolveShopListingCompanyId(UserId $callerId, ?string $requestedCompanyId): ?string
+    {
+        $caller = $this->loadCaller($callerId);
+
+        if ($caller->role === Role::Admin) {
+            return $requestedCompanyId;
+        }
+
+        if ($caller->role === Role::CompanyAdmin && $caller->companyId !== null) {
+            return $caller->companyId;
+        }
+
+        throw new ForbiddenException('You do not have permission to list shops');
+    }
+
+    /**
      * Assert that $callerId may read or edit the given shop.
      *
      * @throws ForbiddenException

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Mossetc\TechnicalTest\Tests\Support;
+
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
 use Mossetc\TechnicalTest\Shop\Domain\Model\Shop;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
@@ -9,10 +11,6 @@ use Mossetc\TechnicalTest\Shop\Domain\Model\ShopName;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
 
-/**
- * In-memory implementation of ShopRepositoryInterface for Behat scenarios.
- * Lives in features/bootstrap/ so it is never shipped to production.
- */
 final class InMemoryShopRepository implements ShopRepositoryInterface
 {
     /** @var array<string, Shop> */
