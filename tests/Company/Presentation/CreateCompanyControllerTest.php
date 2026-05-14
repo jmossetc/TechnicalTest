@@ -17,6 +17,7 @@ final class CreateCompanyControllerTest extends CompanyControllerTestCase
             $this->makeAuth(),
             $this->makeAuthzWithRole($callerRole ?? Role::Admin),
             new CreateCompanyHandler($this->companyRepo),
+            $this->makeValidator(),
         );
     }
 

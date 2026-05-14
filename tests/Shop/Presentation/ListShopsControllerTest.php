@@ -77,7 +77,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 
     public function testCompanyAdminSeesOnlyOwnCompanyShops(): void
@@ -92,7 +94,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Own Shop', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Own Shop', $first['name']);
     }
 
     public function testResponseContainsExpectedFields(): void
@@ -143,7 +147,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Flagship Store', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Flagship Store', $first['name']);
     }
 
     public function testCityFilterIsApplied(): void
@@ -158,7 +164,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Paris Shop', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Paris Shop', $first['name']);
     }
 
     public function testIsDigitalTrueFilterIsApplied(): void
@@ -173,7 +181,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Online', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Online', $first['name']);
     }
 
     public function testIsDigitalFalseFilterIsApplied(): void
@@ -188,7 +198,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Physical', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Physical', $first['name']);
     }
 
     public function testInvalidIsDigitalValueReturns422(): void
@@ -252,7 +264,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
 
         $items = $response->data()['data'];
         $this->assertIsArray($items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 
     public function testSortByNameDescendingReturnsReverseOrder(): void
@@ -267,7 +281,9 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertSame(200, $response->status());
-        $this->assertSame('Gamma', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Gamma', $first['name']);
     }
 
     public function testInvalidSortByValueReturns422(): void

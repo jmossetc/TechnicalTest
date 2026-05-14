@@ -48,7 +48,7 @@ final readonly class RegistrationInputValidatorService
         if ($phoneNumber !== null) {
             try {
                 $parsed = $this->phoneNumberUtil->parse($phoneNumber, 'FR');
-                $phoneNumber = $this->phoneNumberUtil->format($parsed, PhoneNumberFormat::INTERNATIONAL);
+                $phoneNumber = $this->phoneNumberUtil->format($parsed, PhoneNumberFormat::E164);
             } catch (NumberParseException) {
                 throw new InvalidArgumentException('Invalid phone number format');
             }
@@ -96,8 +96,11 @@ final readonly class RegistrationInputValidatorService
         return $role;
     }
 
-    private function nullableString(string $value): ?string
+    private function nullableString(mixed $value): ?string
     {
-        return $value  !== '' ? $value : null;
+        if (!is_string($value)) {
+            return null;
+        }
+        return $value !== '' ? $value : null;
     }
 }

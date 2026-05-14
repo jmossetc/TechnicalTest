@@ -19,7 +19,9 @@ use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shop\Application\Command\CreateShop;
 use Mossetc\TechnicalTest\Shop\Application\Handler\CreateShopHandler;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
+use Mossetc\TechnicalTest\Shop\Domain\Service\ShopInputValidatorService;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryShopRepository;
+use libphonenumber\PhoneNumberUtil;
 use PHPUnit\Framework\TestCase;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
 
@@ -32,6 +34,11 @@ abstract class ShopControllerTestCase extends TestCase
     {
         $this->callerId = UserId::generate();
         $this->shopRepo = new InMemoryShopRepository();
+    }
+
+    protected function makeValidator(): ShopInputValidatorService
+    {
+        return new ShopInputValidatorService(PhoneNumberUtil::getInstance());
     }
 
     protected function makeAuth(): JwtAuthMiddleware
@@ -87,11 +94,13 @@ abstract class ShopControllerTestCase extends TestCase
     }
 
     /**
+     * @param array<string, mixed>  $body
+     * @param array<string, string> $attrs
      * @param array<string, string> $query
      */
-    protected function authedRequest(string $method, string $path, array $query = []): Request
+    protected function authedRequest(string $method, string $path, array $body = [], array $attrs = [], array $query = []): Request
     {
-        return new Request($method, $path, ['Authorization' => 'Bearer tok'], [], [], $query);
+        return new Request($method, $path, ['Authorization' => 'Bearer tok'], $body, $attrs, $query);
     }
 
     protected function unauthRequest(string $method, string $path): Request

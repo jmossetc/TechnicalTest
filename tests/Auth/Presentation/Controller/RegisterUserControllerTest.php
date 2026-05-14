@@ -28,6 +28,7 @@ use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopName;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryUserRepository;
+use libphonenumber\PhoneNumberUtil;
 use PHPUnit\Framework\TestCase;
 
 final class RegisterUserControllerTest extends TestCase
@@ -91,7 +92,7 @@ final class RegisterUserControllerTest extends TestCase
             new RegisterUserHandler($this->userRepo, new PasswordHasher('')),
             $this->makeAuth(),
             new UserAuthorizationService($this->userRepo),
-            new RegistrationInputValidatorService($shopRepo ?? $this->createStub(ShopRepositoryInterface::class)),
+            new RegistrationInputValidatorService($shopRepo ?? $this->createStub(ShopRepositoryInterface::class), PhoneNumberUtil::getInstance()),
         );
     }
 
@@ -222,7 +223,7 @@ final class RegisterUserControllerTest extends TestCase
             new RegisterUserHandler($this->userRepo, new PasswordHasher('')),
             new JwtAuthMiddleware($svc),
             new UserAuthorizationService($this->userRepo),
-            new RegistrationInputValidatorService($this->createStub(ShopRepositoryInterface::class)),
+            new RegistrationInputValidatorService($this->createStub(ShopRepositoryInterface::class), PhoneNumberUtil::getInstance()),
         );
 
         $response = $ctrl($this->req($this->validBody()));

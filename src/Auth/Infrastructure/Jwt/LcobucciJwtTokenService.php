@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Auth\Infrastructure\Jwt;
 
-use DateTimeImmutable;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
@@ -47,7 +46,7 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
 
     public function issue(UserId $userId, Email $email): AuthToken
     {
-        $now = new DateTimeImmutable();;
+        $now = $this->clock->now();
         $expiresAt = $now->modify("+{$this->config->ttlSeconds} seconds");
 
         $token = $this->jwtConfiguration->builder()

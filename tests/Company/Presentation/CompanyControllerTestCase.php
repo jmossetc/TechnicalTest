@@ -19,7 +19,9 @@ use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Company\Application\Command\CreateCompany;
 use Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
+use Mossetc\TechnicalTest\Company\Domain\Service\CompanyInputValidatorService;
 use Mossetc\TechnicalTest\Tests\Support\InMemoryCompanyRepository;
+use libphonenumber\PhoneNumberUtil;
 use PHPUnit\Framework\TestCase;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
 
@@ -40,6 +42,11 @@ abstract class CompanyControllerTestCase extends TestCase
         $svc->method('validate')->willReturn($this->callerId);
 
         return new JwtAuthMiddleware($svc);
+    }
+
+    protected function makeValidator(): CompanyInputValidatorService
+    {
+        return new CompanyInputValidatorService(PhoneNumberUtil::getInstance());
     }
 
     protected function makeAuthzAsAdmin(): UserAuthorizationService

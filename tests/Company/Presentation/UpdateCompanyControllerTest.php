@@ -16,6 +16,7 @@ final class UpdateCompanyControllerTest extends CompanyControllerTestCase
             $this->makeAuth(),
             $this->makeAuthzWithRole($role ?? Role::Admin, $companyId),
             new UpdateCompanyHandler($this->companyRepo),
+            $this->makeValidator(),
         );
     }
 

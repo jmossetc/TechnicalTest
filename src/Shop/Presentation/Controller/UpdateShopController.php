@@ -57,14 +57,14 @@ final readonly class UpdateShopController implements ControllerInterface
             return Response::error($e->getMessage(), 403);
         }
 
-        $shopInputs = $this->validator->validate($request->body);
-        $name = $request->stringBody('name');
-
-        if ($name === '') {
-            return Response::error('name is required', 422);
+        try {
+            $this->validator->validate($request->body);
+        } catch (InvalidArgumentException $e) {
+            return Response::error($e->getMessage(), 422);
         }
 
-        $latRaw    = $request->body['latitude']  ?? null;
+        $name   = $request->stringBody('name');
+        $latRaw = $request->body['latitude']  ?? null;
         $lngRaw    = $request->body['longitude'] ?? null;
         $isDigital = isset($request->body['is_digital']) ? (bool) $request->body['is_digital'] : null;
         $isActive  = isset($request->body['is_active'])  ? (bool) $request->body['is_active']  : null;

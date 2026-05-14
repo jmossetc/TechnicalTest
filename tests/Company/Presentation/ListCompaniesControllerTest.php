@@ -144,7 +144,9 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 
     public function testCountryFilterIsApplied(): void
@@ -159,7 +161,9 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 
     public function testPostalCodeFilterIsApplied(): void
@@ -174,7 +178,9 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 
     public function testPhoneNumberFilterIsApplied(): void
@@ -189,7 +195,9 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 
     public function testInvalidCreatedFromDateReturns422(): void
@@ -241,7 +249,9 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
 
         $items = $this->ctrl()($this->authedRequest('GET', '/api/companies'))->data()['data'];
         $this->assertIsArray($items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 
     public function testSortByNameDescReturnsReverseOrder(): void
@@ -252,7 +262,9 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
             'GET', '/api/companies', query: ['sort_by' => 'name', 'sort_direction' => 'desc'],
         ))->data()['data'];
         $this->assertIsArray($items);
-        $this->assertSame('Beta', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Beta', $first['name']);
     }
 
     public function testSortByCreatedAtAscIsAccepted(): void
@@ -289,6 +301,8 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
             'GET', '/api/companies', query: ['sort_by' => '', 'sort_direction' => ''],
         ))->data()['data'];
         $this->assertIsArray($items);
-        $this->assertSame('Alpha', $items[0]['name']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('Alpha', $first['name']);
     }
 }

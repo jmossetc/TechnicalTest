@@ -22,7 +22,7 @@ final readonly class UpdateCompany
         public ?bool $isActive = null,
     ) {}
 
-    public static function fromCompanyInput(CompanyInput $input, string $id, bool $isActive): self
+    public static function fromCompanyInput(CompanyInput $input, string $id, ?bool $isActive = null): self
     {
         return new self(
             $id,

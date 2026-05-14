@@ -173,7 +173,9 @@ final class ListUsersControllerTest extends TestCase
         $items = $response->data()['data'];
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
-        $this->assertSame('alice@test.test', $items[0]['email']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('alice@test.test', $first['email']);
     }
 
     public function testFiltersUsersByRoleParam(): void
@@ -264,7 +266,9 @@ final class ListUsersControllerTest extends TestCase
             firstName: new FirstName('Alice'), lastName: new LastName('User'),
         ));
 
-        $emails = array_column($this->ctrl()($this->request())->data()['data'], 'email');
+        $rawData = $this->ctrl()($this->request())->data()['data'];
+        if (!is_array($rawData)) { $this->fail('Expected array'); }
+        $emails = array_column($rawData, 'email');
         $pos_alice   = array_search('alice@example.com', $emails, true);
         $pos_charlie = array_search('charlie@example.com', $emails, true);
         $this->assertNotFalse($pos_alice);
@@ -284,7 +288,9 @@ final class ListUsersControllerTest extends TestCase
         // caller@test.test > alice@example.com alphabetically, so caller is first in desc
         $items = $this->ctrl()($this->request(['sort_by' => 'email', 'sort_direction' => 'desc']))->data()['data'];
         $this->assertIsArray($items);
-        $this->assertSame('caller@test.test', $items[0]['email']);
+        $first = $items[0];
+        if (!is_array($first)) { $this->fail('Expected array element'); }
+        $this->assertSame('caller@test.test', $first['email']);
     }
 
     public function testSortByFirstNameAscIsAccepted(): void

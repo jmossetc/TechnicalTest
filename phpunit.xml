@@ -21,6 +21,7 @@
             <directory>src/Auth/Infrastructure/Repository</directory>
             <directory>src/Company/Infrastructure/Repository</directory>
             <directory>src/Shop/Infrastructure/Repository</directory>
+            <directory>src/Shared/Infrastructure/DI</directory>
         </exclude>
     </source>
 </phpunit>
