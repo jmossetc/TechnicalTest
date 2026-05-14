@@ -6,6 +6,7 @@ namespace Mossetc\TechnicalTest\Tests\Company\Presentation;
 
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
 use Mossetc\TechnicalTest\Company\Presentation\Controller\CreateCompanyController;
 
 final class CreateCompanyControllerTest extends CompanyControllerTestCase
@@ -70,6 +71,6 @@ final class CreateCompanyControllerTest extends CompanyControllerTestCase
     {
         $this->ctrl()($this->authedRequest('POST', '/api/companies', ['name' => 'New Corp']));
 
-        $this->assertSame(1, $this->companyRepo->count());
+        $this->assertSame(1, $this->companyRepo->countByCriteria(new CompanySearchCriteria()));
     }
 }

@@ -6,6 +6,7 @@ namespace Mossetc\TechnicalTest\Tests\Company\Application;
 
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Company\Application\Command\ListCompanies;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
 use PHPUnit\Framework\TestCase;
 
 final class ListCompaniesCommandTest extends TestCase
@@ -16,16 +17,19 @@ final class ListCompaniesCommandTest extends TestCase
 
         $this->assertSame(1, $cmd->page);
         $this->assertSame(10, $cmd->limit);
-        $this->assertNull($cmd->name);
+        $this->assertNull($cmd->criteria->name);
+        $this->assertNull($cmd->criteria->email);
     }
 
-    public function testAcceptsCustomValues(): void
+    public function testAcceptsCustomCriteria(): void
     {
-        $cmd = new ListCompanies(page: 3, limit: 25, name: 'Acme');
+        $criteria = new CompanySearchCriteria(name: 'Acme', city: 'Paris');
+        $cmd      = new ListCompanies(page: 3, limit: 25, criteria: $criteria);
 
         $this->assertSame(3,      $cmd->page);
         $this->assertSame(25,     $cmd->limit);
-        $this->assertSame('Acme', $cmd->name);
+        $this->assertSame('Acme', $cmd->criteria->name);
+        $this->assertSame('Paris', $cmd->criteria->city);
     }
 
     public function testRejectsPageZero(): void

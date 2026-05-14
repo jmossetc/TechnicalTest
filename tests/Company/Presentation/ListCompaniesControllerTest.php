@@ -114,4 +114,124 @@ final class ListCompaniesControllerTest extends CompanyControllerTestCase
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
     }
+
+    public function testEmailFilterIsApplied(): void
+    {
+        $this->seedCompanyFull('Alpha', email: 'alpha@example.com');
+        $this->seedCompanyFull('Beta',  email: 'beta@example.com');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['email' => 'alpha'],
+        ));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+        $first = $items[0];
+        $this->assertIsArray($first);
+        $this->assertSame('Alpha', $first['name']);
+    }
+
+    public function testCityFilterIsApplied(): void
+    {
+        $this->seedCompanyFull('Alpha', city: 'Paris');
+        $this->seedCompanyFull('Beta',  city: 'London');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['city' => 'Paris'],
+        ));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+        $this->assertSame('Alpha', $items[0]['name']);
+    }
+
+    public function testCountryFilterIsApplied(): void
+    {
+        $this->seedCompanyFull('Alpha', country: 'France');
+        $this->seedCompanyFull('Beta',  country: 'UK');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['country' => 'France'],
+        ));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+        $this->assertSame('Alpha', $items[0]['name']);
+    }
+
+    public function testPostalCodeFilterIsApplied(): void
+    {
+        $this->seedCompanyFull('Alpha', postalCode: '75001');
+        $this->seedCompanyFull('Beta',  postalCode: '69001');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['postal_code' => '750'],
+        ));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+        $this->assertSame('Alpha', $items[0]['name']);
+    }
+
+    public function testPhoneNumberFilterIsApplied(): void
+    {
+        $this->seedCompanyFull('Alpha', phoneNumber: '+33123456789');
+        $this->seedCompanyFull('Beta',  phoneNumber: '+44207946');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['phone_number' => '+33'],
+        ));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+        $this->assertSame('Alpha', $items[0]['name']);
+    }
+
+    public function testInvalidCreatedFromDateReturns422(): void
+    {
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['created_from' => 'not-a-date'],
+        ));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testInvalidCreatedToDateReturns422(): void
+    {
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['created_to' => '32-13-2025'],
+        ));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testCreatedFromAfterCreatedToReturns422(): void
+    {
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: [
+                'created_from' => '2025-12-31',
+                'created_to'   => '2025-01-01',
+            ],
+        ));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testEmptyFilterParamsAreIgnored(): void
+    {
+        $this->seedCompany('Any');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/companies', query: ['email' => '', 'city' => '', 'country' => ''],
+        ));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertCount(1, $items);
+    }
 }

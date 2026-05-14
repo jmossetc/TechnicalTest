@@ -544,6 +544,16 @@ final class ApiContext implements Context
         $this->lastResponse = $this->doGet('/api/companies', $this->token, ['name' => $name]);
     }
 
+    /**
+     * @When I list companies with search :params
+     */
+    public function iListCompaniesWithSearch(string $params): void
+    {
+        parse_str($params, $query);
+        /** @var array<string, string> $query */
+        $this->lastResponse = $this->doGet('/api/companies', $this->token ?: $this->adminToken, $query);
+    }
+
     /** @When I get the company :companyId */
     public function iGetTheCompany(string $companyId): void
     {

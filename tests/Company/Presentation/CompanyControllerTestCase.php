@@ -70,6 +70,25 @@ abstract class CompanyControllerTestCase extends TestCase
         return (new CreateCompanyHandler($this->companyRepo))->handle(new CreateCompany($name));
     }
 
+    protected function seedCompanyFull(
+        string $name = 'Test Company',
+        ?string $email = null,
+        ?string $phoneNumber = null,
+        ?string $city = null,
+        ?string $postalCode = null,
+        ?string $country = null,
+    ): CompanyId {
+        return (new CreateCompanyHandler($this->companyRepo))
+            ->handle(new CreateCompany(
+                name:        $name,
+                email:       $email,
+                phoneNumber: $phoneNumber,
+                city:        $city,
+                postalCode:  $postalCode,
+                country:     $country,
+            ));
+    }
+
     /**
      * @param array<string, mixed>  $body
      * @param array<string, string> $attrs

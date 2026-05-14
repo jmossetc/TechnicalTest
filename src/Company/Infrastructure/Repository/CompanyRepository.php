@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanySearchCriteria;
 use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
 use PDO;
 use PDOStatement;
@@ -86,21 +87,15 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
-    public function findPaginated(int $limit, int $offset, ?string $name = null): array
+    public function findPaginatedByCriteria(CompanySearchCriteria $criteria, int $limit, int $offset): array
     {
-        $params = ['limit' => $limit, 'offset' => $offset];
-        $where  = 'deleted_at IS NULL';
+        [$where, $params] = $this->buildWhereClause($criteria);
 
-        if ($name !== null) {
-            $where          .= ' AND name LIKE :name';
-            $params['name'] = '%' . $name . '%';
-        }
-
-        $stmt = $this->prepare(
+        $stmt = $this->pdo->prepare(
             'SELECT ' . self::SELECT_COLUMNS . "
-             FROM companies WHERE {$where} ORDER BY name ASC LIMIT :limit OFFSET :offset",
+         FROM companies WHERE {$where} ORDER BY name ASC LIMIT ? OFFSET ?",
         );
-        $stmt->execute($params);
+        $stmt->execute([...$params, $limit, $offset]);
 
         $companies = [];
         while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
@@ -110,22 +105,68 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
         return $companies;
     }
 
-    public function count(?string $name = null): int
+    public function countByCriteria(CompanySearchCriteria $criteria): int
     {
-        $params = [];
-        $where  = 'deleted_at IS NULL';
+        [$where, $params] = $this->buildWhereClause($criteria);
 
-        if ($name !== null) {
-            $where          .= ' AND name LIKE :name';
-            $params['name'] = '%' . $name . '%';
-        }
-
-        $stmt = $this->prepare("SELECT COUNT(*) FROM companies WHERE {$where}");
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM companies WHERE {$where}");
         $stmt->execute($params);
 
         $count = $stmt->fetchColumn();
 
         return is_numeric($count) ? (int) $count : 0;
+    }
+
+    /**
+     * @return array{string, list<mixed>}
+     */
+    private function buildWhereClause(CompanySearchCriteria $criteria): array
+    {
+        $conditions = ['deleted_at IS NULL'];
+        /** @var list<mixed> $params */
+        $params = [];
+
+        if ($criteria->name !== null) {
+            $conditions[] = 'LOWER(name) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->name . '%';
+        }
+
+        if ($criteria->email !== null) {
+            $conditions[] = 'LOWER(email) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->email . '%';
+        }
+
+        if ($criteria->phoneNumber !== null) {
+            $conditions[] = 'LOWER(phone_number) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->phoneNumber . '%';
+        }
+
+        if ($criteria->city !== null) {
+            $conditions[] = 'LOWER(city) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->city . '%';
+        }
+
+        if ($criteria->postalCode !== null) {
+            $conditions[] = 'LOWER(postal_code) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->postalCode . '%';
+        }
+
+        if ($criteria->country !== null) {
+            $conditions[] = 'LOWER(country) LIKE LOWER(?)';
+            $params[]     = '%' . $criteria->country . '%';
+        }
+
+        if ($criteria->createdFrom !== null) {
+            $conditions[] = 'created_at >= ?';
+            $params[]     = $criteria->createdFrom->format('Y-m-d H:i:s');
+        }
+
+        if ($criteria->createdTo !== null) {
+            $conditions[] = 'created_at <= ?';
+            $params[]     = $criteria->createdTo->format('Y-m-d H:i:s');
+        }
+
+        return [implode(' AND ', $conditions), $params];
     }
 
     public function delete(CompanyId $id): void

@@ -91,6 +91,69 @@ Feature: Company API
     And the "data" array should have 0 items
     And the response "pagination.total" should equal "0"
 
+  Scenario: Admin can filter companies by email
+    Given I am logged in as admin
+    And I create a company with name "Alpha Corp"
+    And I create a company with name "Beta Corp"
+    When I list companies with search "email=alpha%40example.com"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin can filter companies by city
+    Given I am logged in as admin
+    And I create a company with name "Paris Co"
+    And I create a company with name "London Co"
+    When I list companies with search "city=Paris"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin can filter companies by country
+    Given I am logged in as admin
+    And I create a company with name "French Co"
+    And I create a company with name "British Co"
+    When I list companies with search "country=France"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin can filter companies by postal code
+    Given I am logged in as admin
+    And I create a company with name "Paris 1st"
+    And I create a company with name "Lyon 1st"
+    When I list companies with search "postal_code=750"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin can filter companies by phone number
+    Given I am logged in as admin
+    And I create a company with name "French Tel"
+    And I create a company with name "British Tel"
+    When I list companies with search "phone_number=%2B33"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Admin can combine name and country filters
+    Given I am logged in as admin
+    And I create a company with name "Alpha Corp"
+    And I create a company with name "Beta Corp"
+    When I list companies with search "name=Alpha&country=France"
+    Then the response status should be 200
+    And the "data" array should have 0 items
+
+  Scenario: Invalid created_from date format returns 422
+    Given I am logged in as admin
+    When I list companies with search "created_from=not-a-date"
+    Then the response status should be 422
+
+  Scenario: Invalid created_to date format returns 422
+    Given I am logged in as admin
+    When I list companies with search "created_to=32-13-2025"
+    Then the response status should be 422
+
+  Scenario: created_from after created_to returns 422
+    Given I am logged in as admin
+    When I list companies with search "created_from=2025-12-31&created_to=2025-01-01"
+    Then the response status should be 422
+
   # ── Get ───────────────────────────────────────────────────────────────────────
 
   Scenario: Admin gets a company by id
