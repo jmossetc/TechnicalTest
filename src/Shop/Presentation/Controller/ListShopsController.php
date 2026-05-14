@@ -13,6 +13,9 @@ use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shop\Application\Command\ListShops;
 use Mossetc\TechnicalTest\Shop\Application\Handler\ListShopsHandler;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -51,11 +54,12 @@ final readonly class ListShopsController implements ControllerInterface
 
         try {
             $criteria = $this->buildCriteria($request->query, $resolvedCompanyId);
+            $sort     = $this->buildSort($request->query);
         } catch (InvalidArgumentException $e) {
             return Response::error($e->getMessage(), 422);
         }
 
-        $result = $this->handler->handle(new ListShops($page, $limit, $criteria));
+        $result = $this->handler->handle(new ListShops($page, $limit, $criteria, $sort));
 
         return Response::json([
             'data'       => $result->shops,
@@ -94,6 +98,29 @@ final readonly class ListShopsController implements ControllerInterface
             createdFrom: $this->parseDate($query['created_from'] ?? ''),
             createdTo:   $this->parseDate($query['created_to'] ?? '', endOfDay: true),
         );
+    }
+
+    /** @param array<string, string> $query */
+    private function buildSort(array $query): ShopSortCriteria
+    {
+        $field = ShopSortField::Name;
+        if (isset($query['sort_by']) && $query['sort_by'] !== '') {
+            $field = ShopSortField::tryFrom($query['sort_by'])
+                ?? throw new InvalidArgumentException(
+                    "Invalid sort_by value '{$query['sort_by']}', valid values: "
+                    . implode(', ', array_column(ShopSortField::cases(), 'value'))
+                );
+        }
+
+        $direction = SortDirection::Asc;
+        if (isset($query['sort_direction']) && $query['sort_direction'] !== '') {
+            $direction = SortDirection::tryFrom($query['sort_direction'])
+                ?? throw new InvalidArgumentException(
+                    "Invalid sort_direction value '{$query['sort_direction']}', expected asc or desc"
+                );
+        }
+
+        return new ShopSortCriteria($field, $direction);
     }
 
     private function nullableString(string $value): ?string

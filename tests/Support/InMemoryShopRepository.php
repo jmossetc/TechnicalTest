@@ -9,7 +9,10 @@ use Mossetc\TechnicalTest\Shop\Domain\Model\Shop;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopName;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 
 final class InMemoryShopRepository implements ShopRepositoryInterface
 {
@@ -37,10 +40,14 @@ final class InMemoryShopRepository implements ShopRepositoryInterface
         return null;
     }
 
-    public function findPaginatedByCriteria(ShopSearchCriteria $criteria, int $limit, int $offset): array
-    {
+    public function findPaginatedByCriteria(
+        ShopSearchCriteria $criteria,
+        ShopSortCriteria   $sort,
+        int                $limit,
+        int                $offset,
+    ): array {
         $shops = array_values($this->filteredByCriteria($criteria));
-        usort($shops, static fn(Shop $a, Shop $b): int => strcmp($a->name->value, $b->name->value));
+        usort($shops, $this->buildComparator($sort));
 
         return array_slice($shops, $offset, $limit);
     }
@@ -53,6 +60,25 @@ final class InMemoryShopRepository implements ShopRepositoryInterface
     public function delete(ShopId $id): void
     {
         unset($this->store[$id->value]);
+    }
+
+    private function buildComparator(ShopSortCriteria $sort): callable
+    {
+        return static function (Shop $a, Shop $b) use ($sort): int {
+            $cmp = match ($sort->field) {
+                ShopSortField::CompanyId  => strcmp($a->companyId->value, $b->companyId->value),
+                ShopSortField::Name       => strcmp($a->name->value, $b->name->value),
+                ShopSortField::Email      => strcmp($a->email ?? '', $b->email ?? ''),
+                ShopSortField::City       => strcmp($a->address->city ?? '', $b->address->city ?? ''),
+                ShopSortField::PostalCode => strcmp($a->address->postalCode ?? '', $b->address->postalCode ?? ''),
+                ShopSortField::Country    => strcmp($a->address->country ?? '', $b->address->country ?? ''),
+                ShopSortField::IsActive   => (int) $a->isActive <=> (int) $b->isActive,
+                ShopSortField::CreatedAt  => $a->createdAt <=> $b->createdAt,
+                ShopSortField::UpdatedAt  => $a->updatedAt <=> $b->updatedAt,
+            };
+
+            return $sort->direction === SortDirection::Desc ? -$cmp : $cmp;
+        };
     }
 
     /** @return array<string, Shop> */

@@ -242,4 +242,49 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $this->assertIsArray($items);
         $this->assertCount(1, $items);
     }
+
+    public function testDefaultSortAppliesNameAsc(): void
+    {
+        $this->seedShop(self::COMPANY_A, 'Gamma');
+        $this->seedShop(self::COMPANY_A, 'Alpha');
+
+        $response = $this->ctrl()($this->authedRequest('GET', '/api/shops'));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertSame('Alpha', $items[0]['name']);
+    }
+
+    public function testSortByNameDescendingReturnsReverseOrder(): void
+    {
+        $this->seedShop(self::COMPANY_A, 'Alpha');
+        $this->seedShop(self::COMPANY_A, 'Gamma');
+
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/shops', query: ['sort_by' => 'name', 'sort_direction' => 'desc'],
+        ));
+
+        $items = $response->data()['data'];
+        $this->assertIsArray($items);
+        $this->assertSame(200, $response->status());
+        $this->assertSame('Gamma', $items[0]['name']);
+    }
+
+    public function testInvalidSortByValueReturns422(): void
+    {
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/shops', query: ['sort_by' => 'invalid_column'],
+        ));
+
+        $this->assertSame(422, $response->status());
+    }
+
+    public function testInvalidSortDirectionValueReturns422(): void
+    {
+        $response = $this->ctrl()($this->authedRequest(
+            'GET', '/api/shops', query: ['sort_direction' => 'sideways'],
+        ));
+
+        $this->assertSame(422, $response->status());
+    }
 }

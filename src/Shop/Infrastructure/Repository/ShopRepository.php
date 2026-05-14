@@ -11,6 +11,7 @@ use Mossetc\TechnicalTest\Shop\Domain\Model\ShopAddress;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopName;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
 use PDO;
 use PDOStatement;
@@ -96,13 +97,17 @@ final readonly class ShopRepository implements ShopRepositoryInterface
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
-    public function findPaginatedByCriteria(ShopSearchCriteria $criteria, int $limit, int $offset): array
-    {
+    public function findPaginatedByCriteria(
+        ShopSearchCriteria $criteria,
+        ShopSortCriteria   $sort,
+        int                $limit,
+        int                $offset,
+    ): array {
         [$where, $params] = $this->buildWhereClause($criteria);
 
         $stmt = $this->prepare(
             'SELECT ' . self::SELECT_COLUMNS . "
-             FROM shops WHERE {$where} ORDER BY name ASC LIMIT ? OFFSET ?",
+             FROM shops WHERE {$where} ORDER BY {$sort->field->value} {$sort->direction->value} LIMIT ? OFFSET ?",
         );
         $stmt->execute([...$params, $limit, $offset]);
 

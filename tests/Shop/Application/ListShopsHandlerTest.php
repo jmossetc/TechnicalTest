@@ -273,4 +273,40 @@ final class ListShopsHandlerTest extends TestCase
         $this->assertSame([], $result->shops);
         $this->assertSame(0, $result->total);
     }
+
+    public function testSortByNameDescendingReturnsReverseAlphabeticalOrder(): void
+    {
+        $this->create(name: 'Alpha');
+        $this->create(name: 'Gamma');
+        $this->create(name: 'Beta');
+
+        $result = $this->handler->handle(new ListShops(
+            limit: 10,
+            sort:  new \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria(
+                field:     \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField::Name,
+                direction: \Mossetc\TechnicalTest\Shared\Domain\SortDirection::Desc,
+            ),
+        ));
+
+        $names = array_map(fn($s) => $s->name->value, $result->shops);
+        $this->assertSame(['Gamma', 'Beta', 'Alpha'], $names);
+    }
+
+    public function testSortByCityAscendingReturnsAlphabeticalCityOrder(): void
+    {
+        $this->create(name: 'Shop Z', city: 'Amsterdam');
+        $this->create(name: 'Shop A', city: 'Zurich');
+        $this->create(name: 'Shop M', city: 'London');
+
+        $result = $this->handler->handle(new ListShops(
+            limit: 10,
+            sort:  new \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria(
+                field:     \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField::City,
+                direction: \Mossetc\TechnicalTest\Shared\Domain\SortDirection::Asc,
+            ),
+        ));
+
+        $cities = array_map(fn($s) => $s->address->city, $result->shops);
+        $this->assertSame(['Amsterdam', 'London', 'Zurich'], $cities);
+    }
 }

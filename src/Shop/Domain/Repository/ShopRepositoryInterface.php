@@ -9,6 +9,7 @@ use Mossetc\TechnicalTest\Shop\Domain\Model\Shop;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopName;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria;
 
 interface ShopRepositoryInterface
 {
@@ -19,7 +20,12 @@ interface ShopRepositoryInterface
     public function findByNameAndCompany(ShopName $name, CompanyId $companyId): ?Shop;
 
     /** @return list<Shop> */
-    public function findPaginatedByCriteria(ShopSearchCriteria $criteria, int $limit, int $offset): array;
+    public function findPaginatedByCriteria(
+        ShopSearchCriteria $criteria,
+        ShopSortCriteria   $sort,
+        int                $limit,
+        int                $offset,
+    ): array;
 
     public function countByCriteria(ShopSearchCriteria $criteria): int;
 

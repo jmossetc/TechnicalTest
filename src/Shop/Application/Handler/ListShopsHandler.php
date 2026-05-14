@@ -17,7 +17,12 @@ final readonly class ListShopsHandler
         $offset = ($query->page - 1) * $query->limit;
 
         return new PaginatedShops(
-            shops: $this->repository->findPaginatedByCriteria($query->criteria, $query->limit, $offset),
+            shops: $this->repository->findPaginatedByCriteria(
+                $query->criteria,
+                $query->sort,
+                $query->limit,
+                $offset,
+            ),
             total: $this->repository->countByCriteria($query->criteria),
             page:  $query->page,
             limit: $query->limit,

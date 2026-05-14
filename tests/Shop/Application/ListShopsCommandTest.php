@@ -61,4 +61,23 @@ final class ListShopsCommandTest extends TestCase
         $this->assertSame(1,   (new ListShops(limit: 1))->limit);
         $this->assertSame(100, (new ListShops(limit: 100))->limit);
     }
+
+    public function testDefaultSortIsNameAsc(): void
+    {
+        $cmd = new ListShops();
+
+        $this->assertSame(\Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField::Name, $cmd->sort->field);
+        $this->assertSame(\Mossetc\TechnicalTest\Shared\Domain\SortDirection::Asc, $cmd->sort->direction);
+    }
+
+    public function testAcceptsCustomSort(): void
+    {
+        $sort = new \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria(
+            field:     \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField::CreatedAt,
+            direction: \Mossetc\TechnicalTest\Shared\Domain\SortDirection::Desc,
+        );
+        $cmd = new ListShops(sort: $sort);
+
+        $this->assertSame($sort, $cmd->sort);
+    }
 }

@@ -6,13 +6,15 @@ namespace Mossetc\TechnicalTest\Shop\Application\Command;
 
 use InvalidArgumentException;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria;
 
 final readonly class ListShops
 {
     public function __construct(
-        public int                $page = 1,
-        public int                $limit = 10,
+        public int                $page     = 1,
+        public int                $limit    = 10,
         public ShopSearchCriteria $criteria = new ShopSearchCriteria(),
+        public ShopSortCriteria   $sort     = new ShopSortCriteria(),
     ) {
         if ($this->page < 1) {
             throw new InvalidArgumentException('Page must be at least 1');

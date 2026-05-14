@@ -170,6 +170,25 @@ Feature: Shop API
     When I list shops with search "created_from=2025-12-31&created_to=2025-01-01"
     Then the response status should be 422
 
+  Scenario: Admin can sort shops by name descending
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And I create a shop with name "Alpha Store" for company "11111111-1111-4111-8111-111111111111"
+    And I create a shop with name "Gamma Store" for company "11111111-1111-4111-8111-111111111111"
+    When I list shops with search "sort_by=name&sort_direction=desc"
+    Then the response status should be 200
+    And the response "data.0.name" should equal "Gamma Store"
+
+  Scenario: Invalid sort_by value returns 422
+    Given I am logged in as admin
+    When I list shops with search "sort_by=not_a_column"
+    Then the response status should be 422
+
+  Scenario: Invalid sort_direction value returns 422
+    Given I am logged in as admin
+    When I list shops with search "sort_direction=sideways"
+    Then the response status should be 422
+
   # ── Get ───────────────────────────────────────────────────────────────────────
 
   Scenario: Admin gets a shop by id
