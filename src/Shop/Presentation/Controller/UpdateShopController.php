@@ -18,15 +18,17 @@ use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
+use Mossetc\TechnicalTest\Shop\Domain\Service\ShopInputValidatorService;
 
 #[AsHttpController(route: 'update_shop')]
 final readonly class UpdateShopController implements ControllerInterface
 {
     public function __construct(
-        private JwtAuthMiddleware        $auth,
-        private UserAuthorizationService $authorization,
-        private GetShopHandler           $getHandler,
-        private UpdateShopHandler        $handler,
+        private JwtAuthMiddleware         $auth,
+        private UserAuthorizationService  $authorization,
+        private GetShopHandler            $getHandler,
+        private UpdateShopHandler         $handler,
+        private ShopInputValidatorService $validator,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -55,6 +57,7 @@ final readonly class UpdateShopController implements ControllerInterface
             return Response::error($e->getMessage(), 403);
         }
 
+        $shopInputs = $this->validator->validate($request->body);
         $name = $request->stringBody('name');
 
         if ($name === '') {

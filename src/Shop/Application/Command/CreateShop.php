@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Shop\Application\Command;
 
+use Mossetc\TechnicalTest\Shop\Application\DTO\ShopInput;
+
 final readonly class CreateShop
 {
     public function __construct(
@@ -20,4 +22,22 @@ final readonly class CreateShop
         public ?float $longitude = null,
         public bool $isDigital = false,
     ) {}
+
+    public static function fromShopInput(ShopInput $input, string $companyId): self
+    {
+        return new self(
+            $companyId,
+            $input->name,
+            $input->email,
+            $input->phoneNumber,
+            $input->addressLine1,
+            $input->addressLine2,
+            $input->city,
+            $input->postalCode,
+            $input->country,
+            $input->latitude,
+            $input->longitude,
+            $input->isDigital,
+        );
+    }
 }

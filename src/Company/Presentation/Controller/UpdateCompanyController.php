@@ -13,6 +13,7 @@ use Mossetc\TechnicalTest\Company\Application\Command\UpdateCompany;
 use Mossetc\TechnicalTest\Company\Application\Handler\UpdateCompanyHandler;
 use Mossetc\TechnicalTest\Company\Domain\Exception\CompanyAlreadyExistsException;
 use Mossetc\TechnicalTest\Company\Domain\Exception\CompanyNotFoundException;
+use Mossetc\TechnicalTest\Company\Domain\Service\CompanyInputValidatorService;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -22,9 +23,10 @@ use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Response;
 final readonly class UpdateCompanyController implements ControllerInterface
 {
     public function __construct(
-        private JwtAuthMiddleware        $auth,
-        private UserAuthorizationService $authorization,
-        private UpdateCompanyHandler     $handler,
+        private JwtAuthMiddleware            $auth,
+        private UserAuthorizationService     $authorization,
+        private UpdateCompanyHandler         $handler,
+        private CompanyInputValidatorService $validator,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -45,9 +47,9 @@ final readonly class UpdateCompanyController implements ControllerInterface
             return Response::error($e->getMessage(), 403);
         }
 
-        $name = $request->stringBody('name');
-
-        if ($name === '') {
+        try {
+            $companyInput = $this->validator->validate($request->body);
+        } catch (InvalidArgumentException $e) {
             return Response::error('name is required', 422);
         }
 
@@ -55,19 +57,7 @@ final readonly class UpdateCompanyController implements ControllerInterface
         $isActive    = is_bool($isActiveRaw) ? $isActiveRaw : null;
 
         try {
-            $this->handler->handle(new UpdateCompany(
-                id:           $id,
-                name:         $name,
-                email:        $request->stringBody('email') ?: null,
-                phoneNumber:  $request->stringBody('phone_number') ?: null,
-                website:      $request->stringBody('website') ?: null,
-                addressLine1: $request->stringBody('address_line_1') ?: null,
-                addressLine2: $request->stringBody('address_line_2') ?: null,
-                city:         $request->stringBody('city') ?: null,
-                postalCode:   $request->stringBody('postal_code') ?: null,
-                country:      $request->stringBody('country') ?: null,
-                isActive:     $isActive,
-            ));
+            $this->handler->handle(UpdateCompany::fromCompanyInput($companyInput, $id, $isActive));
         } catch (CompanyNotFoundException $e) {
             return Response::error($e->getMessage(), 404);
         } catch (CompanyAlreadyExistsException $e) {

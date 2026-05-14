@@ -42,12 +42,9 @@ final readonly class Request
 
         $body = self::parseJsonBody();
 
-        $query = [];
-        foreach ($_GET as $key => $value) {
-            if (is_string($key) && is_string($value)) {
-                $query[$key] = $value;
-            }
-        }
+        $query = array_filter($_GET, static function ($value, $key) {
+            return is_string($key) && is_string($value);
+        }, ARRAY_FILTER_USE_BOTH);
 
         return new self($method, $path, $headers, $body, query: $query);
     }
@@ -62,7 +59,7 @@ final readonly class Request
         return new self($this->method, $this->path, $this->headers, $this->body, $attributes, $this->query);
     }
 
-    /** Read a body key as string, returning $default when absent or non-string. */
+    /** Read a body key as a string, returning $default when absent or non-string. */
     public function stringBody(string $key, string $default = ''): string
     {
         $value = $this->body[$key] ?? null;
@@ -92,13 +89,8 @@ final readonly class Request
             return [];
         }
 
-        $body = [];
-        foreach ($decoded as $key => $value) {
-            if (is_string($key)) {
-                $body[$key] = $value;
-            }
-        }
-
-        return $body;
+        return array_filter($decoded, static function ($key) {
+            return is_string($key);
+        }, ARRAY_FILTER_USE_KEY);
     }
 }

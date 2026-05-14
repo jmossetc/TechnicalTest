@@ -17,6 +17,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\UserSortField;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Date\Date;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -111,10 +112,10 @@ final readonly class ListUsersController implements ControllerInterface
             phoneNumber:   $phoneNumber,
             role:          $role,
             isActive:      $isActive,
-            createdFrom:   $this->parseDate($query['created_from'] ?? ''),
-            createdTo:     $this->parseDate($query['created_to'] ?? '', endOfDay: true),
-            lastLoginFrom: $this->parseDate($query['last_login_from'] ?? ''),
-            lastLoginTo:   $this->parseDate($query['last_login_to'] ?? '', endOfDay: true),
+            createdFrom:   Date::parseDate($query['created_from'] ?? ''),
+            createdTo:     Date::parseDate($query['created_to'] ?? '', endOfDay: true),
+            lastLoginFrom: Date::parseDate($query['last_login_from'] ?? ''),
+            lastLoginTo:   Date::parseDate($query['last_login_to'] ?? '', endOfDay: true),
         );
     }
 
@@ -144,22 +145,6 @@ final readonly class ListUsersController implements ControllerInterface
     private function nullableString(string $value): ?string
     {
         return $value !== '' ? $value : null;
-    }
-
-    private function parseDate(string $raw, bool $endOfDay = false): ?DateTimeImmutable
-    {
-        if ($raw === '') {
-            return null;
-        }
-
-        $dt     = DateTimeImmutable::createFromFormat('Y-m-d', $raw);
-        $errors = DateTimeImmutable::getLastErrors();
-
-        if ($dt === false || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
-            throw new InvalidArgumentException("Invalid date format '{$raw}', expected Y-m-d");
-        }
-
-        return $endOfDay ? $dt->setTime(23, 59, 59) : $dt->setTime(0, 0, 0);
     }
 
     /** @return list<string> */

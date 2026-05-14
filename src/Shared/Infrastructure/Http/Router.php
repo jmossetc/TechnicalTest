@@ -30,7 +30,7 @@ final readonly class Router
             return Response::error('Not Found', 404);
         } catch (MethodNotAllowedException $e) {
             return Response::error(
-                sprintf('Method Not Allowed. Allowed: %s', implode(', ', $e->getAllowedMethods())),
+                'Method Not Allowed. Allowed: ' . implode(', ', $e->getAllowedMethods()),
                 405,
             );
         }
@@ -47,12 +47,9 @@ final readonly class Router
             return Response::error('Not Found', 404);
         }
 
-        $attributes = [];
-        foreach ($match as $key => $value) {
-            if (!str_starts_with($key, '_') && is_string($value)) {
-                $attributes[$key] = $value;
-            }
-        }
+        $attributes = array_filter($match, static function ($value, $key) {
+            return is_string($value) && !str_starts_with($key, '_');
+        }, ARRAY_FILTER_USE_BOTH);
 
         return $controller($request->withAttributes($attributes));
     }

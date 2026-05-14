@@ -12,6 +12,7 @@ use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Company\Application\Command\CreateCompany;
 use Mossetc\TechnicalTest\Company\Application\Handler\CreateCompanyHandler;
 use Mossetc\TechnicalTest\Company\Domain\Exception\CompanyAlreadyExistsException;
+use Mossetc\TechnicalTest\Company\Domain\Service\CompanyInputValidatorService;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\AsHttpController;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Controller\ControllerInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
@@ -24,6 +25,7 @@ final readonly class CreateCompanyController implements ControllerInterface
         private JwtAuthMiddleware        $auth,
         private UserAuthorizationService $authorization,
         private CreateCompanyHandler     $handler,
+        private CompanyInputValidatorService $validator,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -42,24 +44,14 @@ final readonly class CreateCompanyController implements ControllerInterface
             return Response::error($e->getMessage(), 403);
         }
 
-        $name = $request->stringBody('name');
-
-        if ($name === '') {
+        try {
+            $companyInput = $this->validator->validate($request->body);
+        } catch (InvalidArgumentException $e) {
             return Response::error('name is required', 422);
         }
 
         try {
-            $id = $this->handler->handle(new CreateCompany(
-                name:         $name,
-                email:        $request->stringBody('email') ?: null,
-                phoneNumber:  $request->stringBody('phone_number') ?: null,
-                website:      $request->stringBody('website') ?: null,
-                addressLine1: $request->stringBody('address_line_1') ?: null,
-                addressLine2: $request->stringBody('address_line_2') ?: null,
-                city:         $request->stringBody('city') ?: null,
-                postalCode:   $request->stringBody('postal_code') ?: null,
-                country:      $request->stringBody('country') ?: null,
-            ));
+            $id = $this->handler->handle(CreateCompany::fromCompanyInput($companyInput));
         } catch (CompanyAlreadyExistsException $e) {
             return Response::error($e->getMessage(), 409);
         } catch (InvalidArgumentException $e) {

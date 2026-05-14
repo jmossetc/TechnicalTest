@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Auth\Domain\Service;
 
 use InvalidArgumentException;
+use libphonenumber\PhoneNumberUtil;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Service\RegistrationInputValidatorService;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
@@ -24,6 +25,7 @@ final class RegistrationInputValidatorServiceTest extends TestCase
     {
         return new RegistrationInputValidatorService(
             $shopRepo ?? $this->createStub(ShopRepositoryInterface::class),
+                PhoneNumberUtil::getInstance()
         );
     }
 
@@ -217,46 +219,5 @@ final class RegistrationInputValidatorServiceTest extends TestCase
         $input = $this->validator()->validate($this->baseBody());
 
         $this->assertNull($input->phoneNumber);
-    }
-
-    // ── checkRole() direct tests ──────────────────────────────────────────────
-
-    public function testCheckRoleReturnsCorrectRoleEnum(): void
-    {
-        $svc = $this->validator();
-        $this->assertSame(Role::Admin,        $svc->checkRole('admin',        null, null));
-        $this->assertSame(Role::Employee,     $svc->checkRole('employee',     null, null));
-        $this->assertSame(Role::CompanyAdmin, $svc->checkRole('company_admin', self::COMPANY_A, null));
-        $this->assertSame(Role::ShopManager,  $svc->checkRole('shop_manager', null, self::SHOP_A));
-    }
-
-    public function testCheckRoleThrowsOnNullRoleStr(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->validator()->checkRole(null, null, null);
-    }
-
-    public function testCheckRoleThrowsOnEmptyRoleStr(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->validator()->checkRole('', null, null);
-    }
-
-    public function testCheckRoleThrowsOnInvalidRoleStr(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->validator()->checkRole('wizard', null, null);
-    }
-
-    public function testCheckRoleThrowsCompanyAdminWithoutCompanyId(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->validator()->checkRole('company_admin', null, null);
-    }
-
-    public function testCheckRoleThrowsShopManagerWithoutShopId(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->validator()->checkRole('shop_manager', null, null);
     }
 }

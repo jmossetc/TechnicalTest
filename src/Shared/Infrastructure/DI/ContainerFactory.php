@@ -77,7 +77,7 @@ final class ContainerFactory
             if ($container->hasAlias($iface)) {
                 $container->removeAlias($iface);
             }
-            $container->setDefinition($iface, (new Definition($iface))->setSynthetic(true));
+            $container->setDefinition($iface, new Definition($iface)->setSynthetic(true));
         }
 
         $container->compile(resolveEnvPlaceholders: true);

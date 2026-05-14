@@ -23,19 +23,19 @@ final readonly class RegistrationInputValidatorService
     /**
      * Parse and validate the raw registration request fields.
      *
-     * @param array<string, mixed> $requestBody
+     * @param array<string, mixed> $inputs
      * @throws InvalidArgumentException for any validation or lookup failure (→ 422)
      */
-    public function validate(array $requestBody): RegistrationInput
+    public function validate(array $inputs): RegistrationInput
     {
-        $email = is_string($requestBody['email'] ?? null) ? $requestBody['email'] : null;
-        $password = is_string($requestBody['password'] ?? null) ? $requestBody['password'] : null;
-        $firstName = is_string($requestBody['first_name'] ?? null) ? $requestBody['first_name'] : null;
-        $lastName = is_string($requestBody['last_name'] ?? null) ? $requestBody['last_name'] : null;
-        $roleStr = is_string($requestBody['role'] ?? null) ? $requestBody['role'] : null;
-        $companyId = is_string($requestBody['company_id'] ?? null) ? $requestBody['company_id'] : null;
-        $shopId = is_string($requestBody['shop_id'] ?? null) ? $requestBody['shop_id'] : null;
-        $phoneNumber = is_string($requestBody['phone_number'] ?? null) ? $requestBody['phone_number'] : null;
+        $email = $this->nullableString($inputs['email'] ?? '');
+        $password = $this->nullableString($inputs['password'] ?? '');
+        $firstName = $this->nullableString($inputs['first_name'] ?? '');
+        $lastName = $this->nullableString($inputs['last_name'] ?? '');
+        $roleStr = $this->nullableString($inputs['role'] ?? '');
+        $companyId = $this->nullableString($inputs['company_id'] ?? '');
+        $shopId = $this->nullableString($inputs['shop_id'] ?? '');
+        $phoneNumber = $this->nullableString($inputs['phone_number'] ?? '');
 
         if ($email === null || $password === null || $firstName === null || $lastName === null) {
             throw new InvalidArgumentException('email, password, first_name and last_name are required');
@@ -45,11 +45,13 @@ final readonly class RegistrationInputValidatorService
             throw new InvalidArgumentException('Invalid email format');
         }
 
-        try {
-            $phoneNumber = $this->phoneNumberUtil->parse($phoneNumber, 'FR');
-            $phoneNumber = $this->phoneNumberUtil->format($phoneNumber, PhoneNumberFormat::INTERNATIONAL);
-        } catch (NumberParseException) {
-            throw new InvalidArgumentException('Invalid phone number format');
+        if ($phoneNumber !== null) {
+            try {
+                $parsed = $this->phoneNumberUtil->parse($phoneNumber, 'FR');
+                $phoneNumber = $this->phoneNumberUtil->format($parsed, PhoneNumberFormat::INTERNATIONAL);
+            } catch (NumberParseException) {
+                throw new InvalidArgumentException('Invalid phone number format');
+            }
         }
 
         $role = $this->checkRole($roleStr, $companyId, $shopId);
@@ -72,7 +74,7 @@ final readonly class RegistrationInputValidatorService
         return new RegistrationInput($role, $companyId, $shopId, $phoneNumber, $firstName, $lastName, $email, $password,);
     }
 
-    public function checkRole(?string $roleStr, ?string $companyId, ?string $shopId): Role
+    private function checkRole(?string $roleStr, ?string $companyId, ?string $shopId): Role
     {
         if (empty($roleStr)) {
             throw new InvalidArgumentException('role is required');
@@ -92,5 +94,10 @@ final readonly class RegistrationInputValidatorService
         }
 
         return $role;
+    }
+
+    private function nullableString(string $value): ?string
+    {
+        return $value  !== '' ? $value : null;
     }
 }

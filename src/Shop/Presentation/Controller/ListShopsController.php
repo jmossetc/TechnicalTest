@@ -10,6 +10,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Exception\ForbiddenException;
 use Mossetc\TechnicalTest\Auth\Domain\Exception\InvalidTokenException;
 use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
+use Mossetc\TechnicalTest\Shared\Infrastructure\Date\Date;
 use Mossetc\TechnicalTest\Shop\Application\Command\ListShops;
 use Mossetc\TechnicalTest\Shop\Application\Handler\ListShopsHandler;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
@@ -95,8 +96,8 @@ final readonly class ListShopsController implements ControllerInterface
             postalCode:  $this->nullableString($query['postal_code'] ?? ''),
             country:     $this->nullableString($query['country'] ?? ''),
             isDigital:   $isDigital,
-            createdFrom: $this->parseDate($query['created_from'] ?? ''),
-            createdTo:   $this->parseDate($query['created_to'] ?? '', endOfDay: true),
+            createdFrom: Date::parseDate($query['created_from'] ?? ''),
+            createdTo:   Date::parseDate($query['created_to'] ?? '', endOfDay: true),
         );
     }
 
@@ -126,21 +127,5 @@ final readonly class ListShopsController implements ControllerInterface
     private function nullableString(string $value): ?string
     {
         return $value !== '' ? $value : null;
-    }
-
-    private function parseDate(string $raw, bool $endOfDay = false): ?DateTimeImmutable
-    {
-        if ($raw === '') {
-            return null;
-        }
-
-        $dt     = DateTimeImmutable::createFromFormat('Y-m-d', $raw);
-        $errors = DateTimeImmutable::getLastErrors();
-
-        if ($dt === false || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
-            throw new InvalidArgumentException("Invalid date format '{$raw}', expected Y-m-d");
-        }
-
-        return $endOfDay ? $dt->setTime(23, 59, 59) : $dt->setTime(0, 0, 0);
     }
 }

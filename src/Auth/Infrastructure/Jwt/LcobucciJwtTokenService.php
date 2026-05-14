@@ -30,6 +30,7 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
     public function __construct(
         private readonly JwtConfig $config,
         private readonly ClockInterface $clock = new SystemClock(),
+
     ) {
         $signer = new Sha256();
         $key = InMemory::plainText($config->secret);
@@ -43,9 +44,10 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
         );
     }
 
+
     public function issue(UserId $userId, Email $email): AuthToken
     {
-        $now = $this->clock->now();
+        $now = new DateTimeImmutable();;
         $expiresAt = $now->modify("+{$this->config->ttlSeconds} seconds");
 
         $token = $this->jwtConfiguration->builder()

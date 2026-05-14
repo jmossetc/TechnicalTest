@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Company\Application\Command;
 
+use Mossetc\TechnicalTest\Company\Application\DTO\CompanyInput;
+
 final readonly class UpdateCompany
 {
     public function __construct(
@@ -19,4 +21,21 @@ final readonly class UpdateCompany
         public ?string $country = null,
         public ?bool $isActive = null,
     ) {}
+
+    public static function fromCompanyInput(CompanyInput $input, string $id, bool $isActive): self
+    {
+        return new self(
+            $id,
+            $input->name,
+            $input->email,
+            $input->phoneNumber,
+            $input->website,
+            $input->addressLine1,
+            $input->addressLine2,
+            $input->city,
+            $input->postalCode,
+            $input->country,
+            $isActive,
+        );
+    }
 }

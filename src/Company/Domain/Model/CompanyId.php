@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mossetc\TechnicalTest\Company\Domain\Model;
 
-use InvalidArgumentException;
 use Mossetc\TechnicalTest\Shared\Infrastructure\UUID\UUID;
 
 final readonly class CompanyId
