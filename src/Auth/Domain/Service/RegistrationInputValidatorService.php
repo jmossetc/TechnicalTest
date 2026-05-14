@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Auth\Domain\Service;
 
 use InvalidArgumentException;
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberFormat;
+use libphonenumber\PhoneNumberUtil;
 use Mossetc\TechnicalTest\Auth\Application\DTO\RegistrationInput;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
@@ -12,7 +15,10 @@ use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
 
 final readonly class RegistrationInputValidatorService
 {
-    public function __construct(private ShopRepositoryInterface $shopRepository) {}
+    public function __construct(
+        private ShopRepositoryInterface $shopRepository,
+        private PhoneNumberUtil $phoneNumberUtil,
+    ) {}
 
     /**
      * Parse and validate the raw registration request fields.
@@ -33,6 +39,17 @@ final readonly class RegistrationInputValidatorService
 
         if ($email === null || $password === null || $firstName === null || $lastName === null) {
             throw new InvalidArgumentException('email, password, first_name and last_name are required');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Invalid email format');
+        }
+
+        try {
+            $phoneNumber = $this->phoneNumberUtil->parse($phoneNumber, 'FR');
+            $phoneNumber = $this->phoneNumberUtil->format($phoneNumber, PhoneNumberFormat::INTERNATIONAL);
+        } catch (NumberParseException) {
+            throw new InvalidArgumentException('Invalid phone number format');
         }
 
         $role = $this->checkRole($roleStr, $companyId, $shopId);
