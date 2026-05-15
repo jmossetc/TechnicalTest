@@ -8,13 +8,15 @@ use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Router;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// @Todo - Run this code only in dev environment
-//set_exception_handler(static function (Throwable $e): never {
-//    http_response_code(500);
-//    header('Content-Type: application/json; charset=utf-8');
-//    echo json_encode(['error' => 'Internal Server Error'], JSON_THROW_ON_ERROR);
-//    exit(1);
-//});
+/**
+ * @Todo - Run this code only in dev environment
+ * set_exception_handler(static function (Throwable $e): never {
+ *    http_response_code(500);
+ *    header('Content-Type: application/json; charset=utf-8');
+ *    echo json_encode(['error' => 'Internal Server Error'], JSON_THROW_ON_ERROR);
+ *    exit(1);
+ * });
+ */
 
 $container = ContainerFactory::build();
 
