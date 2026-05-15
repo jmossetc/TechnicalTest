@@ -7,3 +7,4 @@ coverage-report
 CLAUDE.md
 /.junie
 /docs
+.php-cs-fixer.cache
