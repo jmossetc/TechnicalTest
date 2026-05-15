@@ -170,3 +170,13 @@ I have tried to use DDD, it may not be perfect as I have not worked with this ar
 - `docker/` — Docker configuration and entrypoints
 - `public/` — Entry point for the web server, the admin dashboard and api-docs
 - `config/` — Dependency Injection and Routing configs
+
+## 🤖 AI Usage
+
+I have used claude code specifically to generate most Unit Tests and Behat Features.
+
+While this is not ideal, I believe that it is better than having no tests. Realistically, 
+AI generated code is not always perfect and can introduce bugs. However, it can save time and effort in the short term.
+Which was ideal given the time constraints.
+
+Also, I have used the AI to generate the admin dashboard as it is not what I'm tested on.
