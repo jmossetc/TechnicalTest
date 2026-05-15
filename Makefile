@@ -5,6 +5,11 @@ DB_DATABASE         ?= technical_test
 DB_USERNAME         ?= app
 DB_PASSWORD         ?= secret
 
+# ── Project Setup ───────────────────────────────────────────────────────────────
+
+.PHONY: setup
+setup: up-build install db-schema db-seed
+
 # ── Dependencies ───────────────────────────────────────────────────────────────
 
 .PHONY: install
@@ -38,9 +43,6 @@ format-check:
 	$(DC) exec app ./vendor/bin/php-cs-fixer fix --dry-run
 
 # ── Docker ─────────────────────────────────────────────────────────────────────
-
-.PHONY: setup
-setup: up-build db-schema db-seed
 
 .PHONY: up
 up:
@@ -85,6 +87,10 @@ db-schema:
 db-seed:
 	# Load fixtures.sql (assumes file exists at database/fixtures.sql)
 	$(DC) exec -T mysql sh -lc 'mysql -u "$${DB_USERNAME:-$(DB_USERNAME)}" -p"$${DB_PASSWORD:-$(DB_PASSWORD)}" "$${DB_DATABASE:-$(DB_DATABASE)}"' < database/fixtures.sql
+
+.PHONY: regenerate-seed
+regenerate-seed:
+	$(DC) exec app php database/generate_fixtures.php > database/fixtures.sql
 
 .PHONY: help
 help:
