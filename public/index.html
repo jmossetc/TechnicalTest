@@ -53,7 +53,7 @@ function loginPage() {
         error: '',
 
         init() {
-            if (getToken()) location.href = 'shops.html';
+            if (getToken()) { location.href = 'shops.html'; return; }
         },
 
         async login() {

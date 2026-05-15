@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const placeholder = document.getElementById('layout-placeholder');
     if (!placeholder) return;
 
-    placeholder.innerHTML = buildLayout(placeholder.dataset.page || '');
+    placeholder.outerHTML = buildLayout(placeholder.dataset.page || '');
 
     const emailEl = document.getElementById('user-email');
     if (emailEl) emailEl.textContent = getEmail();
