@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS companies
     KEY idx_companies_city (city),
     KEY idx_companies_country (country),
     KEY idx_companies_created_at (created_at),
-    KEY idx_companies_created_at (updated_at),
+    KEY idx_companies_updated_at (updated_at),
     KEY idx_companies_deleted_at (deleted_at)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS shops
     KEY idx_shops_created_at (created_at),
     KEY idx_shops_is_active  (is_active),
     KEY idx_shops_is_digital (is_digital),
-    KEY idx_shops_is_digital (created_at),
-    KEY idx_shops_is_digital (updated_at),
+    KEY idx_shops_created_at (created_at),
+    KEY idx_shops_updated_at (updated_at),
     KEY idx_shops_deleted_at (deleted_at),
     CONSTRAINT fk_shops_company
         FOREIGN KEY (company_id) REFERENCES companies (id)
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS users
     KEY idx_users_role (role),
     KEY idx_users_is_active (is_active),
     KEY idx_users_created_at (created_at),
-    KEY idx_users_created_at (updated_at),
+    KEY idx_users_updated_at (updated_at),
     KEY idx_users_deleted_at (deleted_at),
     CONSTRAINT fk_users_company
         FOREIGN KEY (company_id) REFERENCES companies (id),

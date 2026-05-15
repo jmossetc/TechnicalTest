@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 /**
  * Generates fixtures.sql for stress-testing the application.
+ * Matches the schema in database/schema.sql.
  *
  * Scale:
- *   -    5 admin users
- *   -   50 companies  (5 soft-deleted)
- *   -  350 shops       (7 per company, 30 soft-deleted)
- *   -   90 company managers (2 per active company = 2×45)
- *   -  640 shop managers    (2 per active shop    = 2×320)
- *   -  300 plain users      (no role, 20 soft-deleted)
- *   Total users ≈ 1 035
+ *   -       5 admin users
+ *   -   1,000 companies  (50 soft-deleted)
+ *   -  10,000 shops       (10 per company, 300 soft-deleted)
+ *   -   1,900 company admins (2 per active company = 2×950)
+ *   -  19,400 shop managers    (2 per active shop    = 2×9700)
+ *   -   1,000 employees      (arbitrary, 100 soft-deleted)
  *
  * All passwords: password123
  */
@@ -32,8 +32,11 @@ function esc(string $s): string
     return str_replace(["\\", "'"], ["\\\\", "\\'"], $s);
 }
 
-function sq(string $s): string
+function sq(?string $s): string
 {
+    if ($s === null) {
+        return "NULL";
+    }
     return "'" . esc($s) . "'";
 }
 
@@ -53,7 +56,7 @@ function insertChunked(string $table, string $columns, array $rows, int $chunkSi
 
 // ── Reference data ────────────────────────────────────────────────────────────
 
-const PASSWORD_HASH = '$2y$10$nEt6UajoUSGFN11kFgHOrO5GnrA.7AxlEtEa0os3qTepwgGqV61Ci';
+const PASSWORD_HASH = '$2y$10$hUvNr0XIewZXEXVsRM4.GO6PbUw8DzE4nIctVWMjgp6kZtqo6j/VG';
 
 $companyNames = [
     'Acme Corporation','Globex Inc.','Initech','Umbrella Corp','Soylent Corp',
@@ -112,20 +115,21 @@ $lastNames = [
 // ── State ─────────────────────────────────────────────────────────────────────
 
 $userRows        = [];
-$adminRoleRows   = [];
 $companyRows     = [];
 $shopRows        = [];
-$companyRoleRows = [];
-$shopRoleRows    = [];
 
 $emailSeq = 0;
 
-function nextEmail(array $firstNames, array $lastNames, int &$seq, string $tag = ''): string
+function nextIdentity(array $firstNames, array $lastNames, int &$seq): array
 {
     $fn  = $firstNames[$seq % count($firstNames)];
     $ln  = $lastNames[intdiv($seq, count($firstNames)) % count($lastNames)];
-    $n   = $seq + 1;
     $seq++;
+    return [$fn, $ln];
+}
+
+function nextEmail(string $fn, string $ln, int $n, string $tag = ''): string
+{
     $sfx = $tag !== '' ? ".{$tag}" : '';
     return strtolower("{$fn}.{$ln}{$sfx}.{$n}@fixture.test");
 }
@@ -135,67 +139,69 @@ function nextEmail(array $firstNames, array $lastNames, int &$seq, string $tag =
 for ($i = 1; $i <= 5; $i++) {
     $uid   = uuid4();
     $email = "admin{$i}@fixture.test";
-    $userRows[]      = "(" . ubin($uid) . ", " . sq($email) . ", " . sq(PASSWORD_HASH) . ", NULL)";
-    $adminRoleRows[] = "(" . ubin($uid) . ")";
+    [$fn, $ln] = nextIdentity($firstNames, $lastNames, $emailSeq);
+    $userRows[] = "(" . ubin($uid) . ", " . sq($email) . ", " . sq($fn) . ", " . sq($ln) . ", NULL, 'admin', NULL, NULL, 1, NULL, " . sq(PASSWORD_HASH) . ", NULL)";
 }
 
 // ── Companies + shops + role-holders ─────────────────────────────────────────
 
-$companyIds  = [];
-$shopGlobal  = 0; // global shop counter for soft-delete threshold
+$shopGlobal  = 0;
 
-foreach ($companyNames as $ci => $companyName) {
+for ($ci = 0; $ci < 1000; $ci++) {
+    $companyBaseName = $companyNames[$ci % count($companyNames)];
+    $companyName = ($ci < count($companyNames)) ? $companyBaseName : "{$companyBaseName} #{$ci}";
     $cid         = uuid4();
-    $companyIds[] = $cid;
-    $isDeletedCo = ($ci < 5);
+    $isDeletedCo = ($ci < 50);
     $coDeleted   = $isDeletedCo ? "NOW() - INTERVAL " . ($ci + 1) . " DAY" : 'NULL';
-    $companyRows[] = "(" . ubin($cid) . ", " . sq($companyName) . ", {$coDeleted})";
+    $companyRows[] = "(" . ubin($cid) . ", " . sq($companyName) . ", " . sq(strtolower(str_replace([' ', '#'], ['.', ''], $companyName)) . "@fixture.test") . ", NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, {$coDeleted})";
 
-    // Company managers (only for active companies)
+    // Company admins (only for active companies)
     if (!$isDeletedCo) {
         for ($m = 0; $m < 2; $m++) {
             $uid   = uuid4();
-            $email = nextEmail($firstNames, $lastNames, $emailSeq, 'cm');
-            $userRows[]        = "(" . ubin($uid) . ", " . sq($email) . ", " . sq(PASSWORD_HASH) . ", NULL)";
-            $companyRoleRows[] = "(" . ubin($uid) . ", " . ubin($cid) . ")";
+            [$fn, $ln] = nextIdentity($firstNames, $lastNames, $emailSeq);
+            $email = nextEmail($fn, $ln, $emailSeq, 'ca');
+            $userRows[] = "(" . ubin($uid) . ", " . sq($email) . ", " . sq($fn) . ", " . sq($ln) . ", NULL, 'company_admin', " . ubin($cid) . ", NULL, 1, NULL, " . sq(PASSWORD_HASH) . ", NULL)";
         }
     }
 
-    // 7 shops per company
-    for ($si = 0; $si < 7; $si++) {
+    // 10 shops per company
+    for ($si = 0; $si < 10; $si++) {
         $sid         = uuid4();
-        $loc         = $cities[($ci * 7 + $si) % count($cities)];
-        $suffix      = $shopSuffixes[$si];
-        $street      = sprintf($loc['street_fmt'], ($ci * 7 + $si + 1) * 3);
-        $isDeletedSh = ($shopGlobal < 30);
+        $loc         = $cities[($ci * 10 + $si) % count($cities)];
+        $suffix      = $shopSuffixes[$si % count($shopSuffixes)];
+        $shopName    = "{$suffix} #{$si}";
+        $street      = sprintf($loc['street_fmt'], ($ci * 10 + $si + 1) * 3);
+        $isDeletedSh = ($shopGlobal < 300);
         $shDeleted   = $isDeletedSh ? "NOW() - INTERVAL " . ($shopGlobal + 1) . " HOUR" : 'NULL';
         $shopGlobal++;
 
         $shopRows[] = "(" . ubin($sid) . ", " . ubin($cid) . ", "
-            . sq($suffix) . ", " . sq($street) . ", "
+            . sq($shopName) . ", NULL, NULL, " . sq($street) . ", NULL, "
             . sq($loc['city']) . ", " . sq($loc['zip']) . ", "
-            . sq($loc['country']) . ", {$shDeleted})";
+            . sq($loc['country']) . ", NULL, NULL, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, {$shDeleted})";
 
         // Shop managers only for active shops
         if (!$isDeletedSh) {
             for ($sm = 0; $sm < 2; $sm++) {
                 $uid   = uuid4();
-                $email = nextEmail($firstNames, $lastNames, $emailSeq, 'sm');
-                $userRows[]     = "(" . ubin($uid) . ", " . sq($email) . ", " . sq(PASSWORD_HASH) . ", NULL)";
-                $shopRoleRows[] = "(" . ubin($uid) . ", " . ubin($sid) . ")";
+                [$fn, $ln] = nextIdentity($firstNames, $lastNames, $emailSeq);
+                $email = nextEmail($fn, $ln, $emailSeq, 'sm');
+                $userRows[] = "(" . ubin($uid) . ", " . sq($email) . ", " . sq($fn) . ", " . sq($ln) . ", NULL, 'shop_manager', " . ubin($cid) . ", " . ubin($sid) . ", 1, NULL, " . sq(PASSWORD_HASH) . ", NULL)";
             }
         }
     }
 }
 
-// ── Plain users (300, first 20 soft-deleted) ──────────────────────────────────
+// ── Employees (1000, first 100 soft-deleted) ──────────────────────────────────
 
-for ($i = 0; $i < 300; $i++) {
+for ($i = 0; $i < 1000; $i++) {
     $uid       = uuid4();
-    $email     = nextEmail($firstNames, $lastNames, $emailSeq);
-    $isDeleted = ($i < 20);
+    [$fn, $ln] = nextIdentity($firstNames, $lastNames, $emailSeq);
+    $email     = nextEmail($fn, $ln, $emailSeq);
+    $isDeleted = ($i < 100);
     $deleted   = $isDeleted ? "NOW() - INTERVAL " . ($i + 1) . " DAY" : 'NULL';
-    $userRows[] = "(" . ubin($uid) . ", " . sq($email) . ", " . sq(PASSWORD_HASH) . ", {$deleted})";
+    $userRows[] = "(" . ubin($uid) . ", " . sq($email) . ", " . sq($fn) . ", " . sq($ln) . ", NULL, 'employee', NULL, NULL, 1, NULL, " . sq(PASSWORD_HASH) . ", {$deleted})";
 }
 
 // ── Render SQL ────────────────────────────────────────────────────────────────
@@ -203,46 +209,31 @@ for ($i = 0; $i < 300; $i++) {
 $tu = count($userRows);
 $tc = count($companyRows);
 $ts = count($shopRows);
-$tcm = count($companyRoleRows);
-$tsm = count($shopRoleRows);
 
 echo <<<SQL
     -- =============================================================================
     --  fixtures.sql  –  Stress-test dataset
     --
-    --  Users:            {$tu}   (5 admins · {$tcm} company managers · {$tsm} shop managers · plain)
-    --  Companies:        {$tc}  (5 soft-deleted)
-    --  Shops:            {$ts} (7 per company, 30 soft-deleted)
-    --  company_manager:  {$tcm}  role grants
-    --  shop_manager:     {$tsm}  role grants
+    --  Users:            {$tu}
+    --  Companies:        {$tc}  (50 soft-deleted)
+    --  Shops:            {$ts} (10 per company, 300 soft-deleted)
     --
-    --  All passwords: Secret1234!
+    --  All passwords: password123
     -- =============================================================================
 
-    SET foreign_key_checks = 0;
+    SET FOREIGN_KEY_CHECKS = 0;
 
-    TRUNCATE TABLE user_shop_roles;
-    TRUNCATE TABLE user_company_roles;
-    TRUNCATE TABLE user_admin_roles;
+    TRUNCATE TABLE users;
     TRUNCATE TABLE shops;
     TRUNCATE TABLE companies;
-    TRUNCATE TABLE users;
 
-    SET foreign_key_checks = 1;
+    SET FOREIGN_KEY_CHECKS = 1;
 
 
     SQL;
 
-insertChunked('users', '(id, email, password_hash, deleted_at)', $userRows, 50);
-insertChunked('user_admin_roles', '(user_id)', $adminRoleRows, 50);
-insertChunked('companies', '(id, name, deleted_at)', $companyRows, 50);
-insertChunked('shops', '(id, company_id, name, street, city, zip, country, deleted_at)', $shopRows, 50);
-
-if ($companyRoleRows !== []) {
-    insertChunked('user_company_roles', '(user_id, company_id)', $companyRoleRows, 100);
-}
-if ($shopRoleRows !== []) {
-    insertChunked('user_shop_roles', '(user_id, shop_id)', $shopRoleRows, 100);
-}
+insertChunked('companies', '(id, name, email, phone_number, website, address_line_1, address_line_2, city, postal_code, country, is_active, created_at, updated_at, deleted_at)', $companyRows, 50);
+insertChunked('shops', '(id, company_id, name, email, phone_number, address_line_1, address_line_2, city, postal_code, country, latitude, longitude, is_digital, is_active, created_at, updated_at, deleted_at)', $shopRows, 50);
+insertChunked('users', '(id, email, first_name, last_name, phone_number, role, company_id, shop_id, is_active, last_login_at, password_hash, deleted_at)', $userRows, 50);
 
 echo "-- Done.\n";
