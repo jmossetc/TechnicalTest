@@ -20,7 +20,10 @@ use Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware;
 use Mossetc\TechnicalTest\Auth\Infrastructure\Security\PasswordHasher;
 use Mossetc\TechnicalTest\Auth\Presentation\Controller\RegisterUserController;
+use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
+use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
 use Mossetc\TechnicalTest\Shared\Infrastructure\Http\Request;
 use Mossetc\TechnicalTest\Shop\Domain\Model\Shop;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopAddress;
@@ -86,13 +89,31 @@ final class RegisterUserControllerTest extends TestCase
         return $repo;
     }
 
-    private function ctrl(?ShopRepositoryInterface $shopRepo = null): RegisterUserController
+    private function makeCompanyRepo(bool $found = true): CompanyRepositoryInterface
     {
+        $repo = self::createStub(CompanyRepositoryInterface::class);
+        if ($found) {
+            $repo->method('findById')->willReturn(new Company(
+                id: CompanyId::generate(),
+                name: new CompanyName('Test Company'),
+            ));
+        }
+        return $repo;
+    }
+
+    private function ctrl(
+        ?ShopRepositoryInterface $shopRepo = null,
+        ?CompanyRepositoryInterface $companyRepo = null,
+    ): RegisterUserController {
         return new RegisterUserController(
             new RegisterUserHandler($this->userRepo, new PasswordHasher('')),
             $this->makeAuth(),
             new UserAuthorizationService($this->userRepo),
-            new RegistrationInputValidatorService($shopRepo ?? self::createStub(ShopRepositoryInterface::class), PhoneNumberUtil::getInstance()),
+            new RegistrationInputValidatorService(
+                $shopRepo ?? self::createStub(ShopRepositoryInterface::class),
+                $companyRepo ?? self::createStub(CompanyRepositoryInterface::class),
+                PhoneNumberUtil::getInstance()
+            ),
         );
     }
 
@@ -123,7 +144,9 @@ final class RegisterUserControllerTest extends TestCase
     {
         $this->seedCaller(Role::Admin);
 
-        $response = $this->ctrl()($this->req($this->validBody()));
+        $response = $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'shop_id' => self::SHOP_A,
+        ])));
 
         self::assertSame(201, $response->status());
         self::assertArrayHasKey('id', $response->data());
@@ -133,7 +156,9 @@ final class RegisterUserControllerTest extends TestCase
     {
         $this->seedCaller(Role::Admin);
 
-        $this->ctrl()($this->req($this->validBody()));
+        $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'shop_id' => self::SHOP_A,
+        ])));
 
         self::assertSame(2, $this->userRepo->count()); // caller + new user
     }
@@ -142,7 +167,9 @@ final class RegisterUserControllerTest extends TestCase
     {
         $this->seedCaller(Role::Admin);
 
-        $response = $this->ctrl()($this->req($this->validBody()));
+        $response = $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'shop_id' => self::SHOP_A,
+        ])));
 
         $id = $response->data()['id'] ?? null;
         self::assertIsString($id);
@@ -153,7 +180,7 @@ final class RegisterUserControllerTest extends TestCase
     {
         $this->seedCaller(Role::Admin);
 
-        $response = $this->ctrl()($this->req($this->validBody([
+        $response = $this->ctrl(companyRepo: $this->makeCompanyRepo())($this->req($this->validBody([
             'role'       => 'company_admin',
             'company_id' => self::COMPANY_A,
         ])));
@@ -177,9 +204,9 @@ final class RegisterUserControllerTest extends TestCase
     {
         $this->seedCaller(Role::CompanyAdmin, companyId: self::COMPANY_A);
 
-        $response = $this->ctrl()($this->req($this->validBody([
-            'role'       => 'employee',
-            'company_id' => self::COMPANY_A,
+        $response = $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'role'    => 'employee',
+            'shop_id' => self::SHOP_A,
         ])));
 
         self::assertSame(201, $response->status());
@@ -189,7 +216,7 @@ final class RegisterUserControllerTest extends TestCase
     {
         $this->seedCaller(Role::CompanyAdmin, companyId: self::COMPANY_A);
 
-        $response = $this->ctrl()($this->req($this->validBody([
+        $response = $this->ctrl(companyRepo: $this->makeCompanyRepo())($this->req($this->validBody([
             'role'       => 'company_admin',
             'company_id' => self::COMPANY_A,
         ])));
@@ -201,7 +228,10 @@ final class RegisterUserControllerTest extends TestCase
     {
         $this->seedCaller(Role::ShopManager, shopId: self::SHOP_A);
 
-        $response = $this->ctrl()($this->req($this->validBody(['role' => 'employee'])));
+        $response = $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'role'    => 'employee',
+            'shop_id' => self::SHOP_A,
+        ])));
 
         self::assertSame(201, $response->status());
     }
@@ -223,7 +253,11 @@ final class RegisterUserControllerTest extends TestCase
             new RegisterUserHandler($this->userRepo, new PasswordHasher('')),
             new JwtAuthMiddleware($svc),
             new UserAuthorizationService($this->userRepo),
-            new RegistrationInputValidatorService(self::createStub(ShopRepositoryInterface::class), PhoneNumberUtil::getInstance()),
+            new RegistrationInputValidatorService(
+                self::createStub(ShopRepositoryInterface::class),
+                self::createStub(CompanyRepositoryInterface::class),
+                PhoneNumberUtil::getInstance()
+            ),
         );
 
         $response = $ctrl($this->req($this->validBody()));
@@ -299,6 +333,13 @@ final class RegisterUserControllerTest extends TestCase
         self::assertSame(422, $this->ctrl()($this->req($this->validBody(['role' => 'shop_manager'])))->status());
     }
 
+    public function testReturns422WhenEmployeeHasNoShopId(): void
+    {
+        $this->seedCaller(Role::Admin);
+
+        self::assertSame(422, $this->ctrl()($this->req($this->validBody(['role' => 'employee'])))->status());
+    }
+
     public function testReturns422WhenShopManagerShopDoesNotExist(): void
     {
         $this->seedCaller(Role::Admin);
@@ -315,9 +356,11 @@ final class RegisterUserControllerTest extends TestCase
 
     public function testReturns403WhenEmployeeTriesToRegister(): void
     {
-        $this->seedCaller(Role::Employee);
+        $this->seedCaller(Role::Employee, shopId: self::SHOP_A);
 
-        self::assertSame(403, $this->ctrl()($this->req($this->validBody()))->status());
+        self::assertSame(403, $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'shop_id' => self::SHOP_A,
+        ])))->status());
     }
 
     public function testReturns403WhenCompanyAdminTriesToCreateAdmin(): void
@@ -332,7 +375,7 @@ final class RegisterUserControllerTest extends TestCase
         $this->seedCaller(Role::CompanyAdmin, companyId: self::COMPANY_A);
         $otherCompany = '22222222-2222-4222-8222-222222222222';
 
-        $response = $this->ctrl()($this->req($this->validBody([
+        $response = $this->ctrl(companyRepo: $this->makeCompanyRepo())($this->req($this->validBody([
             'role'       => 'company_admin',
             'company_id' => $otherCompany,
         ])));
@@ -352,8 +395,11 @@ final class RegisterUserControllerTest extends TestCase
             firstName: new FirstName('Existing'),
             lastName: new LastName('User'),
             role: Role::Employee,
+            shopId: self::SHOP_A,
         ));
 
-        self::assertSame(409, $this->ctrl()($this->req($this->validBody()))->status());
+        self::assertSame(409, $this->ctrl($this->makeShopRepo(self::COMPANY_A))($this->req($this->validBody([
+            'shop_id' => self::SHOP_A,
+        ])))->status());
     }
 }

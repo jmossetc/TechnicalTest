@@ -8,7 +8,10 @@ use InvalidArgumentException;
 use libphonenumber\PhoneNumberUtil;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Service\RegistrationInputValidatorService;
+use Mossetc\TechnicalTest\Company\Domain\Model\Company;
 use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanyName;
+use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
 use Mossetc\TechnicalTest\Shop\Domain\Model\Shop;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopAddress;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
@@ -21,10 +24,13 @@ final class RegistrationInputValidatorServiceTest extends TestCase
     private const string COMPANY_A = '11111111-1111-4111-8111-111111111111';
     private const string SHOP_A    = 'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 
-    private function validator(?ShopRepositoryInterface $shopRepo = null): RegistrationInputValidatorService
-    {
+    private function validator(
+        ?ShopRepositoryInterface $shopRepo = null,
+        ?CompanyRepositoryInterface $companyRepo = null,
+    ): RegistrationInputValidatorService {
         return new RegistrationInputValidatorService(
             $shopRepo ?? self::createStub(ShopRepositoryInterface::class),
+            $companyRepo ?? self::createStub(CompanyRepositoryInterface::class),
             PhoneNumberUtil::getInstance()
         );
     }
@@ -58,6 +64,18 @@ final class RegistrationInputValidatorServiceTest extends TestCase
             $repo->method('findById')->willReturn($shop);
         }
 
+        return $repo;
+    }
+
+    private function companyRepoReturning(bool $found): CompanyRepositoryInterface
+    {
+        $repo = self::createStub(CompanyRepositoryInterface::class);
+        if ($found) {
+            $repo->method('findById')->willReturn(new Company(
+                id: CompanyId::generate(),
+                name: new CompanyName('Test Company'),
+            ));
+        }
         return $repo;
     }
 
@@ -150,6 +168,35 @@ final class RegistrationInputValidatorServiceTest extends TestCase
         $this->validator()->validate($this->baseBody(['role' => 'shop_manager']));
     }
 
+    public function testThrowsWhenEmployeeHasNoShopId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('shop_id is required for employee role');
+        $this->validator()->validate($this->baseBody(['role' => 'employee']));
+    }
+
+    public function testThrowsWhenCompanyAdminHasInvalidCompanyIdFormat(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid company_id format');
+        $this->validator(companyRepo: $this->companyRepoReturning(false))
+            ->validate($this->baseBody([
+                'role'       => 'company_admin',
+                'company_id' => 'not-a-uuid',
+            ]));
+    }
+
+    public function testThrowsWhenCompanyDoesNotExist(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Company not found');
+        $this->validator(companyRepo: $this->companyRepoReturning(false))
+            ->validate($this->baseBody([
+                'role'       => 'company_admin',
+                'company_id' => self::COMPANY_A,
+            ]));
+    }
+
     // ── Shop resolution ───────────────────────────────────────────────────────
 
     public function testThrowsWhenShopIdIsMalformed(): void
@@ -174,15 +221,31 @@ final class RegistrationInputValidatorServiceTest extends TestCase
 
     public function testValidEmployeeInputReturnsInput(): void
     {
-        $input = $this->validator()->validate($this->baseBody());
+        $input = $this->validator(shopRepo: $this->shopRepoReturning(self::COMPANY_A))
+            ->validate($this->baseBody([
+                'role'    => 'employee',
+                'shop_id' => self::SHOP_A,
+            ]));
 
         self::assertSame(Role::Employee, $input->role);
         self::assertSame('alice@example.com', $input->email);
-        self::assertSame('password123', $input->password);
         self::assertSame('Alice', $input->firstName);
         self::assertSame('Smith', $input->lastName);
-        self::assertNull($input->companyId);
-        self::assertNull($input->shopId);
+        self::assertSame(self::SHOP_A, $input->shopId);
+        self::assertSame(self::COMPANY_A, $input->companyId);
+    }
+
+    public function testValidEmployeeResolvesCompanyFromShop(): void
+    {
+        $input = $this->validator(shopRepo: $this->shopRepoReturning(self::COMPANY_A))
+            ->validate($this->baseBody([
+                'role'    => 'employee',
+                'shop_id' => self::SHOP_A,
+            ]));
+
+        self::assertSame(Role::Employee, $input->role);
+        self::assertSame(self::SHOP_A, $input->shopId);
+        self::assertSame(self::COMPANY_A, $input->companyId);
     }
 
     public function testValidAdminInputReturnsInput(): void
@@ -194,10 +257,11 @@ final class RegistrationInputValidatorServiceTest extends TestCase
 
     public function testValidCompanyAdminInputSetsCompanyId(): void
     {
-        $input = $this->validator()->validate($this->baseBody([
-            'role'       => 'company_admin',
-            'company_id' => self::COMPANY_A,
-        ]));
+        $input = $this->validator(companyRepo: $this->companyRepoReturning(true))
+            ->validate($this->baseBody([
+                'role'       => 'company_admin',
+                'company_id' => self::COMPANY_A,
+            ]));
 
         self::assertSame(Role::CompanyAdmin, $input->role);
         self::assertSame(self::COMPANY_A, $input->companyId);
@@ -218,14 +282,14 @@ final class RegistrationInputValidatorServiceTest extends TestCase
 
     public function testPhoneNumberIsStoredWhenPresent(): void
     {
-        $input = $this->validator()->validate($this->baseBody(['phone_number' => '+33612345678']));
+        $input = $this->validator()->validate($this->baseBody(['role' => 'admin', 'phone_number' => '+33612345678']));
 
         self::assertSame('+33612345678', $input->phoneNumber);
     }
 
     public function testPhoneNumberIsNullWhenAbsent(): void
     {
-        $input = $this->validator()->validate($this->baseBody());
+        $input = $this->validator()->validate($this->baseBody(['role' => 'admin']));
 
         self::assertNull($input->phoneNumber);
     }

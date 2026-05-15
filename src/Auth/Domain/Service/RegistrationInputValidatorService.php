@@ -10,6 +10,8 @@ use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
 use Mossetc\TechnicalTest\Auth\Application\DTO\RegistrationInput;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Company\Domain\Model\CompanyId;
+use Mossetc\TechnicalTest\Company\Domain\Repository\CompanyRepositoryInterface;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopId;
 use Mossetc\TechnicalTest\Shop\Domain\Repository\ShopRepositoryInterface;
 
@@ -17,6 +19,7 @@ final readonly class RegistrationInputValidatorService
 {
     public function __construct(
         private ShopRepositoryInterface $shopRepository,
+        private CompanyRepositoryInterface $companyRepository,
         private PhoneNumberUtil $phoneNumberUtil,
     ) {}
 
@@ -60,7 +63,21 @@ final readonly class RegistrationInputValidatorService
 
         $role = $this->checkRole($roleStr, $companyId, $shopId);
 
-        if ($role === Role::ShopManager && $shopId !== null) {
+        // $companyId is guaranteed non-null here by checkRole(); the !== null check is for PHPStan type narrowing.
+        if ($role === Role::CompanyAdmin && $companyId !== null) {
+            try {
+                $companyUuid = new CompanyId($companyId);
+            } catch (InvalidArgumentException) {
+                throw new InvalidArgumentException('Invalid company_id format');
+            }
+
+            if ($this->companyRepository->findById($companyUuid) === null) {
+                throw new InvalidArgumentException('Company not found');
+            }
+        }
+
+        // $shopId is guaranteed non-null here by checkRole(); the !== null check is for PHPStan type narrowing.
+        if (($role === Role::ShopManager || $role === Role::Employee) && $shopId !== null) {
             try {
                 $shopUuid = new ShopId($shopId);
             } catch (InvalidArgumentException) {
@@ -95,6 +112,10 @@ final readonly class RegistrationInputValidatorService
 
         if ($role === Role::ShopManager && $shopId === null) {
             throw new InvalidArgumentException('shop_id is required for shop_manager role');
+        }
+
+        if ($role === Role::Employee && $shopId === null) {
+            throw new InvalidArgumentException('shop_id is required for employee role');
         }
 
         return $role;
