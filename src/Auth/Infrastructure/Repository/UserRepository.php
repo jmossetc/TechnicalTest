@@ -48,7 +48,8 @@ final readonly class UserRepository implements UserRepositoryInterface
                  company_id    = new_row.company_id,
                  shop_id       = new_row.shop_id,
                  is_active     = new_row.is_active,
-                 password_hash = new_row.password_hash',
+                 password_hash = new_row.password_hash,
+                 updated_at    = NOW()',
         );
 
         $stmt->execute([
@@ -94,14 +95,14 @@ final readonly class UserRepository implements UserRepositoryInterface
     public function delete(UserId $id): void
     {
         $this->prepare(
-            'UPDATE users SET deleted_at = NOW() WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL',
+            'UPDATE users SET deleted_at = NOW(), updated_at = NOW() WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL',
         )->execute(['id' => $id->value]);
     }
 
     public function updateLastLogin(UserId $id): void
     {
         $this->prepare(
-            'UPDATE users SET last_login_at = NOW() WHERE id = UUID_TO_BIN(:id)',
+            'UPDATE users SET last_login_at = NOW(), updated_at = NOW() WHERE id = UUID_TO_BIN(:id)',
         )->execute(['id' => $id->value]);
     }
 
@@ -262,7 +263,7 @@ final readonly class UserRepository implements UserRepositoryInterface
             isActive: (bool) ($row['is_active'] ?? true),
             lastLoginAt: $this->parseDateTimeNullable($row['last_login_at'] ?? null),
             createdAt: $this->parseDateTime($this->col($row, 'created_at')),
-            updatedAt: $this->parseDateTime($this->col($row, 'updated_at')),
+            updatedAt: $this->parseDateTimeNullable($row['updated_at'] ?? null),
             deletedAt: $this->parseDateTimeNullable($row['deleted_at'] ?? null),
         );
     }

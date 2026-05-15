@@ -21,7 +21,7 @@ final readonly class Company implements \JsonSerializable
         public ?string $country = null,
         public bool $isActive = true,
         public DateTimeImmutable $createdAt = new DateTimeImmutable(),
-        public DateTimeImmutable $updatedAt = new DateTimeImmutable(),
+        public ?DateTimeImmutable $updatedAt = null,
         public ?DateTimeImmutable $deletedAt = null,
     ) {}
 
@@ -41,7 +41,7 @@ final readonly class Company implements \JsonSerializable
             'country'       => $this->country,
             'is_active'     => $this->isActive,
             'created_at'    => $this->createdAt->format('Y-m-d\TH:i:s\Z'),
-            'updated_at'    => $this->updatedAt->format('Y-m-d\TH:i:s\Z'),
+            'updated_at'    => $this->updatedAt?->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 }

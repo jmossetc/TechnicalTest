@@ -44,7 +44,8 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
                  city          = new_row.city,
                  postal_code   = new_row.postal_code,
                  country       = new_row.country,
-                 is_active     = new_row.is_active',
+                 is_active     = new_row.is_active,
+                 updated_at    = NOW()',
         );
 
         $stmt->execute([
@@ -177,7 +178,7 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
     public function delete(CompanyId $id): void
     {
         $this->prepare(
-            'UPDATE companies SET deleted_at = NOW() WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL',
+            'UPDATE companies SET deleted_at = NOW(), updated_at = NOW() WHERE id = UUID_TO_BIN(:id) AND deleted_at IS NULL',
         )->execute(['id' => $id->value]);
     }
 
@@ -212,7 +213,7 @@ final readonly class CompanyRepository implements CompanyRepositoryInterface
             country: $this->nullable($row['country'] ?? null),
             isActive: (bool) ($row['is_active'] ?? true),
             createdAt: $this->parseDateTime($this->col($row, 'created_at')),
-            updatedAt: $this->parseDateTime($this->col($row, 'updated_at')),
+            updatedAt: $this->parseDateTimeNullable($row['updated_at'] ?? null),
             deletedAt: $this->parseDateTimeNullable($row['deleted_at'] ?? null),
         );
     }

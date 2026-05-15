@@ -21,7 +21,7 @@ final readonly class User implements \JsonSerializable
         public bool $isActive = true,
         public ?DateTimeImmutable $lastLoginAt = null,
         public DateTimeImmutable $createdAt = new DateTimeImmutable(),
-        public DateTimeImmutable $updatedAt = new DateTimeImmutable(),
+        public ?DateTimeImmutable $updatedAt = null,
         public ?DateTimeImmutable $deletedAt = null,
     ) {}
 
@@ -45,7 +45,7 @@ final readonly class User implements \JsonSerializable
             'is_active'     => $this->isActive,
             'last_login_at' => $this->lastLoginAt?->format('Y-m-d\TH:i:s\Z'),
             'created_at'    => $this->createdAt->format('Y-m-d\TH:i:s\Z'),
-            'updated_at'    => $this->updatedAt->format('Y-m-d\TH:i:s\Z'),
+            'updated_at'    => $this->updatedAt?->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 }

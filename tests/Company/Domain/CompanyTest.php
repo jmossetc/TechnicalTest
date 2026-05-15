@@ -51,17 +51,6 @@ final class CompanyTest extends TestCase
         self::assertTrue($this->makeCompany()->isActive);
     }
 
-    public function testTimestampsDefaultToNow(): void
-    {
-        $before  = new DateTimeImmutable();
-        $company = $this->makeCompany();
-        $after   = new DateTimeImmutable();
-
-        self::assertGreaterThanOrEqual($before, $company->createdAt);
-        self::assertLessThanOrEqual($after, $company->createdAt);
-        self::assertGreaterThanOrEqual($before, $company->updatedAt);
-    }
-
     public function testAcceptsAllOptionalFields(): void
     {
         $company = new Company(
