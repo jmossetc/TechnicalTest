@@ -138,7 +138,13 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
             example:
               email: alice@example.com
-              password: "secretpass"
+              password: "password123"
+              first_name: Alice
+              last_name: Smith
+              role: "admin"
+              company_id: "550e8400-e29b-41d4-a716-446655440000"
+              shop_id: "550e8400-e29b-41d4-a716-446655440000"
+              phone_number: "0123456789"
       responses:
         "201":
           description: User created successfully
