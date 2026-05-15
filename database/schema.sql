@@ -1,3 +1,9 @@
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS shops;
+DROP TABLE IF EXISTS companies;
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- ─────────────────────────────────────────────────────────────────────────────
 --  Companies
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -20,6 +26,10 @@ CREATE TABLE IF NOT EXISTS companies
     deleted_at     TIMESTAMP    NULL     DEFAULT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY companies_name_idx (name),
+    KEY idx_companies_city (city),
+    KEY idx_companies_country (country),
+    KEY idx_companies_created_at (created_at),
+    KEY idx_companies_created_at (updated_at),
     KEY idx_companies_deleted_at (deleted_at)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
@@ -53,6 +63,11 @@ CREATE TABLE IF NOT EXISTS shops
     UNIQUE KEY shops_company_name_idx (company_id, name),
     KEY idx_shops_city (city),
     KEY idx_shops_country (country),
+    KEY idx_shops_created_at (created_at),
+    KEY idx_shops_is_active  (is_active),
+    KEY idx_shops_is_digital (is_digital),
+    KEY idx_shops_is_digital (created_at),
+    KEY idx_shops_is_digital (updated_at),
     KEY idx_shops_deleted_at (deleted_at),
     CONSTRAINT fk_shops_company
         FOREIGN KEY (company_id) REFERENCES companies (id)
@@ -83,6 +98,12 @@ CREATE TABLE IF NOT EXISTS users
     deleted_at    TIMESTAMP                                                   NULL     DEFAULT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY users_email_idx (email),
+    KEY idx_users_company_id (company_id),
+    KEY idx_users_shop_id (shop_id),
+    KEY idx_users_role (role),
+    KEY idx_users_is_active (is_active),
+    KEY idx_users_created_at (created_at),
+    KEY idx_users_created_at (updated_at),
     KEY idx_users_deleted_at (deleted_at),
     CONSTRAINT fk_users_company
         FOREIGN KEY (company_id) REFERENCES companies (id),
