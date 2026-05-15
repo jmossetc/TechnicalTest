@@ -67,12 +67,19 @@ The fastest way to get started is using the provided `Makefile`.
     - MySQL: `localhost:3306`
     - Admin Dashboard (Made with AI so it has issues): [http://localhost:8080/index.html](http://localhost:8080/index.html)
     - Swagger UI: [api-docs/index.html](http://localhost:8080/api-docs/index.html)
+    - Postman Collection: In docs/postman
 
 3. **Run the test suite**:
    ```bash
    make tests
    make behat
    ```
+
+4. **Users**
+    - Admin: `admin1@fixture.test` with password `password123`
+    - Company Admin: `jack.taylor.ca.7710@fixture.test` with password `password123`
+    - Shop Manager: `bob.reed.sm.11752@fixture.test` with password `password123`
+    - Employee: `zoe.phillips.21376@fixture.test` with password `password123` 
 
 ---
 

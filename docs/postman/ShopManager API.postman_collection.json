@@ -1,0 +1,4378 @@
+{
+	"info": {
+		"_postman_id": "86188b2f-445a-45bc-a5c6-237712e8da11",
+		"name": "ShopManager API",
+		"description": "JWT-based authentication REST API built with plain PHP 8.5 and Symfony Router.\n\n## Authentication\nProtected endpoints require a `Bearer` token obtained from `POST /api/auth/login`.\nPass it in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "54114896",
+		"_collection_link": "https://charlie-mossetchafik-9786190.postman.co/workspace/Charlie's-Workspace~69c708c2-1fcd-4698-8467-2188cdf8fe0e/collection/54114896-86188b2f-445a-45bc-a5c6-237712e8da11?action=share&source=collection_link&creator=54114896"
+	},
+	"item": [
+		{
+			"name": "api",
+			"item": [
+				{
+					"name": "users",
+					"item": [
+						{
+							"name": "{id}",
+							"item": [
+								{
+									"name": "Retrieve a user by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/users/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+													"description": "UUID v4 of the user"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "User found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"id\": \"bf5e66e4-7b9d-e79d-7164-e3a9dabd1938\",\n  \"email\": \"4K1quTa-vl@ztErWxqcKdeqYwYsTMqkrJtMzcUcc.zoan\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"role\": \"company_admin\",\n  \"is_active\": false,\n  \"created_at\": \"1947-01-28T20:49:11.037Z\",\n  \"updated_at\": \"1979-08-25T09:51:33.943Z\",\n  \"phone_number\": \"string\",\n  \"company_id\": \"2cc204d8-7c94-eb89-01bd-3e45c70fae93\",\n  \"shop_id\": \"bfe55d7b-99c0-6ab4-6372-2ad6528df008\",\n  \"last_login_at\": \"1980-02-04T23:50:41.050Z\"\n}"
+										},
+										{
+											"name": "Malformed user ID",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "Bad Request",
+											"code": 400,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Unauthorized",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "User not found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								},
+								{
+									"name": "Update a user",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"email\": \"jjDIpKmCO2qpLB@mUZtIIZKAucWjFZyxKEBtfazdUeVWsdI.qx\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"stringstring\",\n  \"current_password\": \"string\",\n  \"role\": \"company_admin\",\n  \"company_id\": \"360c8b2a-62bc-643e-44a6-a5f75e50c470\",\n  \"shop_id\": \"1835d92b-b704-8909-b13e-1c5e8b16c170\",\n  \"phone_number\": \"string\",\n  \"is_active\": false\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/users/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "User updated",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"jjDIpKmCO2qpLB@mUZtIIZKAucWjFZyxKEBtfazdUeVWsdI.qx\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"stringstring\",\n  \"current_password\": \"string\",\n  \"role\": \"company_admin\",\n  \"company_id\": \"360c8b2a-62bc-643e-44a6-a5f75e50c470\",\n  \"shop_id\": \"1835d92b-b704-8909-b13e-1c5e8b16c170\",\n  \"phone_number\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"updated\": false\n}"
+										},
+										{
+											"name": "Unauthorized",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"jjDIpKmCO2qpLB@mUZtIIZKAucWjFZyxKEBtfazdUeVWsdI.qx\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"stringstring\",\n  \"current_password\": \"string\",\n  \"role\": \"company_admin\",\n  \"company_id\": \"360c8b2a-62bc-643e-44a6-a5f75e50c470\",\n  \"shop_id\": \"1835d92b-b704-8909-b13e-1c5e8b16c170\",\n  \"phone_number\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										},
+										{
+											"name": "Forbidden",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"jjDIpKmCO2qpLB@mUZtIIZKAucWjFZyxKEBtfazdUeVWsdI.qx\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"stringstring\",\n  \"current_password\": \"string\",\n  \"role\": \"company_admin\",\n  \"company_id\": \"360c8b2a-62bc-643e-44a6-a5f75e50c470\",\n  \"shop_id\": \"1835d92b-b704-8909-b13e-1c5e8b16c170\",\n  \"phone_number\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Forbidden",
+											"code": 403,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										},
+										{
+											"name": "User not found",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"jjDIpKmCO2qpLB@mUZtIIZKAucWjFZyxKEBtfazdUeVWsdI.qx\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"stringstring\",\n  \"current_password\": \"string\",\n  \"role\": \"company_admin\",\n  \"company_id\": \"360c8b2a-62bc-643e-44a6-a5f75e50c470\",\n  \"shop_id\": \"1835d92b-b704-8909-b13e-1c5e8b16c170\",\n  \"phone_number\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										},
+										{
+											"name": "Email already exists",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"jjDIpKmCO2qpLB@mUZtIIZKAucWjFZyxKEBtfazdUeVWsdI.qx\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"stringstring\",\n  \"current_password\": \"string\",\n  \"role\": \"company_admin\",\n  \"company_id\": \"360c8b2a-62bc-643e-44a6-a5f75e50c470\",\n  \"shop_id\": \"1835d92b-b704-8909-b13e-1c5e8b16c170\",\n  \"phone_number\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Conflict",
+											"code": 409,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										},
+										{
+											"name": "Validation error",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"jjDIpKmCO2qpLB@mUZtIIZKAucWjFZyxKEBtfazdUeVWsdI.qx\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"stringstring\",\n  \"current_password\": \"string\",\n  \"role\": \"company_admin\",\n  \"company_id\": \"360c8b2a-62bc-643e-44a6-a5f75e50c470\",\n  \"shop_id\": \"1835d92b-b704-8909-b13e-1c5e8b16c170\",\n  \"phone_number\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+											"code": 422,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										}
+									]
+								},
+								{
+									"name": "Delete a user by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/users/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+													"description": "UUID v4 of the user"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "User deleted successfully (no content)",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "No Content",
+											"code": 204,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										},
+										{
+											"name": "Malformed user ID (not a valid UUID v4)",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "Bad Request",
+											"code": 400,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Missing or invalid token",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "No user with the given ID exists",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/users/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"users",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a",
+															"description": "UUID v4 of the user"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "List users with pagination and filters",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{bearerToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/users?page=1&limit=10&company_ids=string&shop_ids=string&email=string&first_name=string&last_name=string&phone_number=string&role=shop_manager&is_active=true&created_from=2010-01-30&created_to=2010-01-30&last_login_from=2010-01-30&last_login_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"users"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "company_ids",
+											"value": "string",
+											"description": "Comma-separated list of company UUIDs"
+										},
+										{
+											"key": "shop_ids",
+											"value": "string",
+											"description": "Comma-separated list of shop UUIDs"
+										},
+										{
+											"key": "email",
+											"value": "string"
+										},
+										{
+											"key": "first_name",
+											"value": "string"
+										},
+										{
+											"key": "last_name",
+											"value": "string"
+										},
+										{
+											"key": "phone_number",
+											"value": "string"
+										},
+										{
+											"key": "role",
+											"value": "shop_manager"
+										},
+										{
+											"key": "is_active",
+											"value": "true"
+										},
+										{
+											"key": "created_from",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "created_to",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "last_login_from",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "last_login_to",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "sort_by",
+											"value": "updated_at"
+										},
+										{
+											"key": "sort_direction",
+											"value": "desc"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Paginated list of users",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/users?page=1&limit=10&company_ids=string&shop_ids=string&email=string&first_name=string&last_name=string&phone_number=string&role=shop_manager&is_active=true&created_from=2010-01-30&created_to=2010-01-30&last_login_from=2010-01-30&last_login_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "company_ids",
+													"value": "string",
+													"description": "Comma-separated list of company UUIDs"
+												},
+												{
+													"key": "shop_ids",
+													"value": "string",
+													"description": "Comma-separated list of shop UUIDs"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "first_name",
+													"value": "string"
+												},
+												{
+													"key": "last_name",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "role",
+													"value": "shop_manager"
+												},
+												{
+													"key": "is_active",
+													"value": "true"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "last_login_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "last_login_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"data\": [\n    {\n      \"id\": \"3c13af56-6a75-d761-c717-4277b305a284\",\n      \"email\": \"5P0nNbKe5@SBdeIX.av\",\n      \"first_name\": \"string\",\n      \"last_name\": \"string\",\n      \"role\": \"admin\",\n      \"is_active\": false,\n      \"created_at\": \"1956-12-30T23:31:37.492Z\",\n      \"updated_at\": \"1964-04-20T19:54:34.517Z\",\n      \"phone_number\": \"string\",\n      \"company_id\": \"fd01d61a-993d-6bf2-2f15-710207f779f5\",\n      \"shop_id\": \"6a847b6a-722b-0b44-72dd-ace4b921b5fb\",\n      \"last_login_at\": \"1975-03-31T11:25:08.431Z\"\n    },\n    {\n      \"id\": \"be37ffc0-ec9a-a221-bdd0-f0d9c49f309b\",\n      \"email\": \"wL6DaaSCXMHUyD@Nwf.ey\",\n      \"first_name\": \"string\",\n      \"last_name\": \"string\",\n      \"role\": \"shop_manager\",\n      \"is_active\": true,\n      \"created_at\": \"2002-10-04T13:21:27.279Z\",\n      \"updated_at\": \"1950-04-23T00:23:17.703Z\",\n      \"phone_number\": \"string\",\n      \"company_id\": \"d1d81a84-1ae5-ea88-77a3-533a1dc0e28c\",\n      \"shop_id\": \"99b4bbd5-b6ad-b84a-ebed-84affd286959\",\n      \"last_login_at\": \"2001-09-05T10:34:48.237Z\"\n    }\n  ],\n  \"pagination\": {\n    \"total\": 9390,\n    \"page\": 5369,\n    \"limit\": 6487,\n    \"pages\": 731\n  }\n}"
+								},
+								{
+									"name": "Missing or invalid token",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/users?page=1&limit=10&company_ids=string&shop_ids=string&email=string&first_name=string&last_name=string&phone_number=string&role=shop_manager&is_active=true&created_from=2010-01-30&created_to=2010-01-30&last_login_from=2010-01-30&last_login_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "company_ids",
+													"value": "string",
+													"description": "Comma-separated list of company UUIDs"
+												},
+												{
+													"key": "shop_ids",
+													"value": "string",
+													"description": "Comma-separated list of shop UUIDs"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "first_name",
+													"value": "string"
+												},
+												{
+													"key": "last_name",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "role",
+													"value": "shop_manager"
+												},
+												{
+													"key": "is_active",
+													"value": "true"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "last_login_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "last_login_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								},
+								{
+									"name": "Validation error in query parameters",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/users?page=1&limit=10&company_ids=string&shop_ids=string&email=string&first_name=string&last_name=string&phone_number=string&role=shop_manager&is_active=true&created_from=2010-01-30&created_to=2010-01-30&last_login_from=2010-01-30&last_login_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "company_ids",
+													"value": "string",
+													"description": "Comma-separated list of company UUIDs"
+												},
+												{
+													"key": "shop_ids",
+													"value": "string",
+													"description": "Comma-separated list of shop UUIDs"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "first_name",
+													"value": "string"
+												},
+												{
+													"key": "last_name",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "role",
+													"value": "shop_manager"
+												},
+												{
+													"key": "is_active",
+													"value": "true"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "last_login_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "last_login_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+									"code": 422,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								}
+							]
+						},
+						{
+							"name": "Register a new user",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"Alice\",\n  \"last_name\": \"Smith\",\n  \"role\": \"admin\",\n  \"company_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"shop_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"phone_number\": \"0123456789\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"users"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "User created successfully",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"Alice\",\n  \"last_name\": \"Smith\",\n  \"role\": \"admin\",\n  \"company_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"shop_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"phone_number\": \"0123456789\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+								},
+								{
+									"name": "Email address is already registered",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"Alice\",\n  \"last_name\": \"Smith\",\n  \"role\": \"admin\",\n  \"company_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"shop_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"phone_number\": \"0123456789\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users"
+											]
+										}
+									},
+									"status": "Conflict",
+									"code": 409,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"User with email 'alice@example.com' already exists\"\n}"
+								},
+								{
+									"name": "Validation error (missing fields, invalid email, short password)",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"Alice\",\n  \"last_name\": \"Smith\",\n  \"role\": \"admin\",\n  \"company_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"shop_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"phone_number\": \"0123456789\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/users",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"users"
+											]
+										}
+									},
+									"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+									"code": 422,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"Password must be at least 8 characters long\"\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "auth",
+					"item": [
+						{
+							"name": "login",
+							"item": [
+								{
+									"name": "Authenticate and obtain a JWT token",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"email\": \"admin1@fixture.test\",\n  \"password\": \"password123\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/auth/login",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"auth",
+												"login"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Authentication successful",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"admin1@fixture.test\",\n  \"password\": \"password123\"\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/auth/login",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"auth",
+														"login"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...\"\n}"
+										},
+										{
+											"name": "Invalid email or password",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"admin1@fixture.test\",\n  \"password\": \"password123\"\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/auth/login",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"auth",
+														"login"
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"Invalid email or password\"\n}"
+										},
+										{
+											"name": "Validation error (missing fields, invalid email format)",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"email\": \"admin1@fixture.test\",\n  \"password\": \"password123\"\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/auth/login",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"auth",
+														"login"
+													]
+												}
+											},
+											"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+											"code": 422,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "companies",
+					"item": [
+						{
+							"name": "{id}",
+							"item": [
+								{
+									"name": "Get a company by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/companies/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Company found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"id\": \"5ca032b8-deeb-789d-5839-72b42b5f8c7f\",\n  \"name\": \"string\",\n  \"is_active\": true,\n  \"created_at\": \"1961-09-13T16:04:15.433Z\",\n  \"updated_at\": \"1972-05-02T10:43:52.845Z\",\n  \"email\": \"jGCR@YNiKNxgu.nbb\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"address_line_1\": \"string\",\n  \"address_line_2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\"\n}"
+										},
+										{
+											"name": "Missing or invalid token",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Company not found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								},
+								{
+									"name": "Update a company",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"string\",\n  \"email\": \"MefZNDHTn@lAOkOzLkN.xsbn\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"is_active\": false\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/companies/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Company updated",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"MefZNDHTn@lAOkOzLkN.xsbn\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"updated\": false\n}"
+										},
+										{
+											"name": "Missing or invalid token",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"MefZNDHTn@lAOkOzLkN.xsbn\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Company not found",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"MefZNDHTn@lAOkOzLkN.xsbn\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Validation error",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"MefZNDHTn@lAOkOzLkN.xsbn\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+											"code": 422,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								},
+								{
+									"name": "Delete a company",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/companies/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Company deleted",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "No Content",
+											"code": 204,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										},
+										{
+											"name": "Missing or invalid token",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Company not found",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "{companyId}",
+							"item": [
+								{
+									"name": "shops",
+									"item": [
+										{
+											"name": "List shops for a company",
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{bearerToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:companyId/shops?page=1&limit=10",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":companyId",
+														"shops"
+													],
+													"query": [
+														{
+															"key": "page",
+															"value": "1"
+														},
+														{
+															"key": "limit",
+															"value": "10"
+														}
+													],
+													"variable": [
+														{
+															"key": "companyId",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"response": [
+												{
+													"name": "Paginated list of shops",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/api/companies/:companyId/shops?page=1&limit=10",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"api",
+																"companies",
+																":companyId",
+																"shops"
+															],
+															"query": [
+																{
+																	"key": "page",
+																	"value": "1"
+																},
+																{
+																	"key": "limit",
+																	"value": "10"
+																}
+															],
+															"variable": [
+																{
+																	"key": "companyId",
+																	"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"data\": [\n    {\n      \"id\": \"def555e5-bcf6-a549-7caa-268442d43aac\",\n      \"company_id\": \"a75bdf28-ebb7-e0d5-ad1f-b0a40f203079\",\n      \"name\": \"string\",\n      \"is_digital\": true,\n      \"is_active\": false,\n      \"created_at\": \"2018-07-03T12:43:22.978Z\",\n      \"updated_at\": \"2003-12-09T21:42:46.386Z\",\n      \"email\": \"x5bXmjhW@MBllM.jep\",\n      \"phone_number\": \"string\",\n      \"address_line_1\": \"string\",\n      \"address_line_2\": \"string\",\n      \"city\": \"string\",\n      \"postal_code\": \"string\",\n      \"country\": \"string\",\n      \"latitude\": 8742.526837922805,\n      \"longitude\": 5938.095727729964\n    },\n    {\n      \"id\": \"6239a101-f55c-dd26-37ae-6b97d538fbf3\",\n      \"company_id\": \"0cefdaad-1d06-b784-7c35-f1b0dac7a624\",\n      \"name\": \"string\",\n      \"is_digital\": false,\n      \"is_active\": true,\n      \"created_at\": \"1998-11-22T14:51:55.349Z\",\n      \"updated_at\": \"1973-03-11T13:16:34.094Z\",\n      \"email\": \"0Us@dCTOvzXfLvvwPjdkHwLjZXWTqJf.zd\",\n      \"phone_number\": \"string\",\n      \"address_line_1\": \"string\",\n      \"address_line_2\": \"string\",\n      \"city\": \"string\",\n      \"postal_code\": \"string\",\n      \"country\": \"string\",\n      \"latitude\": 1961.130836743532,\n      \"longitude\": 684.7679914674254\n    }\n  ],\n  \"pagination\": {\n    \"total\": 1272,\n    \"page\": 8455,\n    \"limit\": 3838,\n    \"pages\": 6911\n  }\n}"
+												},
+												{
+													"name": "Missing or invalid token",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/api/companies/:companyId/shops?page=1&limit=10",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"api",
+																"companies",
+																":companyId",
+																"shops"
+															],
+															"query": [
+																{
+																	"key": "page",
+																	"value": "1"
+																},
+																{
+																	"key": "limit",
+																	"value": "10"
+																}
+															],
+															"variable": [
+																{
+																	"key": "companyId",
+																	"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+																}
+															]
+														}
+													},
+													"status": "Unauthorized",
+													"code": 401,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"error\": \"string\"\n}"
+												},
+												{
+													"name": "Company not found",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/api/companies/:companyId/shops?page=1&limit=10",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"api",
+																"companies",
+																":companyId",
+																"shops"
+															],
+															"query": [
+																{
+																	"key": "page",
+																	"value": "1"
+																},
+																{
+																	"key": "limit",
+																	"value": "10"
+																}
+															],
+															"variable": [
+																{
+																	"key": "companyId",
+																	"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+																}
+															]
+														}
+													},
+													"status": "Not Found",
+													"code": 404,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"error\": \"string\"\n}"
+												}
+											]
+										},
+										{
+											"name": "Create a shop for a company",
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{bearerToken}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"GHVeET-IF@IAASE.ils\",\n  \"phone_number\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 5265.852961261979,\n  \"longitude\": 3352.366460363738,\n  \"is_digital\": true\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/companies/:companyId/shops",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"companies",
+														":companyId",
+														"shops"
+													],
+													"variable": [
+														{
+															"key": "companyId",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"response": [
+												{
+													"name": "Shop created",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"name\": \"string\",\n  \"email\": \"GHVeET-IF@IAASE.ils\",\n  \"phone_number\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 5265.852961261979,\n  \"longitude\": 3352.366460363738,\n  \"is_digital\": true\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/api/companies/:companyId/shops",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"api",
+																"companies",
+																":companyId",
+																"shops"
+															],
+															"variable": [
+																{
+																	"key": "companyId",
+																	"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+																}
+															]
+														}
+													},
+													"status": "Created",
+													"code": 201,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"id\": \"b8c712a4-bce1-affc-0d27-4d4d12e66987\"\n}"
+												},
+												{
+													"name": "Missing or invalid token",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"name\": \"string\",\n  \"email\": \"GHVeET-IF@IAASE.ils\",\n  \"phone_number\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 5265.852961261979,\n  \"longitude\": 3352.366460363738,\n  \"is_digital\": true\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/api/companies/:companyId/shops",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"api",
+																"companies",
+																":companyId",
+																"shops"
+															],
+															"variable": [
+																{
+																	"key": "companyId",
+																	"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+																}
+															]
+														}
+													},
+													"status": "Unauthorized",
+													"code": 401,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"error\": \"string\"\n}"
+												},
+												{
+													"name": "Company not found",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"name\": \"string\",\n  \"email\": \"GHVeET-IF@IAASE.ils\",\n  \"phone_number\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 5265.852961261979,\n  \"longitude\": 3352.366460363738,\n  \"is_digital\": true\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/api/companies/:companyId/shops",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"api",
+																"companies",
+																":companyId",
+																"shops"
+															],
+															"variable": [
+																{
+																	"key": "companyId",
+																	"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+																}
+															]
+														}
+													},
+													"status": "Not Found",
+													"code": 404,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"error\": \"string\"\n}"
+												},
+												{
+													"name": "Validation error",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"name\": \"string\",\n  \"email\": \"GHVeET-IF@IAASE.ils\",\n  \"phone_number\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 5265.852961261979,\n  \"longitude\": 3352.366460363738,\n  \"is_digital\": true\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/api/companies/:companyId/shops",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"api",
+																"companies",
+																":companyId",
+																"shops"
+															],
+															"variable": [
+																{
+																	"key": "companyId",
+																	"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+																}
+															]
+														}
+													},
+													"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+													"code": 422,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"error\": \"string\"\n}"
+												}
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "List companies with pagination and filters",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{bearerToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/companies?page=1&limit=10&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"companies"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "name",
+											"value": "string"
+										},
+										{
+											"key": "email",
+											"value": "string"
+										},
+										{
+											"key": "phone_number",
+											"value": "string"
+										},
+										{
+											"key": "city",
+											"value": "string"
+										},
+										{
+											"key": "postal_code",
+											"value": "string"
+										},
+										{
+											"key": "country",
+											"value": "string"
+										},
+										{
+											"key": "created_from",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "created_to",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "sort_by",
+											"value": "updated_at"
+										},
+										{
+											"key": "sort_direction",
+											"value": "desc"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Paginated list of companies",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/companies?page=1&limit=10&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "name",
+													"value": "string"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "city",
+													"value": "string"
+												},
+												{
+													"key": "postal_code",
+													"value": "string"
+												},
+												{
+													"key": "country",
+													"value": "string"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"data\": [\n    {\n      \"id\": \"a5364d7a-8a13-a3aa-d3f6-1f7cabd71465\",\n      \"name\": \"string\",\n      \"is_active\": true,\n      \"created_at\": \"2000-09-22T15:07:16.381Z\",\n      \"updated_at\": \"1982-05-26T05:48:07.702Z\",\n      \"email\": \"Kk9tynD4UVXgxVl@TwpHLDUudO.yr\",\n      \"phone_number\": \"string\",\n      \"website\": \"string\",\n      \"address_line_1\": \"string\",\n      \"address_line_2\": \"string\",\n      \"city\": \"string\",\n      \"postal_code\": \"string\",\n      \"country\": \"string\"\n    },\n    {\n      \"id\": \"eb72543c-6129-d375-7d31-3b14ca1025d3\",\n      \"name\": \"string\",\n      \"is_active\": true,\n      \"created_at\": \"2007-07-05T10:02:40.466Z\",\n      \"updated_at\": \"1992-08-09T21:53:51.858Z\",\n      \"email\": \"BlK@qmGgQdtRYrVJPCagQvsoOI.jymb\",\n      \"phone_number\": \"string\",\n      \"website\": \"string\",\n      \"address_line_1\": \"string\",\n      \"address_line_2\": \"string\",\n      \"city\": \"string\",\n      \"postal_code\": \"string\",\n      \"country\": \"string\"\n    }\n  ],\n  \"pagination\": {\n    \"total\": 5478,\n    \"page\": 9023,\n    \"limit\": 1538,\n    \"pages\": 3928\n  }\n}"
+								},
+								{
+									"name": "Missing or invalid token",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/companies?page=1&limit=10&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "name",
+													"value": "string"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "city",
+													"value": "string"
+												},
+												{
+													"key": "postal_code",
+													"value": "string"
+												},
+												{
+													"key": "country",
+													"value": "string"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								},
+								{
+									"name": "Validation error in query parameters",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/companies?page=1&limit=10&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "name",
+													"value": "string"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "city",
+													"value": "string"
+												},
+												{
+													"key": "postal_code",
+													"value": "string"
+												},
+												{
+													"key": "country",
+													"value": "string"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+									"code": 422,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								}
+							]
+						},
+						{
+							"name": "Create a new company",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{bearerToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"string\",\n  \"email\": \"TpOjq97lQP@sJbrt.qr\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/companies",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"companies"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Company created",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"string\",\n  \"email\": \"TpOjq97lQP@sJbrt.qr\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/companies",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"id\": \"b8c712a4-bce1-affc-0d27-4d4d12e66987\"\n}"
+								},
+								{
+									"name": "Missing or invalid token",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"string\",\n  \"email\": \"TpOjq97lQP@sJbrt.qr\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/companies",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies"
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								},
+								{
+									"name": "Validation error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"string\",\n  \"email\": \"TpOjq97lQP@sJbrt.qr\",\n  \"phone_number\": \"string\",\n  \"website\": \"string\",\n  \"addressLine1\": \"string\",\n  \"addressLine2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/companies",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"companies"
+											]
+										}
+									},
+									"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+									"code": 422,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "shops",
+					"item": [
+						{
+							"name": "{id}",
+							"item": [
+								{
+									"name": "Get a shop by ID",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/shops/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"shops",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Shop found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"id\": \"a7403f75-0ff9-0ac3-fd42-8e79966d3558\",\n  \"company_id\": \"26e125a1-f647-e81f-cbcc-7e757f44f5d6\",\n  \"name\": \"string\",\n  \"is_digital\": false,\n  \"is_active\": false,\n  \"created_at\": \"1994-12-05T02:40:55.290Z\",\n  \"updated_at\": \"1959-08-23T21:48:03.509Z\",\n  \"email\": \"Lc4P8IF17@FAhYSkatMLREdAfOHmQJq.uqon\",\n  \"phone_number\": \"string\",\n  \"address_line_1\": \"string\",\n  \"address_line_2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 4488.286980600742,\n  \"longitude\": 3322.90341324893\n}"
+										},
+										{
+											"name": "Missing or invalid token",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Shop not found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								},
+								{
+									"name": "Update a shop",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"string\",\n  \"email\": \"83Z@dbFdsPpss.byqs\",\n  \"phone_number\": \"string\",\n  \"address_line_1\": \"string\",\n  \"address_line_2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 6715.256035796133,\n  \"longitude\": 8116.380618109449,\n  \"is_digital\": false,\n  \"is_active\": false\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/api/shops/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"shops",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Shop updated",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"83Z@dbFdsPpss.byqs\",\n  \"phone_number\": \"string\",\n  \"address_line_1\": \"string\",\n  \"address_line_2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 6715.256035796133,\n  \"longitude\": 8116.380618109449,\n  \"is_digital\": false,\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"updated\": false\n}"
+										},
+										{
+											"name": "Missing or invalid token",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"83Z@dbFdsPpss.byqs\",\n  \"phone_number\": \"string\",\n  \"address_line_1\": \"string\",\n  \"address_line_2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 6715.256035796133,\n  \"longitude\": 8116.380618109449,\n  \"is_digital\": false,\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Shop not found",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"83Z@dbFdsPpss.byqs\",\n  \"phone_number\": \"string\",\n  \"address_line_1\": \"string\",\n  \"address_line_2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 6715.256035796133,\n  \"longitude\": 8116.380618109449,\n  \"is_digital\": false,\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Validation error",
+											"originalRequest": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"string\",\n  \"email\": \"83Z@dbFdsPpss.byqs\",\n  \"phone_number\": \"string\",\n  \"address_line_1\": \"string\",\n  \"address_line_2\": \"string\",\n  \"city\": \"string\",\n  \"postal_code\": \"string\",\n  \"country\": \"string\",\n  \"latitude\": 6715.256035796133,\n  \"longitude\": 8116.380618109449,\n  \"is_digital\": false,\n  \"is_active\": false\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+											"code": 422,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								},
+								{
+									"name": "Delete a shop",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/shops/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"shops",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Shop deleted",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "No Content",
+											"code": 204,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": null
+										},
+										{
+											"name": "Missing or invalid token",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										},
+										{
+											"name": "Shop not found",
+											"originalRequest": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/api/shops/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"api",
+														"shops",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id",
+															"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"error\": \"string\"\n}"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "List all shops with pagination and filters",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{bearerToken}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/shops?page=1&limit=10&company_id=af9b05c6-f4ff-39a7-9869-d56fb62a281a&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&is_digital=true&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"shops"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "company_id",
+											"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+										},
+										{
+											"key": "name",
+											"value": "string"
+										},
+										{
+											"key": "email",
+											"value": "string"
+										},
+										{
+											"key": "phone_number",
+											"value": "string"
+										},
+										{
+											"key": "city",
+											"value": "string"
+										},
+										{
+											"key": "postal_code",
+											"value": "string"
+										},
+										{
+											"key": "country",
+											"value": "string"
+										},
+										{
+											"key": "is_digital",
+											"value": "true"
+										},
+										{
+											"key": "created_from",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "created_to",
+											"value": "2010-01-30"
+										},
+										{
+											"key": "sort_by",
+											"value": "updated_at"
+										},
+										{
+											"key": "sort_direction",
+											"value": "desc"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Paginated list of shops",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/shops?page=1&limit=10&company_id=af9b05c6-f4ff-39a7-9869-d56fb62a281a&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&is_digital=true&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"shops"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "company_id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												},
+												{
+													"key": "name",
+													"value": "string"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "city",
+													"value": "string"
+												},
+												{
+													"key": "postal_code",
+													"value": "string"
+												},
+												{
+													"key": "country",
+													"value": "string"
+												},
+												{
+													"key": "is_digital",
+													"value": "true"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"data\": [\n    {\n      \"id\": \"def555e5-bcf6-a549-7caa-268442d43aac\",\n      \"company_id\": \"a75bdf28-ebb7-e0d5-ad1f-b0a40f203079\",\n      \"name\": \"string\",\n      \"is_digital\": true,\n      \"is_active\": false,\n      \"created_at\": \"2018-07-03T12:43:22.978Z\",\n      \"updated_at\": \"2003-12-09T21:42:46.386Z\",\n      \"email\": \"x5bXmjhW@MBllM.jep\",\n      \"phone_number\": \"string\",\n      \"address_line_1\": \"string\",\n      \"address_line_2\": \"string\",\n      \"city\": \"string\",\n      \"postal_code\": \"string\",\n      \"country\": \"string\",\n      \"latitude\": 8742.526837922805,\n      \"longitude\": 5938.095727729964\n    },\n    {\n      \"id\": \"6239a101-f55c-dd26-37ae-6b97d538fbf3\",\n      \"company_id\": \"0cefdaad-1d06-b784-7c35-f1b0dac7a624\",\n      \"name\": \"string\",\n      \"is_digital\": false,\n      \"is_active\": true,\n      \"created_at\": \"1998-11-22T14:51:55.349Z\",\n      \"updated_at\": \"1973-03-11T13:16:34.094Z\",\n      \"email\": \"0Us@dCTOvzXfLvvwPjdkHwLjZXWTqJf.zd\",\n      \"phone_number\": \"string\",\n      \"address_line_1\": \"string\",\n      \"address_line_2\": \"string\",\n      \"city\": \"string\",\n      \"postal_code\": \"string\",\n      \"country\": \"string\",\n      \"latitude\": 1961.130836743532,\n      \"longitude\": 684.7679914674254\n    }\n  ],\n  \"pagination\": {\n    \"total\": 1272,\n    \"page\": 8455,\n    \"limit\": 3838,\n    \"pages\": 6911\n  }\n}"
+								},
+								{
+									"name": "Missing or invalid token",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/shops?page=1&limit=10&company_id=af9b05c6-f4ff-39a7-9869-d56fb62a281a&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&is_digital=true&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"shops"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "company_id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												},
+												{
+													"key": "name",
+													"value": "string"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "city",
+													"value": "string"
+												},
+												{
+													"key": "postal_code",
+													"value": "string"
+												},
+												{
+													"key": "country",
+													"value": "string"
+												},
+												{
+													"key": "is_digital",
+													"value": "true"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								},
+								{
+									"name": "Validation error in query parameters",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer <token>",
+												"description": "Added as a part of security scheme: bearer"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/api/shops?page=1&limit=10&company_id=af9b05c6-f4ff-39a7-9869-d56fb62a281a&name=string&email=string&phone_number=string&city=string&postal_code=string&country=string&is_digital=true&created_from=2010-01-30&created_to=2010-01-30&sort_by=updated_at&sort_direction=desc",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"api",
+												"shops"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "company_id",
+													"value": "af9b05c6-f4ff-39a7-9869-d56fb62a281a"
+												},
+												{
+													"key": "name",
+													"value": "string"
+												},
+												{
+													"key": "email",
+													"value": "string"
+												},
+												{
+													"key": "phone_number",
+													"value": "string"
+												},
+												{
+													"key": "city",
+													"value": "string"
+												},
+												{
+													"key": "postal_code",
+													"value": "string"
+												},
+												{
+													"key": "country",
+													"value": "string"
+												},
+												{
+													"key": "is_digital",
+													"value": "true"
+												},
+												{
+													"key": "created_from",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "created_to",
+													"value": "2010-01-30"
+												},
+												{
+													"key": "sort_by",
+													"value": "updated_at"
+												},
+												{
+													"key": "sort_direction",
+													"value": "desc"
+												}
+											]
+										}
+									},
+									"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+									"code": 422,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"error\": \"string\"\n}"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "/"
+		}
+	]
+}
