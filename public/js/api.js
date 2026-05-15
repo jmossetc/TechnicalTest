@@ -1,7 +1,7 @@
 const api = {
     async request(method, path, body = null, params = null) {
         const token = getToken();
-        if (!token) { location.href = 'index.html'; throw new Error('No token'); }
+        if (!token) { location.href = 'index.html'; return new Promise(() => {}); }
 
         let url = path;
         if (params) {
@@ -30,7 +30,7 @@ const api = {
         if (response.status === 401) {
             clearToken();
             location.href = 'index.html';
-            throw { status: 401, error: 'Session expired' };
+            return new Promise(() => {});
         }
 
         let data;
