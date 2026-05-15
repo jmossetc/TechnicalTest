@@ -392,6 +392,112 @@ final class ApiContext implements Context
         $this->lastResponse = $this->doDelete("/api/users/{$userId}", $this->token);
     }
 
+    /** @When I update user :userId with first_name :firstName */
+    public function iUpdateUserWithFirstName(string $userId, string $firstName): void
+    {
+        $this->lastResponse = $this->doPatch("/api/users/{$userId}", ['first_name' => $firstName], $this->token);
+    }
+
+    /** @When I update the target user with first_name :firstName and last_name :lastName */
+    public function iUpdateTheTargetUserWithFirstNameAndLastName(string $firstName, string $lastName): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->targetUserId}",
+            ['first_name' => $firstName, 'last_name' => $lastName],
+            $this->token,
+        );
+    }
+
+    /** @When I update the target user with first_name :firstName */
+    public function iUpdateTheTargetUserWithFirstName(string $firstName): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->targetUserId}",
+            ['first_name' => $firstName],
+            $this->token,
+        );
+    }
+
+    /** @When I update the target user with email :email */
+    public function iUpdateTheTargetUserWithEmail(string $email): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->targetUserId}",
+            ['email' => $email],
+            $this->token,
+        );
+    }
+
+    /** @When I update the target user is_active to false */
+    public function iUpdateTheTargetUserIsActiveToFalse(): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->targetUserId}",
+            ['is_active' => false],
+            $this->token,
+        );
+    }
+
+    /** @When I update the target user with role :role and company :companyId */
+    public function iUpdateTheTargetUserWithRoleAndCompany(string $role, string $companyId): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->targetUserId}",
+            ['role' => $role, 'company_id' => $companyId],
+            $this->token,
+        );
+    }
+
+    /** @When I update the target user password to :password */
+    public function iUpdateTheTargetUserPasswordTo(string $password): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->targetUserId}",
+            ['password' => $password],
+            $this->token,
+        );
+    }
+
+    /** @When I update my profile with first_name :firstName */
+    public function iUpdateMyProfileWithFirstName(string $firstName): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->lastUserId}",
+            ['first_name' => $firstName],
+            $this->token,
+        );
+    }
+
+    /** @When I change my password from :currentPassword to :newPassword */
+    public function iChangeMyPasswordFromTo(string $currentPassword, string $newPassword): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->lastUserId}",
+            ['current_password' => $currentPassword, 'password' => $newPassword],
+            $this->token,
+        );
+    }
+
+    /** @When I update my password to :password without current_password */
+    public function iUpdateMyPasswordToWithoutCurrentPassword(string $password): void
+    {
+        $this->lastResponse = $this->doPatch(
+            "/api/users/{$this->lastUserId}",
+            ['password' => $password],
+            $this->token,
+        );
+    }
+
+    /**
+     * @Given a target employee exists for shop :shopId
+     */
+    public function aTargetEmployeeExistsForShop(string $shopId): void
+    {
+        $companyId = $this->shopCompanyId($shopId);
+        $userId    = $this->seedUser("target-emp-{$shopId}@internal.test", 'Target1234!', Role::Employee, $companyId, $shopId);
+        $this->targetUserId = $userId->value;
+    }
+
     // ── Then ──────────────────────────────────────────────────────────────────
 
     /** @Then the response status should be :status */

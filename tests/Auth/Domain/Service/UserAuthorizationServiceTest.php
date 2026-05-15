@@ -11,6 +11,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\LastName;
 use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserUpdatePermissions;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
@@ -428,6 +429,86 @@ final class UserAuthorizationServiceTest extends TestCase
             ->resolveShopListingCompanyId($this->callerId, null);
     }
 
+    // ── authorizeUserUpdate ───────────────────────────────────────────────────
+
+    public function testAdminGetsAllPermissions(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, self::COMPANY_A);
+        $perms  = $this->serviceWithBoth(Role::Admin)->authorizeUserUpdate($this->callerId, $target);
+
+        $this->assertTrue($perms->canEditProfile);
+        $this->assertTrue($perms->canEditStatus);
+        $this->assertTrue($perms->canEditRole);
+    }
+
+    public function testSelfGetsProfilePermissionOnly(): void
+    {
+        $self  = $this->makeUser($this->callerId, Role::Employee, self::COMPANY_A);
+        $perms = $this->serviceWithBoth(Role::Employee, self::COMPANY_A)->authorizeUserUpdate($this->callerId, $self);
+
+        $this->assertTrue($perms->canEditProfile);
+        $this->assertFalse($perms->canEditStatus);
+        $this->assertFalse($perms->canEditRole);
+    }
+
+    public function testCompanyAdminGetsProfileAndStatusForOwnCompany(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, self::COMPANY_A);
+        $perms  = $this->serviceWithBoth(Role::CompanyAdmin, self::COMPANY_A)
+            ->authorizeUserUpdate($this->callerId, $target);
+
+        $this->assertTrue($perms->canEditProfile);
+        $this->assertTrue($perms->canEditStatus);
+        $this->assertFalse($perms->canEditRole);
+    }
+
+    public function testCompanyAdminForbiddenForOtherCompany(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, self::COMPANY_B);
+
+        $this->expectException(ForbiddenException::class);
+        $this->serviceWithBoth(Role::CompanyAdmin, self::COMPANY_A)
+            ->authorizeUserUpdate($this->callerId, $target);
+    }
+
+    public function testShopManagerGetsProfileAndStatusForEmployeeInOwnShop(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, self::COMPANY_A, self::SHOP_A1);
+        $perms  = $this->serviceWithBoth(Role::ShopManager, self::COMPANY_A, self::SHOP_A1)
+            ->authorizeUserUpdate($this->callerId, $target);
+
+        $this->assertTrue($perms->canEditProfile);
+        $this->assertTrue($perms->canEditStatus);
+        $this->assertFalse($perms->canEditRole);
+    }
+
+    public function testShopManagerForbiddenForEmployeeInOtherShop(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, self::COMPANY_A, self::SHOP_B1);
+
+        $this->expectException(ForbiddenException::class);
+        $this->serviceWithBoth(Role::ShopManager, self::COMPANY_A, self::SHOP_A1)
+            ->authorizeUserUpdate($this->callerId, $target);
+    }
+
+    public function testShopManagerForbiddenForNonEmployee(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::ShopManager, self::COMPANY_A, self::SHOP_A1);
+
+        $this->expectException(ForbiddenException::class);
+        $this->serviceWithBoth(Role::ShopManager, self::COMPANY_A, self::SHOP_A1)
+            ->authorizeUserUpdate($this->callerId, $target);
+    }
+
+    public function testEmployeeForbiddenForOtherUser(): void
+    {
+        $target = $this->makeUser($this->targetId, Role::Employee, self::COMPANY_A);
+
+        $this->expectException(ForbiddenException::class);
+        $this->serviceWithBoth(Role::Employee, self::COMPANY_A)
+            ->authorizeUserUpdate($this->callerId, $target);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function service(
@@ -437,6 +518,21 @@ final class UserAuthorizationServiceTest extends TestCase
         bool $isUserActive = true,
     ): UserAuthorizationService {
         $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId, $isUserActive);
+
+        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo->method('findById')->willReturnCallback(
+            static fn(UserId $id): ?User => $caller->id->equals($id) ? $caller : null,
+        );
+
+        return new UserAuthorizationService($repo);
+    }
+
+    private function serviceWithBoth(
+        Role $callerRole,
+        ?string $callerCompanyId = null,
+        ?string $callerShopId = null,
+    ): UserAuthorizationService {
+        $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId);
 
         $repo = $this->createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturnCallback(

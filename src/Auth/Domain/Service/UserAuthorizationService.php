@@ -9,6 +9,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
+use Mossetc\TechnicalTest\Auth\Domain\Model\UserUpdatePermissions;
 use Mossetc\TechnicalTest\Auth\Domain\Repository\UserRepositoryInterface;
 
 final readonly class UserAuthorizationService
@@ -252,6 +253,62 @@ final readonly class UserAuthorizationService
         }
 
         throw new ForbiddenException('You do not have permission to access this shop');
+    }
+
+    /**
+     * Determine what fields $callerId may update on $target.
+     *
+     * Returns a permissions object; only throws ForbiddenException when the
+     * caller has no access to the target at all.
+     *
+     * @throws ForbiddenException
+     */
+    public function authorizeUserUpdate(UserId $callerId, User $target): UserUpdatePermissions
+    {
+        $caller = $this->loadCaller($callerId);
+        $isSelf = $callerId->equals($target->id);
+
+        if ($caller->role === Role::Admin) {
+            return new UserUpdatePermissions(
+                canEditProfile: true,
+                canEditStatus:  true,
+                canEditRole:    true,
+            );
+        }
+
+        if ($isSelf) {
+            return new UserUpdatePermissions(
+                canEditProfile: true,
+                canEditStatus:  false,
+                canEditRole:    false,
+            );
+        }
+
+        if ($caller->role === Role::CompanyAdmin && $caller->companyId !== null) {
+            if ($target->companyId !== $caller->companyId) {
+                throw new ForbiddenException('You do not have permission to update this user');
+            }
+
+            return new UserUpdatePermissions(
+                canEditProfile: true,
+                canEditStatus:  true,
+                canEditRole:    false,
+            );
+        }
+
+        if ($caller->role === Role::ShopManager && $caller->shopId !== null) {
+            if ($target->role === Role::Employee && $target->shopId === $caller->shopId) {
+                return new UserUpdatePermissions(
+                    canEditProfile: true,
+                    canEditStatus:  true,
+                    canEditRole:    false,
+                );
+            }
+
+            throw new ForbiddenException('You do not have permission to update this user');
+        }
+
+        throw new ForbiddenException('You do not have permission to update this user');
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

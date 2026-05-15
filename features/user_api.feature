@@ -441,3 +441,124 @@ Feature: User API
     Given I am logged in as admin
     When I list users with search "sort_direction=upside_down"
     Then the response status should be 422
+
+  # ── Update (PATCH) ────────────────────────────────────────────────────────────
+
+  Scenario: Updating a user without authentication returns 401
+    When I update user "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d" with first_name "Bob"
+    Then the response status should be 401
+
+  Scenario: Updating a non-existent user returns 404
+    Given I am logged in as admin
+    When I update user "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d" with first_name "Bob"
+    Then the response status should be 404
+
+  Scenario: Admin updates another user's profile fields
+    Given I am logged in as admin
+    And a target user exists with no role
+    When I update the target user with first_name "Alice" and last_name "Smith"
+    Then the response status should be 200
+    And the response should contain field "updated"
+
+  Scenario: Admin updates a user's email
+    Given I am logged in as admin
+    And a target user exists with no role
+    When I update the target user with email "newemail@example.com"
+    Then the response status should be 200
+
+  Scenario: Admin cannot update email to one already taken
+    Given I am logged in as admin
+    And a user is registered with email "taken@example.com" and password "secretpass"
+    And a target user exists with no role
+    When I update the target user with email "taken@example.com"
+    Then the response status should be 409
+
+  Scenario: Admin updates a user's active status
+    Given I am logged in as admin
+    And a target user exists with no role
+    When I update the target user is_active to false
+    Then the response status should be 200
+
+  Scenario: Admin updates a user's role
+    Given I am logged in as admin
+    And a company "11111111-1111-4111-8111-111111111111" exists
+    And a target user exists with no role
+    When I update the target user with role "company_admin" and company "11111111-1111-4111-8111-111111111111"
+    Then the response status should be 200
+
+  Scenario: Admin changes a user's password without current_password
+    Given I am logged in as admin
+    And a target user exists with no role
+    When I update the target user password to "NewPass123!"
+    Then the response status should be 200
+
+  Scenario: User updates own profile
+    Given I am logged in as "alice@example.com" with password "secretpass"
+    When I update my profile with first_name "Alicia"
+    Then the response status should be 200
+
+  Scenario: User changes own password with correct current_password
+    Given I am logged in as "alice@example.com" with password "secretpass"
+    When I change my password from "secretpass" to "NewPass123!"
+    Then the response status should be 200
+
+  Scenario: User changes own password with wrong current_password
+    Given I am logged in as "alice@example.com" with password "secretpass"
+    When I change my password from "wrongpasss" to "NewPass123!"
+    Then the response status should be 422
+
+  Scenario: User changes own password without providing current_password
+    Given I am logged in as "alice@example.com" with password "secretpass"
+    When I update my password to "NewPass123!" without current_password
+    Then the response status should be 422
+
+  Scenario: Update with invalid email format returns 422
+    Given I am logged in as admin
+    And a target user exists with no role
+    When I update the target user with email "not-an-email"
+    Then the response status should be 422
+
+  Scenario: Update with a password too short returns 422
+    Given I am logged in as admin
+    And a target user exists with no role
+    When I update the target user password to "short"
+    Then the response status should be 422
+
+  Scenario: Company manager updates profile of a shop manager in their company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
+    And a target user exists with role shop_manager for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I update the target user with first_name "Alice" and last_name "Smith"
+    Then the response status should be 200
+
+  Scenario: Company manager cannot update user in another company
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a company "22222222-2222-4222-8222-222222222222" exists
+    And I am logged in as company admin of "11111111-1111-4111-8111-111111111111"
+    And a target user exists with role company_admin for company "22222222-2222-4222-8222-222222222222"
+    When I update the target user with first_name "Eve"
+    Then the response status should be 403
+
+  Scenario: Shop manager updates an employee in their shop
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    And a target employee exists for shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I update the target user with first_name "Frank"
+    Then the response status should be 200
+
+  Scenario: Shop manager cannot update user in another shop
+    Given a company "11111111-1111-4111-8111-111111111111" exists
+    And a shop "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And a shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa" exists for company "11111111-1111-4111-8111-111111111111"
+    And I am logged in as shop manager of "aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    And a target employee exists for shop "aaaa2222-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    When I update the target user with first_name "Frank"
+    Then the response status should be 403
+
+  Scenario: User with no role cannot update another user
+    Given I am logged in as a user with no role
+    And a target user exists with no role
+    When I update the target user with first_name "Hacker"
+    Then the response status should be 403

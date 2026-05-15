@@ -1,14 +1,14 @@
 parameters:
   # Environment variable defaults
-  env(DB_HOST):      '127.0.0.1'
-  env(DB_PORT):      '3306'
-  env(DB_DATABASE):  'technical_test'
-  env(DB_USERNAME):  'app'
-  env(DB_PASSWORD):  'secret'
-  env(JWT_SECRET):        ''
-  env(JWT_ISSUER):        'http://localhost:8080'
-  env(JWT_AUDIENCE):      'http://localhost:8080'
-  env(PASSWORD_SALT):   ''
+  env(DB_HOST): '127.0.0.1'
+  env(DB_PORT): '3306'
+  env(DB_DATABASE): 'technical_test'
+  env(DB_USERNAME): 'app'
+  env(DB_PASSWORD): 'secret'
+  env(JWT_SECRET): ''
+  env(JWT_ISSUER): 'http://localhost:8080'
+  env(JWT_AUDIENCE): 'http://localhost:8080'
+  env(PASSWORD_SALT): ''
   # jwt.ttl is set as an integer by ContainerFactory (avoids string-to-int coercion)
 
 services:
@@ -68,6 +68,9 @@ services:
 
   Mossetc\TechnicalTest\Auth\Infrastructure\Jwt\JwtAuthMiddleware: ~
 
+  libphonenumber\PhoneNumberUtil:
+    factory: ['libphonenumber\PhoneNumberUtil', 'getInstance']
+
   Mossetc\TechnicalTest\Auth\Domain\Service\RegistrationInputValidatorService: ~
 
   Mossetc\TechnicalTest\Auth\Domain\Service\UserAuthorizationService: ~
@@ -82,8 +85,16 @@ services:
 
   Mossetc\TechnicalTest\Auth\Application\Handler\DeleteUserHandler: ~
 
-  # autoconfigure: true makes the container read #[AsHttpController] and add the tag.
-  # To add a new controller: create the class with the attribute, add one line here.
+  Mossetc\TechnicalTest\Auth\Domain\Service\UserUpdateInputValidatorService: ~
+
+  Mossetc\TechnicalTest\Company\Domain\Service\CompanyInputValidatorService: ~
+
+  Mossetc\TechnicalTest\Shop\Domain\Service\ShopInputValidatorService: ~
+
+  Mossetc\TechnicalTest\Auth\Application\Handler\UpdateUserHandler: ~
+
+  Mossetc\TechnicalTest\Auth\Presentation\Controller\UpdateUserController:
+    autoconfigure: true
 
   Mossetc\TechnicalTest\Auth\Presentation\Controller\RegisterUserController:
     autoconfigure: true

@@ -99,6 +99,15 @@ final class RegistrationInputValidatorServiceTest extends TestCase
         $this->validator()->validate($body);
     }
 
+    public function testThrowsWhenPasswordIsTooShort(): void
+    {
+        $body = $this->baseBody();
+        $body['password'] = 'short';
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->validator()->validate($body);
+    }
+
     // ── Role validation (checkRole) ───────────────────────────────────────────
 
     public function testThrowsWhenRoleIsAbsent(): void

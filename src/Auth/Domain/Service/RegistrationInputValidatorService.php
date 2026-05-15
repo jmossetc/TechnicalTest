@@ -41,6 +41,10 @@ final readonly class RegistrationInputValidatorService
             throw new InvalidArgumentException('email, password, first_name and last_name are required');
         }
 
+        if (strlen($password) < 8) {
+            throw new InvalidArgumentException('Password must be at least 8 characters long');
+        }
+
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidArgumentException('Invalid email format');
         }

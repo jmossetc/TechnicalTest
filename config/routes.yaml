@@ -19,6 +19,10 @@ delete_user:
   path: /api/users/{id}
   methods: [DELETE]
 
+update_user:
+  path: /api/users/{id}
+  methods: [PATCH]
+
 # Company endpoints
 create_company:
   path: /api/companies
