@@ -29,7 +29,7 @@ A shop manager can manage their shop and employees.
 ## 🛠 Tech Stack
 
 - **PHP 8.5+** (using Symfony components)
-- **MySQL 8.4**
+- **MySQL 8.4** (Using PDO to display my SQL skills)
 - **Docker & Docker Compose**
 - **Quality Tools**: PHPUnit, PHPStan, PHP CS Fixer, Behat
 - **Auth**: JWT (lcobucci/jwt)
