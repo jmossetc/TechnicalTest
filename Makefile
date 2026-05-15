@@ -1,4 +1,9 @@
-DC          := docker compose
+DC                  := docker compose
+
+# Defaults (can be overridden by environment)
+DB_DATABASE         ?= technical_test
+DB_USERNAME         ?= app
+DB_PASSWORD         ?= secret
 
 # ── Dependencies ───────────────────────────────────────────────────────────────
 
@@ -34,6 +39,9 @@ format-check:
 
 # ── Docker ─────────────────────────────────────────────────────────────────────
 
+.PHONY: setup
+setup: up-build db-schema db-seed
+
 .PHONY: up
 up:
 	$(DC) up -d
@@ -65,3 +73,23 @@ restart:
 .PHONY: ps
 ps:
 	$(DC) ps
+
+# ── Database helpers ──────────────────────────────────────────────────────────
+
+.PHONY: db-schema
+db-schema:
+	# Re-apply database schema.sql into the running MySQL service
+	$(DC) exec -T mysql sh -lc 'mysql -u "$${DB_USERNAME:-$(DB_USERNAME)}" -p"$${DB_PASSWORD:-$(DB_PASSWORD)}" "$${DB_DATABASE:-$(DB_DATABASE)}"' < database/schema.sql
+
+.PHONY: db-seed
+db-seed:
+	# Load fixtures.sql (assumes file exists at database/fixtures.sql)
+	$(DC) exec -T mysql sh -lc 'mysql -u "$${DB_USERNAME:-$(DB_USERNAME)}" -p"$${DB_PASSWORD:-$(DB_PASSWORD)}" "$${DB_DATABASE:-$(DB_DATABASE)}"' < database/fixtures.sql
+
+.PHONY: help
+help:
+	@echo "Available targets:"
+	@echo "  setup              → Build, start, and init DB (schema + fixtures)"
+	@echo "  up, up-build, down, build, shell, logs, restart, ps"
+	@echo "  install, tests, tests-coverage, analyse, format, format-check"
+	@echo "  db-schema, db-seed"
