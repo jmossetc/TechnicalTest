@@ -14,15 +14,15 @@ info:
     ```
 
 servers:
-  - url: http://localhost:8080
-    description: Local development server
+  - url: /
+    description: Current server
 
 paths:
 
   /api/users:
     get:
       operationId: listUsers
-      summary: List users with pagination
+      summary: List users with pagination and filters
       tags: [Users]
       security:
         - bearerAuth: []
@@ -33,7 +33,6 @@ paths:
             type: integer
             minimum: 1
             default: 1
-          description: Page number (1-based)
         - name: limit
           in: query
           schema:
@@ -41,7 +40,71 @@ paths:
             minimum: 1
             maximum: 100
             default: 10
-          description: Number of users per page
+        - name: company_ids
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of company UUIDs
+        - name: shop_ids
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of shop UUIDs
+        - name: email
+          in: query
+          schema:
+            type: string
+        - name: first_name
+          in: query
+          schema:
+            type: string
+        - name: last_name
+          in: query
+          schema:
+            type: string
+        - name: phone_number
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserRole'
+        - name: is_active
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false", "1", "0"]
+        - name: created_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: created_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: last_login_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: last_login_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [email, first_name, last_name, role, created_at, updated_at]
+        - name: sort_direction
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
       responses:
         "200":
           description: Paginated list of users
@@ -49,17 +112,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserListResponse'
-              example:
-                data:
-                  - id: "550e8400-e29b-41d4-a716-446655440000"
-                    email: alice@example.com
-                pagination:
-                  total: 1
-                  page: 1
-                  limit: 10
-                  pages: 1
         "401":
           description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "422":
+          description: Validation error in query parameters
           content:
             application/json:
               schema:
@@ -118,8 +178,8 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
             example:
-              email: alice@example.com
-              password: "secretpass"
+              email: admin1@fixture.test
+              password: "password123"
       responses:
         "200":
           description: Authentication successful
@@ -159,7 +219,6 @@ paths:
           schema:
             type: string
             format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         "200":
           description: User found
@@ -167,31 +226,64 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponse'
-              example:
-                id: "550e8400-e29b-41d4-a716-446655440000"
-                email: alice@example.com
         "400":
-          description: Malformed user ID (not a valid UUID v4)
+          description: Malformed user ID
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         "401":
-          description: Missing or invalid Authorization header / expired token
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "Unauthorized"
         "404":
-          description: No user with the given ID exists
+          description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error: "User not found"
+
+    patch:
+      operationId: updateUser
+      summary: Update a user
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated:
+                    type: boolean
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+        "409":
+          description: Email already exists
+        "422":
+          description: Validation error
 
     delete:
       operationId: deleteUser
@@ -232,7 +324,7 @@ paths:
   /api/companies:
     get:
       operationId: listCompanies
-      summary: List companies with pagination
+      summary: List companies with pagination and filters
       tags: [Companies]
       security:
         - bearerAuth: []
@@ -250,6 +342,50 @@ paths:
             minimum: 1
             maximum: 100
             default: 10
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+        - name: phone_number
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: postal_code
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: created_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: created_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [name, created_at, updated_at]
+        - name: sort_direction
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
       responses:
         "200":
           description: Paginated list of companies
@@ -259,6 +395,12 @@ paths:
                 $ref: '#/components/schemas/CompanyListResponse'
         "401":
           description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "422":
+          description: Validation error in query parameters
           content:
             application/json:
               schema:
@@ -282,7 +424,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompanyResponse'
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
         "401":
           description: Missing or invalid token
           content:
@@ -316,7 +462,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompanyResponse'
+                $ref: '#/components/schemas/Company'
         "401":
           description: Missing or invalid token
           content:
@@ -355,7 +501,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompanyResponse'
+                type: object
+                properties:
+                  updated:
+                    type: boolean
         "401":
           description: Missing or invalid token
           content:
@@ -399,6 +548,101 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         "404":
           description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/shops:
+    get:
+      operationId: listAllShops
+      summary: List all shops with pagination and filters
+      tags: [Shops]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: company_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+        - name: phone_number
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: postal_code
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: is_digital
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false", "1", "0"]
+        - name: created_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: created_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [name, created_at, updated_at]
+        - name: sort_direction
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        "200":
+          description: Paginated list of shops
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShopListResponse'
+        "401":
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "422":
+          description: Validation error in query parameters
           content:
             application/json:
               schema:
@@ -476,7 +720,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShopResponse'
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
         "401":
           description: Missing or invalid token
           content:
@@ -516,7 +764,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShopResponse'
+                $ref: '#/components/schemas/Shop'
         "401":
           description: Missing or invalid token
           content:
@@ -555,7 +803,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShopResponse'
+                type: object
+                properties:
+                  updated:
+                    type: boolean
         "401":
           description: Missing or invalid token
           content:
@@ -614,18 +865,66 @@ components:
 
   schemas:
 
+    UserRole:
+      type: string
+      enum: [admin, company_admin, shop_manager, employee]
+
     RegisterRequest:
       type: object
-      required: [email, password]
+      required: [email, password, first_name, last_name, role]
       properties:
         email:
           type: string
           format: email
-          description: Must be a valid email address (case-insensitive)
         password:
           type: string
           minLength: 8
-          description: Plain-text password (stored as bcrypt hash)
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        company_id:
+          type: string
+          format: uuid
+          description: Required if role is company_admin
+        shop_id:
+          type: string
+          format: uuid
+          description: Required if role is shop_manager or employee
+        phone_number:
+          type: string
+          description: Optional phone number in E164 format
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        password:
+          type: string
+          minLength: 8
+        current_password:
+          type: string
+          description: Required if updating password
+        role:
+          $ref: '#/components/schemas/UserRole'
+        company_id:
+          type: string
+          format: uuid
+        shop_id:
+          type: string
+          format: uuid
+        phone_number:
+          type: string
+        is_active:
+          type: boolean
 
     LoginRequest:
       type: object
@@ -637,26 +936,9 @@ components:
         password:
           type: string
 
-    UserCreatedResponse:
-      type: object
-      required: [id]
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: UUID v4 of the newly created user
-
-    TokenResponse:
-      type: object
-      required: [token]
-      properties:
-        token:
-          type: string
-          description: Signed HMAC-SHA256 JWT valid for the configured TTL (default 1 hour)
-
     UserResponse:
       type: object
-      required: [id, email]
+      required: [id, email, first_name, last_name, role, is_active, created_at, updated_at]
       properties:
         id:
           type: string
@@ -664,6 +946,50 @@ components:
         email:
           type: string
           format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone_number:
+          type: string
+          nullable: true
+        role:
+          $ref: '#/components/schemas/UserRole'
+        company_id:
+          type: string
+          format: uuid
+          nullable: true
+        shop_id:
+          type: string
+          format: uuid
+          nullable: true
+        is_active:
+          type: boolean
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UserCreatedResponse:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    TokenResponse:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
 
     UserListResponse:
       type: object
@@ -674,44 +1000,101 @@ components:
           items:
             $ref: '#/components/schemas/UserResponse'
         pagination:
-          type: object
-          required: [total, page, limit, pages]
-          properties:
-            total:
-              type: integer
-              description: Total number of users in the system
-            page:
-              type: integer
-            limit:
-              type: integer
-            pages:
-              type: integer
-              description: Total number of pages
-
-    ErrorResponse:
-      type: object
-      required: [error]
-      properties:
-        error:
-          type: string
-          description: Human-readable error message
+          $ref: '#/components/schemas/Pagination'
 
     # Companies
     Company:
       type: object
-      required: [id, name]
+      required: [id, name, is_active, created_at, updated_at]
       properties:
         id:
           type: string
           format: uuid
         name:
           type: string
-        description:
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone_number:
           type: string
           nullable: true
-    CompanyResponse:
-      allOf:
-        - $ref: '#/components/schemas/Company'
+        website:
+          type: string
+          nullable: true
+        address_line_1:
+          type: string
+          nullable: true
+        address_line_2:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CompanyCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone_number:
+          type: string
+        website:
+          type: string
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+
+    CompanyUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone_number:
+          type: string
+        website:
+          type: string
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        is_active:
+          type: boolean
+
     CompanyListResponse:
       type: object
       required: [data, pagination]
@@ -722,41 +1105,116 @@ components:
             $ref: '#/components/schemas/Company'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    CompanyCreateRequest:
+
+    # Shops
+    Shop:
+      type: object
+      required: [id, company_id, name, is_digital, is_active, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+        address_line_1:
+          type: string
+          nullable: true
+        address_line_2:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        postal_code:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+        is_digital:
+          type: boolean
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ShopCreateRequest:
       type: object
       required: [name]
       properties:
         name:
           type: string
-        description:
+        email:
           type: string
-    CompanyUpdateRequest:
-      type: object
-      properties:
-        name:
+          format: email
+        phone_number:
           type: string
-        description:
+        addressLine1:
           type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        is_digital:
+          type: boolean
 
-    # Shops
-    Shop:
+    ShopUpdateRequest:
       type: object
-      required: [id, companyId, name]
       properties:
-        id:
-          type: string
-          format: uuid
-        companyId:
-          type: string
-          format: uuid
         name:
           type: string
-        address:
+        email:
           type: string
-          nullable: true
-    ShopResponse:
-      allOf:
-        - $ref: '#/components/schemas/Shop'
+          format: email
+        phone_number:
+          type: string
+        address_line_1:
+          type: string
+        address_line_2:
+          type: string
+        city:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        is_digital:
+          type: boolean
+        is_active:
+          type: boolean
+
     ShopListResponse:
       type: object
       required: [data, pagination]
@@ -767,21 +1225,6 @@ components:
             $ref: '#/components/schemas/Shop'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    ShopCreateRequest:
-      type: object
-      required: [name]
-      properties:
-        name:
-          type: string
-        address:
-          type: string
-    ShopUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        address:
-          type: string
 
     Pagination:
       type: object
@@ -795,3 +1238,10 @@ components:
           type: integer
         pages:
           type: integer
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
