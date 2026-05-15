@@ -164,7 +164,7 @@ final readonly class UserAuthorizationService
 
         if ($caller->role === Role::CompanyAdmin && $caller->companyId !== null) {
             if (
-                in_array($target->role, [Role::ShopManager, Role::Employee], true)
+                \in_array($target->role, [Role::ShopManager, Role::Employee], true)
                 && $target->companyId === $caller->companyId
             ) {
                 return;
@@ -271,16 +271,16 @@ final readonly class UserAuthorizationService
         if ($caller->role === Role::Admin) {
             return new UserUpdatePermissions(
                 canEditProfile: true,
-                canEditStatus:  true,
-                canEditRole:    true,
+                canEditStatus: true,
+                canEditRole: true,
             );
         }
 
         if ($isSelf) {
             return new UserUpdatePermissions(
                 canEditProfile: true,
-                canEditStatus:  false,
-                canEditRole:    false,
+                canEditStatus: false,
+                canEditRole: false,
             );
         }
 
@@ -291,8 +291,8 @@ final readonly class UserAuthorizationService
 
             return new UserUpdatePermissions(
                 canEditProfile: true,
-                canEditStatus:  true,
-                canEditRole:    false,
+                canEditStatus: true,
+                canEditRole: false,
             );
         }
 
@@ -300,8 +300,8 @@ final readonly class UserAuthorizationService
             if ($target->role === Role::Employee && $target->shopId === $caller->shopId) {
                 return new UserUpdatePermissions(
                     canEditProfile: true,
-                    canEditStatus:  true,
-                    canEditRole:    false,
+                    canEditStatus: true,
+                    canEditRole: false,
                 );
             }
 

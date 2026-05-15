@@ -33,8 +33,8 @@ final class DeleteShopControllerTest extends ShopControllerTestCase
             $this->authedRequest('DELETE', "/api/shops/{$id->value}", attrs: ['id' => $id->value]),
         );
 
-        $this->assertSame(200, $response->status());
-        $this->assertTrue($response->data()['deleted']);
+        self::assertSame(200, $response->status());
+        self::assertTrue($response->data()['deleted']);
     }
 
     public function testShopIsRemovedFromRepositoryAfterDelete(): void
@@ -44,14 +44,14 @@ final class DeleteShopControllerTest extends ShopControllerTestCase
             $this->authedRequest('DELETE', "/api/shops/{$id->value}", attrs: ['id' => $id->value]),
         );
 
-        $this->assertSame(0, $this->shopRepo->countByCriteria(new ShopSearchCriteria()));
+        self::assertSame(0, $this->shopRepo->countByCriteria(new ShopSearchCriteria()));
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
         $id = $this->seedShop(self::COMPANY_A);
         $response = $this->ctrl()($this->unauthRequest('DELETE', "/api/shops/{$id->value}"));
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns404WhenShopNotFound(): void
@@ -59,7 +59,7 @@ final class DeleteShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('DELETE', '/api/shops/' . self::UNKNOWN_UUID, attrs: ['id' => self::UNKNOWN_UUID]),
         );
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns400ForMalformedId(): void
@@ -67,7 +67,7 @@ final class DeleteShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('DELETE', '/api/shops/bad-id', attrs: ['id' => 'bad-id']),
         );
-        $this->assertSame(400, $response->status());
+        self::assertSame(400, $response->status());
     }
 
     public function testReturns403WhenCallerLacksCompanyAccess(): void
@@ -77,6 +77,6 @@ final class DeleteShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl(Role::CompanyAdmin, '22222222-2222-4222-8222-222222222222')(
             $this->authedRequest('DELETE', "/api/shops/{$id->value}", attrs: ['id' => $id->value]),
         );
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 }

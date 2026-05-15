@@ -30,7 +30,7 @@ final class RouterTest extends TestCase
     /** @param array<string, ControllerInterface> $controllers */
     private function makeContainer(array $controllers): ContainerInterface
     {
-        $container = $this->createStub(ContainerInterface::class);
+        $container = self::createStub(ContainerInterface::class);
 
         $container->method('has')->willReturnCallback(
             static fn(string $id): bool => isset($controllers[$id]),
@@ -46,7 +46,10 @@ final class RouterTest extends TestCase
     {
         return new class ($response) implements ControllerInterface {
             public function __construct(private readonly Response $response) {}
-            public function __invoke(Request $request): Response { return $this->response; }
+            public function __invoke(Request $request): Response
+            {
+                return $this->response;
+            }
         };
     }
 
@@ -67,16 +70,16 @@ final class RouterTest extends TestCase
 
         $response = $router->dispatch($this->req('GET', '/api/users'));
 
-        $this->assertSame(200, $response->status());
-        $this->assertSame(['ok' => true], $response->data());
+        self::assertSame(200, $response->status());
+        self::assertSame(['ok' => true], $response->data());
     }
 
     public function testInjectsRouteAttributesIntoRequest(): void
     {
-        $capturedRequest = null;
         $controller      = new class implements ControllerInterface {
             public ?Request $captured = null;
-            public function __invoke(Request $request): Response {
+            public function __invoke(Request $request): Response
+            {
                 $this->captured = $request;
                 return Response::json([]);
             }
@@ -89,15 +92,16 @@ final class RouterTest extends TestCase
 
         $router->dispatch($this->req('GET', '/api/users/abc-123'));
 
-        $this->assertNotNull($controller->captured);
-        $this->assertSame('abc-123', $controller->captured->attributes['id'] ?? null);
+        self::assertNotNull($controller->captured);
+        self::assertSame('abc-123', $controller->captured->attributes['id'] ?? null);
     }
 
     public function testDoesNotPassPrivateRouteAttributesToController(): void
     {
         $controller = new class implements ControllerInterface {
             public ?Request $captured = null;
-            public function __invoke(Request $request): Response {
+            public function __invoke(Request $request): Response
+            {
                 $this->captured = $request;
                 return Response::json([]);
             }
@@ -112,7 +116,7 @@ final class RouterTest extends TestCase
 
         // Symfony inserts _route, _controller etc. — these must be stripped
         foreach (array_keys($controller->captured->attributes ?? []) as $key) {
-            $this->assertStringNotContainsString('_', substr($key, 0, 1));
+            self::assertStringNotContainsString('_', substr($key, 0, 1));
         }
     }
 
@@ -127,7 +131,7 @@ final class RouterTest extends TestCase
 
         $response = $router->dispatch($this->req('GET', '/api/unknown'));
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns404WhenRouteMatchesButControllerNotInContainer(): void
@@ -139,12 +143,12 @@ final class RouterTest extends TestCase
 
         $response = $router->dispatch($this->req('GET', '/api/orphan'));
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns404WhenContainerEntryIsNotAController(): void
     {
-        $container = $this->createStub(ContainerInterface::class);
+        $container = self::createStub(ContainerInterface::class);
         $container->method('has')->willReturn(true);
         $container->method('get')->willReturn(new \stdClass());
 
@@ -155,7 +159,7 @@ final class RouterTest extends TestCase
 
         $response = $router->dispatch($this->req('GET', '/api/bad'));
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     // ── 405 path ──────────────────────────────────────────────────────────────
@@ -169,7 +173,7 @@ final class RouterTest extends TestCase
 
         $response = $router->dispatch($this->req('DELETE', '/api/users'));
 
-        $this->assertSame(405, $response->status());
+        self::assertSame(405, $response->status());
     }
 
     public function testMethodNotAllowedResponseMentionsAllowedMethods(): void
@@ -182,7 +186,7 @@ final class RouterTest extends TestCase
         $response = $router->dispatch($this->req('DELETE', '/api/users'));
 
         $error = $response->data()['error'] ?? '';
-        $this->assertIsString($error);
-        $this->assertStringContainsString('Allowed', $error);
+        self::assertIsString($error);
+        self::assertStringContainsString('Allowed', $error);
     }
 }

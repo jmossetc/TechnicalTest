@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mossetc\TechnicalTest\Auth\Domain\Service;
 
 use Mossetc\TechnicalTest\Auth\Domain\Exception\UserNotFoundException;
@@ -11,8 +13,7 @@ final readonly class UserDeletionService
     public function __construct(
         private UserRepositoryInterface  $userRepository,
         private UserAuthorizationService $authorizationService,
-    ) {
-    }
+    ) {}
 
     public function deleteUser(UserId $targetId, UserId $callerId): void
     {

@@ -14,7 +14,7 @@ final class FirstNameTest extends TestCase
     {
         $name = new FirstName('Alice');
 
-        $this->assertSame('Alice', $name->value);
+        self::assertSame('Alice', $name->value);
     }
 
     public function testRejectsEmptyString(): void
@@ -39,13 +39,13 @@ final class FirstNameTest extends TestCase
     {
         $name = new FirstName(str_repeat('a', 255));
 
-        $this->assertSame(255, strlen($name->value));
+        self::assertSame(255, \strlen($name->value));
     }
 
     public function testPreservesOriginalCasing(): void
     {
         $name = new FirstName('Jean-Pierre');
 
-        $this->assertSame('Jean-Pierre', $name->value);
+        self::assertSame('Jean-Pierre', $name->value);
     }
 }

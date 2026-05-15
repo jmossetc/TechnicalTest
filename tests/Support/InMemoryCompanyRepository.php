@@ -48,12 +48,12 @@ final class InMemoryCompanyRepository implements CompanyRepositoryInterface
         $companies = array_values($this->filteredByCriteria($criteria));
         usort($companies, $this->buildComparator($sort));
 
-        return array_slice($companies, $offset, $limit);
+        return \array_slice($companies, $offset, $limit);
     }
 
     public function countByCriteria(CompanySearchCriteria $criteria): int
     {
-        return count($this->filteredByCriteria($criteria));
+        return \count($this->filteredByCriteria($criteria));
     }
 
     /** @return callable(Company, Company): int */

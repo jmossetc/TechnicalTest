@@ -22,8 +22,8 @@ use RuntimeException;
 
 final readonly class UserRepository implements UserRepositoryInterface
 {
-    private const string SELECT_COLUMNS =
-        'BIN_TO_UUID(id) AS id, email, first_name, last_name, phone_number,
+    private const string SELECT_COLUMNS
+        = 'BIN_TO_UUID(id) AS id, email, first_name, last_name, phone_number,
          role, BIN_TO_UUID(company_id) AS company_id, BIN_TO_UUID(shop_id) AS shop_id,
          is_active, last_login_at, password_hash, created_at, updated_at, deleted_at';
 
@@ -61,7 +61,7 @@ final readonly class UserRepository implements UserRepositoryInterface
             'company_id'   => $user->companyId,
             'shop_id'      => $user->shopId,
             'is_active'    => $user->isActive ? 1 : 0,
-            'password_hash'=> $user->password->hash,
+            'password_hash' => $user->password->hash,
         ]);
     }
 
@@ -75,7 +75,7 @@ final readonly class UserRepository implements UserRepositoryInterface
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return is_array($row) ? $this->hydrate($row) : null;
+        return \is_array($row) ? $this->hydrate($row) : null;
     }
 
     public function findById(UserId $id): ?User
@@ -88,7 +88,7 @@ final readonly class UserRepository implements UserRepositoryInterface
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return is_array($row) ? $this->hydrate($row) : null;
+        return \is_array($row) ? $this->hydrate($row) : null;
     }
 
     public function delete(UserId $id): void
@@ -148,7 +148,7 @@ final readonly class UserRepository implements UserRepositoryInterface
             if ($scope->ids === []) {
                 $conditions[] = '1=0';
             } else {
-                $in           = implode(',', array_fill(0, count($scope->ids), 'UUID_TO_BIN(?)'));
+                $in           = implode(',', array_fill(0, \count($scope->ids), 'UUID_TO_BIN(?)'));
                 $conditions[] = "company_id IN ({$in})";
                 array_push($params, ...$scope->ids);
             }
@@ -156,7 +156,7 @@ final readonly class UserRepository implements UserRepositoryInterface
             if ($scope->ids === []) {
                 $conditions[] = '1=0';
             } else {
-                $in           = implode(',', array_fill(0, count($scope->ids), 'UUID_TO_BIN(?)'));
+                $in           = implode(',', array_fill(0, \count($scope->ids), 'UUID_TO_BIN(?)'));
                 $conditions[] = "shop_id IN ({$in})";
                 array_push($params, ...$scope->ids);
 
@@ -237,7 +237,7 @@ final readonly class UserRepository implements UserRepositoryInterface
     private function fetchAll(PDOStatement $stmt): array
     {
         $users = [];
-        while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
+        while (\is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
             $users[] = $this->hydrate($row);
         }
 
@@ -250,20 +250,20 @@ final readonly class UserRepository implements UserRepositoryInterface
     private function hydrate(array $row): User
     {
         return new User(
-            id:          new UserId($this->col($row, 'id')),
-            email:       new Email($this->col($row, 'email')),
-            password:    HashedPassword::fromHash($this->col($row, 'password_hash')),
-            firstName:   new FirstName($this->col($row, 'first_name')),
-            lastName:    new LastName($this->col($row, 'last_name')),
-            role:        Role::from($this->col($row, 'role')),
-            companyId:   $this->nullableStr($row['company_id'] ?? null),
-            shopId:      $this->nullableStr($row['shop_id'] ?? null),
+            id: new UserId($this->col($row, 'id')),
+            email: new Email($this->col($row, 'email')),
+            password: HashedPassword::fromHash($this->col($row, 'password_hash')),
+            firstName: new FirstName($this->col($row, 'first_name')),
+            lastName: new LastName($this->col($row, 'last_name')),
+            role: Role::from($this->col($row, 'role')),
+            companyId: $this->nullableStr($row['company_id'] ?? null),
+            shopId: $this->nullableStr($row['shop_id'] ?? null),
             phoneNumber: $this->nullableStr($row['phone_number'] ?? null),
-            isActive:    (bool) ($row['is_active'] ?? true),
+            isActive: (bool) ($row['is_active'] ?? true),
             lastLoginAt: $this->parseDateTimeNullable($row['last_login_at'] ?? null),
-            createdAt:   $this->parseDateTime($this->col($row, 'created_at')),
-            updatedAt:   $this->parseDateTime($this->col($row, 'updated_at')),
-            deletedAt:   $this->parseDateTimeNullable($row['deleted_at'] ?? null),
+            createdAt: $this->parseDateTime($this->col($row, 'created_at')),
+            updatedAt: $this->parseDateTime($this->col($row, 'updated_at')),
+            deletedAt: $this->parseDateTimeNullable($row['deleted_at'] ?? null),
         );
     }
 
@@ -274,9 +274,9 @@ final readonly class UserRepository implements UserRepositoryInterface
     {
         $value = $row[$key] ?? null;
 
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             throw new RuntimeException(
-                sprintf("Expected string for column '%s', got %s", $key, get_debug_type($value)),
+                \sprintf("Expected string for column '%s', got %s", $key, get_debug_type($value)),
             );
         }
 
@@ -285,7 +285,7 @@ final readonly class UserRepository implements UserRepositoryInterface
 
     private function nullableStr(mixed $value): ?string
     {
-        return is_string($value) && $value !== '' ? $value : null;
+        return \is_string($value) && $value !== '' ? $value : null;
     }
 
     private function parseDateTime(string $value): DateTimeImmutable
@@ -301,7 +301,7 @@ final readonly class UserRepository implements UserRepositoryInterface
 
     private function parseDateTimeNullable(mixed $value): ?DateTimeImmutable
     {
-        if (!is_string($value) || $value === '') {
+        if (!\is_string($value) || $value === '') {
             return null;
         }
 

@@ -14,7 +14,7 @@ final class UserIdTest extends TestCase
     {
         $id = UserId::generate();
 
-        $this->assertMatchesRegularExpression(
+        self::assertMatchesRegularExpression(
             '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
             $id->value,
         );
@@ -25,14 +25,14 @@ final class UserIdTest extends TestCase
         $a = UserId::generate();
         $b = UserId::generate();
 
-        $this->assertFalse($a->equals($b));
+        self::assertFalse($a->equals($b));
     }
 
     public function testAcceptsValidUuid(): void
     {
         $id = new UserId('550e8400-e29b-41d4-a716-446655440000');
 
-        $this->assertSame('550e8400-e29b-41d4-a716-446655440000', $id->value);
+        self::assertSame('550e8400-e29b-41d4-a716-446655440000', $id->value);
     }
 
     public function testRejectsInvalidUuid(): void
@@ -54,7 +54,7 @@ final class UserIdTest extends TestCase
         $id = UserId::generate();
         $same = new UserId($id->value);
 
-        $this->assertTrue($id->equals($same));
+        self::assertTrue($id->equals($same));
     }
 
     public function testEqualityIsCaseInsensitive(): void
@@ -62,13 +62,13 @@ final class UserIdTest extends TestCase
         $id = new UserId('550e8400-e29b-41d4-a716-446655440000');
         $upper = new UserId('550E8400-E29B-41D4-A716-446655440000');
 
-        $this->assertTrue($id->equals($upper));
+        self::assertTrue($id->equals($upper));
     }
 
     public function testToString(): void
     {
         $id = UserId::generate();
 
-        $this->assertSame($id->value, (string) $id);
+        self::assertSame($id->value, (string) $id);
     }
 }

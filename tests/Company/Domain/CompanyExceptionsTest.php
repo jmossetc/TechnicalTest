@@ -16,8 +16,7 @@ final class CompanyExceptionsTest extends TestCase
     {
         $e = new CompanyAlreadyExistsException(new CompanyName('Acme Corp'));
 
-        $this->assertStringContainsString('Acme Corp', $e->getMessage());
-        $this->assertInstanceOf(RuntimeException::class, $e);
+        self::assertStringContainsString('Acme Corp', $e->getMessage());
     }
 
     public function testNotFoundMessageContainsId(): void
@@ -25,7 +24,6 @@ final class CompanyExceptionsTest extends TestCase
         $id = '11111111-1111-4111-8111-111111111111';
         $e  = new CompanyNotFoundException($id);
 
-        $this->assertStringContainsString($id, $e->getMessage());
-        $this->assertInstanceOf(RuntimeException::class, $e);
+        self::assertStringContainsString($id, $e->getMessage());
     }
 }

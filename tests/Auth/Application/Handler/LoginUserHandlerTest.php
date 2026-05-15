@@ -32,13 +32,13 @@ final class LoginUserHandlerTest extends TestCase
         $this->repository = new InMemoryUserRepository();
         $this->hasher     = new PasswordHasher('');
 
-        (new RegisterUserHandler($this->repository, $this->hasher))
+        new RegisterUserHandler($this->repository, $this->hasher)
             ->handle(new RegisterUser('alice@example.com', 'password123', 'Alice', 'Smith'));
     }
 
     private function makeHandler(?TokenServiceInterface $tokens = null): LoginUserHandler
     {
-        $tokens ??= $this->createStub(TokenServiceInterface::class);
+        $tokens ??= self::createStub(TokenServiceInterface::class);
 
         return new LoginUserHandler($this->repository, $tokens, $this->hasher);
     }
@@ -47,11 +47,11 @@ final class LoginUserHandlerTest extends TestCase
     {
         $expected = new AuthToken('jwt.token.here');
         $tokens   = $this->createMock(TokenServiceInterface::class);
-        $tokens->expects($this->once())->method('issue')->willReturn($expected);
+        $tokens->expects(self::once())->method('issue')->willReturn($expected);
 
         $token = $this->makeHandler($tokens)->handle(new LoginUser('alice@example.com', 'password123'));
 
-        $this->assertSame('jwt.token.here', $token->value);
+        self::assertSame('jwt.token.here', $token->value);
     }
 
     public function testThrowsOnUnknownEmail(): void
@@ -69,33 +69,33 @@ final class LoginUserHandlerTest extends TestCase
     public function testEmailLookupIsCaseInsensitive(): void
     {
         $tokens = $this->createMock(TokenServiceInterface::class);
-        $tokens->expects($this->once())->method('issue')->willReturn(new AuthToken('tok'));
+        $tokens->expects(self::once())->method('issue')->willReturn(new AuthToken('tok'));
 
         $this->makeHandler($tokens)->handle(new LoginUser('ALICE@EXAMPLE.COM', 'password123'));
     }
 
     public function testUpdatesLastLoginOnSuccess(): void
     {
-        $tokens = $this->createStub(TokenServiceInterface::class);
+        $tokens = self::createStub(TokenServiceInterface::class);
         $tokens->method('issue')->willReturn(new AuthToken('tok'));
 
         $this->makeHandler($tokens)->handle(new LoginUser('alice@example.com', 'password123'));
 
         $user = $this->repository->findByEmail(new Email('alice@example.com'));
-        $this->assertNotNull($user?->lastLoginAt);
+        self::assertNotNull($user?->lastLoginAt);
     }
 
     public function testThrowsForInactiveUser(): void
     {
         $userId = UserId::generate();
         $this->repository->save(new User(
-            id:        $userId,
-            email:     new Email('inactive@example.com'),
-            password:  $this->hasher->hash(new PlainPassword('password123')),
+            id: $userId,
+            email: new Email('inactive@example.com'),
+            password: $this->hasher->hash(new PlainPassword('password123')),
             firstName: new FirstName('In'),
-            lastName:  new LastName('Active'),
-            role:      Role::Employee,
-            isActive:  false,
+            lastName: new LastName('Active'),
+            role: Role::Employee,
+            isActive: false,
         ));
 
         $this->expectException(InvalidCredentialsException::class);

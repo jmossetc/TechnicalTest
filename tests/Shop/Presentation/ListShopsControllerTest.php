@@ -30,7 +30,7 @@ final class ListShopsControllerTest extends ShopControllerTestCase
     {
         $response = $this->ctrl()($this->unauthRequest('GET', '/api/shops'));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns403ForShopManager(): void
@@ -39,7 +39,7 @@ final class ListShopsControllerTest extends ShopControllerTestCase
             $this->authedRequest('GET', '/api/shops'),
         );
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testReturns403ForEmployee(): void
@@ -48,7 +48,7 @@ final class ListShopsControllerTest extends ShopControllerTestCase
             $this->authedRequest('GET', '/api/shops'),
         );
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testAdminSeesAllShops(): void
@@ -59,10 +59,10 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()($this->authedRequest('GET', '/api/shops'));
 
         $data = $response->data();
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $items = $data['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(2, $items);
+        self::assertIsArray($items);
+        self::assertCount(2, $items);
     }
 
     public function testAdminCanFilterByCompanyId(): void
@@ -71,15 +71,19 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $this->seedShop(self::COMPANY_B, 'Beta');
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['company_id' => self::COMPANY_A],
+            'GET',
+            '/api/shops',
+            query: ['company_id' => self::COMPANY_A],
         ));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Alpha', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Alpha', $first['name']);
     }
 
     public function testCompanyAdminSeesOnlyOwnCompanyShops(): void
@@ -92,11 +96,13 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         );
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Own Shop', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Own Shop', $first['name']);
     }
 
     public function testResponseContainsExpectedFields(): void
@@ -106,14 +112,14 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()($this->authedRequest('GET', '/api/shops'));
 
         $data = $response->data();
-        $this->assertArrayHasKey('data', $data);
-        $this->assertArrayHasKey('pagination', $data);
+        self::assertArrayHasKey('data', $data);
+        self::assertArrayHasKey('pagination', $data);
         $pagination = $data['pagination'];
-        $this->assertIsArray($pagination);
-        $this->assertArrayHasKey('total', $pagination);
-        $this->assertArrayHasKey('page', $pagination);
-        $this->assertArrayHasKey('limit', $pagination);
-        $this->assertArrayHasKey('pages', $pagination);
+        self::assertIsArray($pagination);
+        self::assertArrayHasKey('total', $pagination);
+        self::assertArrayHasKey('page', $pagination);
+        self::assertArrayHasKey('limit', $pagination);
+        self::assertArrayHasKey('pages', $pagination);
     }
 
     public function testPaginationIsRespected(): void
@@ -123,16 +129,18 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $this->seedShop(self::COMPANY_A, 'C');
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['page' => '1', 'limit' => '2'],
+            'GET',
+            '/api/shops',
+            query: ['page' => '1', 'limit' => '2'],
         ));
 
         $data = $response->data();
         $items = $data['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(2, $items);
+        self::assertIsArray($items);
+        self::assertCount(2, $items);
         $pagination = $data['pagination'];
-        $this->assertIsArray($pagination);
-        $this->assertSame(3, $pagination['total']);
+        self::assertIsArray($pagination);
+        self::assertSame(3, $pagination['total']);
     }
 
     public function testNameFilterIsApplied(): void
@@ -141,105 +149,129 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $this->seedShop(self::COMPANY_A, 'Corner Shop');
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['name' => 'Flagship'],
+            'GET',
+            '/api/shops',
+            query: ['name' => 'Flagship'],
         ));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Flagship Store', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Flagship Store', $first['name']);
     }
 
     public function testCityFilterIsApplied(): void
     {
-        $this->seedShop(self::COMPANY_A, 'Paris Shop',  city: 'Paris');
+        $this->seedShop(self::COMPANY_A, 'Paris Shop', city: 'Paris');
         $this->seedShop(self::COMPANY_A, 'London Shop', city: 'London');
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['city' => 'Paris'],
+            'GET',
+            '/api/shops',
+            query: ['city' => 'Paris'],
         ));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Paris Shop', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Paris Shop', $first['name']);
     }
 
     public function testIsDigitalTrueFilterIsApplied(): void
     {
         $this->seedShop(self::COMPANY_A, 'Physical', isDigital: false);
-        $this->seedShop(self::COMPANY_A, 'Online',   isDigital: true);
+        $this->seedShop(self::COMPANY_A, 'Online', isDigital: true);
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['is_digital' => 'true'],
+            'GET',
+            '/api/shops',
+            query: ['is_digital' => 'true'],
         ));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Online', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Online', $first['name']);
     }
 
     public function testIsDigitalFalseFilterIsApplied(): void
     {
         $this->seedShop(self::COMPANY_A, 'Physical', isDigital: false);
-        $this->seedShop(self::COMPANY_A, 'Online',   isDigital: true);
+        $this->seedShop(self::COMPANY_A, 'Online', isDigital: true);
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['is_digital' => 'false'],
+            'GET',
+            '/api/shops',
+            query: ['is_digital' => 'false'],
         ));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Physical', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Physical', $first['name']);
     }
 
     public function testInvalidIsDigitalValueReturns422(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['is_digital' => 'maybe'],
+            'GET',
+            '/api/shops',
+            query: ['is_digital' => 'maybe'],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testInvalidCreatedFromDateReturns422(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['created_from' => 'not-a-date'],
+            'GET',
+            '/api/shops',
+            query: ['created_from' => 'not-a-date'],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testInvalidCreatedToDateReturns422(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['created_to' => '32-13-2025'],
+            'GET',
+            '/api/shops',
+            query: ['created_to' => '32-13-2025'],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testCreatedFromAfterCreatedToReturns422(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: [
+            'GET',
+            '/api/shops',
+            query: [
                 'created_from' => '2025-12-31',
                 'created_to'   => '2025-01-01',
             ],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testEmptyFilterParamsAreIgnored(): void
@@ -247,12 +279,14 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $this->seedShop(self::COMPANY_A, 'Any');
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['name' => '', 'city' => '', 'is_digital' => ''],
+            'GET',
+            '/api/shops',
+            query: ['name' => '', 'city' => '', 'is_digital' => ''],
         ));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
     }
 
     public function testDefaultSortAppliesNameAsc(): void
@@ -263,10 +297,12 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()($this->authedRequest('GET', '/api/shops'));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
+        self::assertIsArray($items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Alpha', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Alpha', $first['name']);
     }
 
     public function testSortByNameDescendingReturnsReverseOrder(): void
@@ -275,32 +311,40 @@ final class ListShopsControllerTest extends ShopControllerTestCase
         $this->seedShop(self::COMPANY_A, 'Gamma');
 
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['sort_by' => 'name', 'sort_direction' => 'desc'],
+            'GET',
+            '/api/shops',
+            query: ['sort_by' => 'name', 'sort_direction' => 'desc'],
         ));
 
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertSame(200, $response->status());
+        self::assertIsArray($items);
+        self::assertSame(200, $response->status());
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('Gamma', $first['name']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('Gamma', $first['name']);
     }
 
     public function testInvalidSortByValueReturns422(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['sort_by' => 'invalid_column'],
+            'GET',
+            '/api/shops',
+            query: ['sort_by' => 'invalid_column'],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testInvalidSortDirectionValueReturns422(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/shops', query: ['sort_direction' => 'sideways'],
+            'GET',
+            '/api/shops',
+            query: ['sort_direction' => 'sideways'],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 }

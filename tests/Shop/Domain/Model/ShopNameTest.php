@@ -13,7 +13,7 @@ final class ShopNameTest extends TestCase
     public function testAcceptsValidName(): void
     {
         $name = new ShopName('My Shop');
-        $this->assertSame('My Shop', $name->value);
+        self::assertSame('My Shop', $name->value);
     }
 
     public function testRejectsEmptyString(): void
@@ -37,21 +37,21 @@ final class ShopNameTest extends TestCase
     public function testAcceptsNameOf255Characters(): void
     {
         $name = new ShopName(str_repeat('a', 255));
-        $this->assertSame(255, strlen($name->value));
+        self::assertSame(255, \strlen($name->value));
     }
 
     public function testEqualsTrueForSameValue(): void
     {
-        $this->assertTrue((new ShopName('Foo'))->equals(new ShopName('Foo')));
+        self::assertTrue(new ShopName('Foo')->equals(new ShopName('Foo')));
     }
 
     public function testEqualsFalseForDifferentValue(): void
     {
-        $this->assertFalse((new ShopName('Foo'))->equals(new ShopName('Bar')));
+        self::assertFalse(new ShopName('Foo')->equals(new ShopName('Bar')));
     }
 
     public function testToStringReturnsValue(): void
     {
-        $this->assertSame('My Shop', (string) new ShopName('My Shop'));
+        self::assertSame('My Shop', (string) new ShopName('My Shop'));
     }
 }

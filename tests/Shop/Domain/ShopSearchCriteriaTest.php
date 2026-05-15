@@ -15,16 +15,16 @@ final class ShopSearchCriteriaTest extends TestCase
     {
         $c = new ShopSearchCriteria();
 
-        $this->assertNull($c->companyId);
-        $this->assertNull($c->name);
-        $this->assertNull($c->email);
-        $this->assertNull($c->phoneNumber);
-        $this->assertNull($c->city);
-        $this->assertNull($c->postalCode);
-        $this->assertNull($c->country);
-        $this->assertNull($c->isDigital);
-        $this->assertNull($c->createdFrom);
-        $this->assertNull($c->createdTo);
+        self::assertNull($c->companyId);
+        self::assertNull($c->name);
+        self::assertNull($c->email);
+        self::assertNull($c->phoneNumber);
+        self::assertNull($c->city);
+        self::assertNull($c->postalCode);
+        self::assertNull($c->country);
+        self::assertNull($c->isDigital);
+        self::assertNull($c->createdFrom);
+        self::assertNull($c->createdTo);
     }
 
     public function testAcceptsAllFields(): void
@@ -33,23 +33,23 @@ final class ShopSearchCriteriaTest extends TestCase
         $to   = new DateTimeImmutable('2025-12-31');
 
         $c = new ShopSearchCriteria(
-            companyId:   '11111111-1111-4111-8111-111111111111',
-            name:        'Flagship',
-            email:       'shop@',
+            companyId: '11111111-1111-4111-8111-111111111111',
+            name: 'Flagship',
+            email: 'shop@',
             phoneNumber: '+33',
-            city:        'Paris',
-            postalCode:  '75',
-            country:     'France',
-            isDigital:   true,
+            city: 'Paris',
+            postalCode: '75',
+            country: 'France',
+            isDigital: true,
             createdFrom: $from,
-            createdTo:   $to,
+            createdTo: $to,
         );
 
-        $this->assertSame('11111111-1111-4111-8111-111111111111', $c->companyId);
-        $this->assertSame('Flagship', $c->name);
-        $this->assertTrue($c->isDigital);
-        $this->assertSame($from, $c->createdFrom);
-        $this->assertSame($to, $c->createdTo);
+        self::assertSame('11111111-1111-4111-8111-111111111111', $c->companyId);
+        self::assertSame('Flagship', $c->name);
+        self::assertTrue($c->isDigital);
+        self::assertSame($from, $c->createdFrom);
+        self::assertSame($to, $c->createdTo);
     }
 
     public function testRejectsCreatedFromAfterCreatedTo(): void
@@ -59,7 +59,7 @@ final class ShopSearchCriteriaTest extends TestCase
 
         new ShopSearchCriteria(
             createdFrom: new DateTimeImmutable('2025-02-01'),
-            createdTo:   new DateTimeImmutable('2025-01-01'),
+            createdTo: new DateTimeImmutable('2025-01-01'),
         );
     }
 
@@ -69,7 +69,7 @@ final class ShopSearchCriteriaTest extends TestCase
 
         $c = new ShopSearchCriteria(createdFrom: $date, createdTo: $date);
 
-        $this->assertSame($date, $c->createdFrom);
-        $this->assertSame($date, $c->createdTo);
+        self::assertSame($date, $c->createdFrom);
+        self::assertSame($date, $c->createdTo);
     }
 }

@@ -26,15 +26,15 @@ final class GetShopHandlerTest extends TestCase
     {
         $this->repository = new InMemoryShopRepository();
         $this->handler    = new GetShopHandler($this->repository);
-        $this->existingId = (new CreateShopHandler($this->repository))
+        $this->existingId = new CreateShopHandler($this->repository)
             ->handle(new CreateShop(self::COMPANY_A, 'My Shop'));
     }
 
     public function testReturnsShopOnSuccess(): void
     {
         $shop = $this->handler->handle($this->existingId->value);
-        $this->assertSame($this->existingId->value, $shop->id->value);
-        $this->assertSame('My Shop', $shop->name->value);
+        self::assertSame($this->existingId->value, $shop->id->value);
+        self::assertSame('My Shop', $shop->name->value);
     }
 
     public function testThrowsShopNotFoundExceptionForUnknownId(): void

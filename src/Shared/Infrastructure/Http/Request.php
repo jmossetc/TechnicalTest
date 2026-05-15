@@ -27,11 +27,11 @@ final readonly class Request
 
         $uri  = self::serverString('REQUEST_URI', '/');
         $path = parse_url($uri, PHP_URL_PATH);
-        $path = is_string($path) ? $path : '/';
+        $path = \is_string($path) ? $path : '/';
 
         $headers = [];
         foreach ($_SERVER as $key => $value) {
-            if (!is_string($value)) {
+            if (!\is_string($value)) {
                 continue;
             }
             if (str_starts_with($key, 'HTTP_')) {
@@ -42,9 +42,7 @@ final readonly class Request
 
         $body = self::parseJsonBody();
 
-        $query = array_filter($_GET, static function ($value, $key) {
-            return is_string($key) && is_string($value);
-        }, ARRAY_FILTER_USE_BOTH);
+        $query = array_filter($_GET, static fn($value, $key) => \is_string($key) && \is_string($value), ARRAY_FILTER_USE_BOTH);
 
         return new self($method, $path, $headers, $body, query: $query);
     }
@@ -64,14 +62,14 @@ final readonly class Request
     {
         $value = $this->body[$key] ?? null;
 
-        return is_string($value) ? $value : $default;
+        return \is_string($value) ? $value : $default;
     }
 
     private static function serverString(string $key, string $default = ''): string
     {
         $value = $_SERVER[$key] ?? $default;
 
-        return is_string($value) ? $value : $default;
+        return \is_string($value) ? $value : $default;
     }
 
     /** @return array<string, mixed> */
@@ -85,12 +83,10 @@ final readonly class Request
 
         $decoded = json_decode($raw, associative: true);
 
-        if (!is_array($decoded)) {
+        if (!\is_array($decoded)) {
             return [];
         }
 
-        return array_filter($decoded, static function ($key) {
-            return is_string($key);
-        }, ARRAY_FILTER_USE_KEY);
+        return array_filter($decoded, static fn($key) => \is_string($key), ARRAY_FILTER_USE_KEY);
     }
 }

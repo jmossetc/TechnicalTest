@@ -29,47 +29,46 @@ final class CreateShopHandlerTest extends TestCase
     public function testCreatesShopAndReturnsId(): void
     {
         $id = $this->handler->handle(new CreateShop(self::COMPANY_A, 'My Shop'));
-        $this->assertInstanceOf(ShopId::class, $id);
-        $this->assertNotNull($this->repository->findById($id));
+        self::assertNotNull($this->repository->findById($id));
     }
 
     public function testReturnedIdMatchesSavedShop(): void
     {
         $id   = $this->handler->handle(new CreateShop(self::COMPANY_A, 'My Shop'));
         $shop = $this->repository->findById($id);
-        $this->assertNotNull($shop);
-        $this->assertTrue($id->equals($shop->id));
+        self::assertNotNull($shop);
+        self::assertTrue($id->equals($shop->id));
     }
 
     public function testStoresAllOptionalFields(): void
     {
         $id = $this->handler->handle(new CreateShop(
-            companyId:    self::COMPANY_A,
-            name:         'Full Shop',
-            email:        'shop@example.com',
-            phoneNumber:  '+33123456789',
+            companyId: self::COMPANY_A,
+            name: 'Full Shop',
+            email: 'shop@example.com',
+            phoneNumber: '+33123456789',
             addressLine1: '10 Rue de la Paix',
             addressLine2: 'Bâtiment B',
-            city:         'Paris',
-            postalCode:   '75001',
-            country:      'France',
-            latitude:     48.8566,
-            longitude:    2.3522,
-            isDigital:    true,
+            city: 'Paris',
+            postalCode: '75001',
+            country: 'France',
+            latitude: 48.8566,
+            longitude: 2.3522,
+            isDigital: true,
         ));
 
         $shop = $this->repository->findById($id);
-        $this->assertNotNull($shop);
-        $this->assertSame('shop@example.com',   $shop->email);
-        $this->assertSame('+33123456789',        $shop->phoneNumber);
-        $this->assertSame('10 Rue de la Paix',  $shop->address->addressLine1);
-        $this->assertSame('Bâtiment B',         $shop->address->addressLine2);
-        $this->assertSame('Paris',              $shop->address->city);
-        $this->assertSame('75001',              $shop->address->postalCode);
-        $this->assertSame('France',             $shop->address->country);
-        $this->assertSame(48.8566,              $shop->latitude);
-        $this->assertSame(2.3522,               $shop->longitude);
-        $this->assertTrue($shop->isDigital);
+        self::assertNotNull($shop);
+        self::assertSame('shop@example.com', $shop->email);
+        self::assertSame('+33123456789', $shop->phoneNumber);
+        self::assertSame('10 Rue de la Paix', $shop->address->addressLine1);
+        self::assertSame('Bâtiment B', $shop->address->addressLine2);
+        self::assertSame('Paris', $shop->address->city);
+        self::assertSame('75001', $shop->address->postalCode);
+        self::assertSame('France', $shop->address->country);
+        self::assertSame(48.8566, $shop->latitude);
+        self::assertSame(2.3522, $shop->longitude);
+        self::assertTrue($shop->isDigital);
     }
 
     public function testThrowsWhenNameAlreadyExistsInSameCompany(): void
@@ -83,7 +82,7 @@ final class CreateShopHandlerTest extends TestCase
     {
         $this->handler->handle(new CreateShop(self::COMPANY_A, 'My Shop'));
         $id = $this->handler->handle(new CreateShop(self::COMPANY_B, 'My Shop'));
-        $this->assertNotNull($this->repository->findById($id));
+        self::assertNotNull($this->repository->findById($id));
     }
 
     public function testThrowsForInvalidCompanyId(): void

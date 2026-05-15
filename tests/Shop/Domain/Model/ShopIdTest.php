@@ -15,7 +15,7 @@ final class ShopIdTest extends TestCase
     public function testAcceptsValidUuid(): void
     {
         $id = new ShopId(self::VALID);
-        $this->assertSame(self::VALID, $id->value);
+        self::assertSame(self::VALID, $id->value);
     }
 
     public function testRejectsInvalidUuid(): void
@@ -28,21 +28,21 @@ final class ShopIdTest extends TestCase
     {
         $id   = ShopId::generate();
         $copy = new ShopId($id->value);
-        $this->assertSame($id->value, $copy->value);
+        self::assertSame($id->value, $copy->value);
     }
 
     public function testEqualsTrueForSameValue(): void
     {
-        $this->assertTrue((new ShopId(self::VALID))->equals(new ShopId(self::VALID)));
+        self::assertTrue(new ShopId(self::VALID)->equals(new ShopId(self::VALID)));
     }
 
     public function testEqualsFalseForDifferentValue(): void
     {
-        $this->assertFalse((new ShopId(self::VALID))->equals(ShopId::generate()));
+        self::assertFalse(new ShopId(self::VALID)->equals(ShopId::generate()));
     }
 
     public function testToStringReturnsValue(): void
     {
-        $this->assertSame(self::VALID, (string) new ShopId(self::VALID));
+        self::assertSame(self::VALID, (string) new ShopId(self::VALID));
     }
 }

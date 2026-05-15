@@ -14,12 +14,12 @@ final class ShopExceptionsTest extends TestCase
     public function testShopAlreadyExistsMessageIncludesName(): void
     {
         $e = new ShopAlreadyExistsException(new ShopName('My Shop'));
-        $this->assertStringContainsString('My Shop', $e->getMessage());
+        self::assertStringContainsString('My Shop', $e->getMessage());
     }
 
     public function testShopNotFoundMessageIncludesId(): void
     {
         $e = new ShopNotFoundException('abc-123');
-        $this->assertStringContainsString('abc-123', $e->getMessage());
+        self::assertStringContainsString('abc-123', $e->getMessage());
     }
 }

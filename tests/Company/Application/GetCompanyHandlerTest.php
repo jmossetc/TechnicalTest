@@ -25,12 +25,12 @@ final class GetCompanyHandlerTest extends TestCase
 
     public function testReturnsExistingCompany(): void
     {
-        $id = (new CreateCompanyHandler($this->repository))->handle(new CreateCompany('Acme'));
+        $id = new CreateCompanyHandler($this->repository)->handle(new CreateCompany('Acme'));
 
         $company = $this->handler->handle($id->value);
 
-        $this->assertTrue($id->equals($company->id));
-        $this->assertSame('Acme', $company->name->value);
+        self::assertTrue($id->equals($company->id));
+        self::assertSame('Acme', $company->name->value);
     }
 
     public function testThrowsWhenNotFound(): void

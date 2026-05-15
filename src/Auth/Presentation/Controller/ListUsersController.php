@@ -106,16 +106,16 @@ final readonly class ListUsersController implements ControllerInterface
         }
 
         return new UserSearchCriteria(
-            email:         $email,
-            firstName:     $firstName,
-            lastName:      $lastName,
-            phoneNumber:   $phoneNumber,
-            role:          $role,
-            isActive:      $isActive,
-            createdFrom:   Date::parseDate($query['created_from'] ?? ''),
-            createdTo:     Date::parseDate($query['created_to'] ?? '', endOfDay: true),
+            email: $email,
+            firstName: $firstName,
+            lastName: $lastName,
+            phoneNumber: $phoneNumber,
+            role: $role,
+            isActive: $isActive,
+            createdFrom: Date::parseDate($query['created_from'] ?? ''),
+            createdTo: Date::parseDate($query['created_to'] ?? '', endOfDay: true),
             lastLoginFrom: Date::parseDate($query['last_login_from'] ?? ''),
-            lastLoginTo:   Date::parseDate($query['last_login_to'] ?? '', endOfDay: true),
+            lastLoginTo: Date::parseDate($query['last_login_to'] ?? '', endOfDay: true),
         );
     }
 

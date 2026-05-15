@@ -42,14 +42,14 @@ final class UserDeletionTest extends TestCase
     private function seed(UserId $id, Role $role, ?string $companyId = null, ?string $shopId = null): void
     {
         $this->repository->save(new User(
-            id:        $id,
-            email:     new Email($id->value . '@test.test'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $id,
+            email: new Email($id->value . '@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Test'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
-            shopId:    $shopId,
+            shopId: $shopId,
         ));
     }
 
@@ -69,9 +69,9 @@ final class UserDeletionTest extends TestCase
 
         try {
             $this->service()->deleteUser($this->targetId, $this->callerId);
-            $this->fail('Expected UserNotFoundException');
+            self::fail('Expected UserNotFoundException');
         } catch (UserNotFoundException $e) {
-            $this->assertStringContainsStringIgnoringCase('not found', $e->getMessage());
+            self::assertStringContainsStringIgnoringCase('not found', $e->getMessage());
         }
     }
 
@@ -111,7 +111,7 @@ final class UserDeletionTest extends TestCase
     {
         $company = '11111111-1111-4111-8111-111111111111';
         $this->seed($this->callerId, Role::CompanyAdmin, companyId: $company);
-        $this->seed($this->targetId, Role::Employee,     companyId: $company);
+        $this->seed($this->targetId, Role::Employee, companyId: $company);
 
         $this->service()->deleteUser($this->targetId, $this->callerId);
 
@@ -122,7 +122,7 @@ final class UserDeletionTest extends TestCase
     {
         $company = '11111111-1111-4111-8111-111111111111';
         $this->seed($this->callerId, Role::CompanyAdmin, companyId: $company);
-        $this->seed($this->targetId, Role::ShopManager,  companyId: $company, shopId: 'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+        $this->seed($this->targetId, Role::ShopManager, companyId: $company, shopId: 'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
 
         $this->service()->deleteUser($this->targetId, $this->callerId);
 
@@ -153,7 +153,7 @@ final class UserDeletionTest extends TestCase
     public function testCompanyAdminCannotDeleteUserInAnotherCompany(): void
     {
         $this->seed($this->callerId, Role::CompanyAdmin, companyId: '11111111-1111-4111-8111-111111111111');
-        $this->seed($this->targetId, Role::Employee,     companyId: '22222222-2222-4222-8222-222222222222');
+        $this->seed($this->targetId, Role::Employee, companyId: '22222222-2222-4222-8222-222222222222');
 
         $this->expectException(ForbiddenException::class);
         $this->service()->deleteUser($this->targetId, $this->callerId);

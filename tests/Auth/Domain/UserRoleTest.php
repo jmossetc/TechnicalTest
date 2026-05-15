@@ -14,9 +14,9 @@ final class UserRoleTest extends TestCase
     {
         $userRole = new UserRole(Role::Admin);
 
-        $this->assertSame(Role::Admin, $userRole->role);
-        $this->assertNull($userRole->companyId);
-        $this->assertNull($userRole->shopId);
+        self::assertSame(Role::Admin, $userRole->role);
+        self::assertNull($userRole->companyId);
+        self::assertNull($userRole->shopId);
     }
 
     public function testCompanyAdminRoleHoldsCompanyId(): void
@@ -24,9 +24,9 @@ final class UserRoleTest extends TestCase
         $companyId = '11111111-1111-4111-8111-111111111111';
         $userRole  = new UserRole(Role::CompanyAdmin, companyId: $companyId);
 
-        $this->assertSame(Role::CompanyAdmin, $userRole->role);
-        $this->assertSame($companyId, $userRole->companyId);
-        $this->assertNull($userRole->shopId);
+        self::assertSame(Role::CompanyAdmin, $userRole->role);
+        self::assertSame($companyId, $userRole->companyId);
+        self::assertNull($userRole->shopId);
     }
 
     public function testShopManagerRoleHoldsShopId(): void
@@ -34,18 +34,18 @@ final class UserRoleTest extends TestCase
         $shopId   = 'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
         $userRole = new UserRole(Role::ShopManager, shopId: $shopId);
 
-        $this->assertSame(Role::ShopManager, $userRole->role);
-        $this->assertNull($userRole->companyId);
-        $this->assertSame($shopId, $userRole->shopId);
+        self::assertSame(Role::ShopManager, $userRole->role);
+        self::assertNull($userRole->companyId);
+        self::assertSame($shopId, $userRole->shopId);
     }
 
     public function testEmployeeRoleHasNoScope(): void
     {
         $userRole = new UserRole(Role::Employee);
 
-        $this->assertSame(Role::Employee, $userRole->role);
-        $this->assertNull($userRole->companyId);
-        $this->assertNull($userRole->shopId);
+        self::assertSame(Role::Employee, $userRole->role);
+        self::assertNull($userRole->companyId);
+        self::assertNull($userRole->shopId);
     }
 
     public function testCanHoldBothCompanyIdAndShopId(): void
@@ -54,7 +54,7 @@ final class UserRoleTest extends TestCase
         $shopId    = 'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
         $userRole  = new UserRole(Role::ShopManager, companyId: $companyId, shopId: $shopId);
 
-        $this->assertSame($companyId, $userRole->companyId);
-        $this->assertSame($shopId, $userRole->shopId);
+        self::assertSame($companyId, $userRole->companyId);
+        self::assertSame($shopId, $userRole->shopId);
     }
 }

@@ -22,13 +22,13 @@ final readonly class RegisterUser
     public static function fromRegistrationInput(RegistrationInput $input): self
     {
         return new self(
-            email:       $input->email,
-            password:    $input->password,
-            firstName:   $input->firstName,
-            lastName:    $input->lastName,
-            role:        $input->role->value,
-            companyId:   $input->companyId,
-            shopId:      $input->shopId,
+            email: $input->email,
+            password: $input->password,
+            firstName: $input->firstName,
+            lastName: $input->lastName,
+            role: $input->role->value,
+            companyId: $input->companyId,
+            shopId: $input->shopId,
             phoneNumber: $input->phoneNumber,
         );
     }

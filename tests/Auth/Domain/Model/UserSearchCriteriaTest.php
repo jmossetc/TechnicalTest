@@ -16,16 +16,16 @@ final class UserSearchCriteriaTest extends TestCase
     {
         $c = new UserSearchCriteria();
 
-        $this->assertNull($c->email);
-        $this->assertNull($c->firstName);
-        $this->assertNull($c->lastName);
-        $this->assertNull($c->phoneNumber);
-        $this->assertNull($c->role);
-        $this->assertNull($c->isActive);
-        $this->assertNull($c->createdFrom);
-        $this->assertNull($c->createdTo);
-        $this->assertNull($c->lastLoginFrom);
-        $this->assertNull($c->lastLoginTo);
+        self::assertNull($c->email);
+        self::assertNull($c->firstName);
+        self::assertNull($c->lastName);
+        self::assertNull($c->phoneNumber);
+        self::assertNull($c->role);
+        self::assertNull($c->isActive);
+        self::assertNull($c->createdFrom);
+        self::assertNull($c->createdTo);
+        self::assertNull($c->lastLoginFrom);
+        self::assertNull($c->lastLoginTo);
     }
 
     public function testAcceptsAllFields(): void
@@ -34,22 +34,22 @@ final class UserSearchCriteriaTest extends TestCase
         $to   = new DateTimeImmutable('2025-12-31');
 
         $c = new UserSearchCriteria(
-            email:         'ali',
-            firstName:     'Al',
-            lastName:      'ice',
-            phoneNumber:   '06',
-            role:          Role::Employee,
-            isActive:      true,
-            createdFrom:   $from,
-            createdTo:     $to,
+            email: 'ali',
+            firstName: 'Al',
+            lastName: 'ice',
+            phoneNumber: '06',
+            role: Role::Employee,
+            isActive: true,
+            createdFrom: $from,
+            createdTo: $to,
             lastLoginFrom: $from,
-            lastLoginTo:   $to,
+            lastLoginTo: $to,
         );
 
-        $this->assertSame('ali', $c->email);
-        $this->assertSame(Role::Employee, $c->role);
-        $this->assertTrue($c->isActive);
-        $this->assertSame($from, $c->createdFrom);
+        self::assertSame('ali', $c->email);
+        self::assertSame(Role::Employee, $c->role);
+        self::assertTrue($c->isActive);
+        self::assertSame($from, $c->createdFrom);
     }
 
     public function testRejectsCreatedFromAfterCreatedTo(): void
@@ -59,7 +59,7 @@ final class UserSearchCriteriaTest extends TestCase
 
         new UserSearchCriteria(
             createdFrom: new DateTimeImmutable('2025-02-01'),
-            createdTo:   new DateTimeImmutable('2025-01-01'),
+            createdTo: new DateTimeImmutable('2025-01-01'),
         );
     }
 
@@ -70,7 +70,7 @@ final class UserSearchCriteriaTest extends TestCase
 
         new UserSearchCriteria(
             lastLoginFrom: new DateTimeImmutable('2025-02-01'),
-            lastLoginTo:   new DateTimeImmutable('2025-01-01'),
+            lastLoginTo: new DateTimeImmutable('2025-01-01'),
         );
     }
 
@@ -80,7 +80,7 @@ final class UserSearchCriteriaTest extends TestCase
 
         $c = new UserSearchCriteria(createdFrom: $date, createdTo: $date);
 
-        $this->assertSame($date, $c->createdFrom);
-        $this->assertSame($date, $c->createdTo);
+        self::assertSame($date, $c->createdFrom);
+        self::assertSame($date, $c->createdTo);
     }
 }

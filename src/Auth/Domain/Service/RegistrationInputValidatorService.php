@@ -41,7 +41,7 @@ final readonly class RegistrationInputValidatorService
             throw new InvalidArgumentException('email, password, first_name and last_name are required');
         }
 
-        if (strlen($password) < 8) {
+        if (\strlen($password) < 8) {
             throw new InvalidArgumentException('Password must be at least 8 characters long');
         }
 
@@ -75,7 +75,7 @@ final readonly class RegistrationInputValidatorService
             $companyId = $shop->companyId->value;
         }
 
-        return new RegistrationInput($role, $companyId, $shopId, $phoneNumber, $firstName, $lastName, $email, $password,);
+        return new RegistrationInput($role, $companyId, $shopId, $phoneNumber, $firstName, $lastName, $email, $password, );
     }
 
     private function checkRole(?string $roleStr, ?string $companyId, ?string $shopId): Role
@@ -102,7 +102,7 @@ final readonly class RegistrationInputValidatorService
 
     private function nullableString(mixed $value): ?string
     {
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             return null;
         }
         return $value !== '' ? $value : null;

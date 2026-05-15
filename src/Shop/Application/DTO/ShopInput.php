@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mossetc\TechnicalTest\Shop\Application\DTO;
 
 final readonly class ShopInput

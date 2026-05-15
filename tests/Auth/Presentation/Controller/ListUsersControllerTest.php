@@ -34,7 +34,7 @@ final class ListUsersControllerTest extends TestCase
 
     private function makeAuth(): JwtAuthMiddleware
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willReturn($this->callerId);
 
         return new JwtAuthMiddleware($svc);
@@ -43,12 +43,12 @@ final class ListUsersControllerTest extends TestCase
     private function seedCaller(Role $role): void
     {
         $this->userRepo->save(new User(
-            id:        $this->callerId,
-            email:     new Email('caller@test.test'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $this->callerId,
+            email: new Email('caller@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Caller'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
         ));
     }
 
@@ -71,17 +71,20 @@ final class ListUsersControllerTest extends TestCase
     {
         $this->seedCaller(Role::Admin);
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('other@test.test'),
+            id: UserId::generate(),
+            email: new Email('other@test.test'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('A'), lastName: new LastName('B'), role: Role::Employee,
+            firstName: new FirstName('A'),
+            lastName: new LastName('B'),
+            role: Role::Employee,
         ));
 
         $response = $this->ctrl()($this->request());
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(2, $items);
+        self::assertIsArray($items);
+        self::assertCount(2, $items);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
@@ -90,7 +93,7 @@ final class ListUsersControllerTest extends TestCase
 
         $response = $this->ctrl()(new Request('GET', '/api/users', [], []));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns403ForEmployee(): void
@@ -99,7 +102,7 @@ final class ListUsersControllerTest extends TestCase
 
         $response = $this->ctrl()($this->request());
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testResponseContainsPaginationMetadata(): void
@@ -107,11 +110,11 @@ final class ListUsersControllerTest extends TestCase
         $this->seedCaller(Role::Admin);
 
         $pagination = $this->ctrl()($this->request())->data()['pagination'];
-        $this->assertIsArray($pagination);
-        $this->assertArrayHasKey('total', $pagination);
-        $this->assertArrayHasKey('page',  $pagination);
-        $this->assertArrayHasKey('limit', $pagination);
-        $this->assertArrayHasKey('pages', $pagination);
+        self::assertIsArray($pagination);
+        self::assertArrayHasKey('total', $pagination);
+        self::assertArrayHasKey('page', $pagination);
+        self::assertArrayHasKey('limit', $pagination);
+        self::assertArrayHasKey('pages', $pagination);
     }
 
     public function testResponseContainsExpectedUserFields(): void
@@ -119,14 +122,14 @@ final class ListUsersControllerTest extends TestCase
         $this->seedCaller(Role::Admin);
 
         $items = $this->ctrl()($this->request())->data()['data'];
-        $this->assertIsArray($items);
+        self::assertIsArray($items);
         $item = $items[0];
-        $this->assertIsArray($item);
-        $this->assertArrayHasKey('id',         $item);
-        $this->assertArrayHasKey('email',      $item);
-        $this->assertArrayHasKey('first_name', $item);
-        $this->assertArrayHasKey('last_name',  $item);
-        $this->assertArrayHasKey('role',       $item);
+        self::assertIsArray($item);
+        self::assertArrayHasKey('id', $item);
+        self::assertArrayHasKey('email', $item);
+        self::assertArrayHasKey('first_name', $item);
+        self::assertArrayHasKey('last_name', $item);
+        self::assertArrayHasKey('role', $item);
     }
 
     public function testCompanyAdminSeesOnlyOwnCompany(): void
@@ -134,65 +137,82 @@ final class ListUsersControllerTest extends TestCase
         $companyId = '11111111-1111-4111-8111-111111111111';
 
         $this->userRepo->save(new User(
-            id: $this->callerId, email: new Email('caller@test.test'),
+            id: $this->callerId,
+            email: new Email('caller@test.test'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('CA'), lastName: new LastName('User'),
-            role: Role::CompanyAdmin, companyId: $companyId,
+            firstName: new FirstName('CA'),
+            lastName: new LastName('User'),
+            role: Role::CompanyAdmin,
+            companyId: $companyId,
         ));
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('other@test.test'),
+            id: UserId::generate(),
+            email: new Email('other@test.test'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('A'), lastName: new LastName('B'), role: Role::Employee,
+            firstName: new FirstName('A'),
+            lastName: new LastName('B'),
+            role: Role::Employee,
         ));
 
         $response = $this->ctrl()($this->request());
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
     }
 
     public function testFiltersUsersByEmailParam(): void
     {
         $this->seedCaller(Role::Admin);
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('alice@test.test'),
+            id: UserId::generate(),
+            email: new Email('alice@test.test'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('Alice'), lastName: new LastName('Smith'), role: Role::Employee,
+            firstName: new FirstName('Alice'),
+            lastName: new LastName('Smith'),
+            role: Role::Employee,
         ));
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('bob@test.test'),
+            id: UserId::generate(),
+            email: new Email('bob@test.test'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('Bob'), lastName: new LastName('Jones'), role: Role::Employee,
+            firstName: new FirstName('Bob'),
+            lastName: new LastName('Jones'),
+            role: Role::Employee,
         ));
 
         $response = $this->ctrl()($this->request(['email' => 'alice']));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('alice@test.test', $first['email']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('alice@test.test', $first['email']);
     }
 
     public function testFiltersUsersByRoleParam(): void
     {
         $this->seedCaller(Role::Admin);
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('emp@test.test'),
+            id: UserId::generate(),
+            email: new Email('emp@test.test'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('E'), lastName: new LastName('Mp'), role: Role::Employee,
+            firstName: new FirstName('E'),
+            lastName: new LastName('Mp'),
+            role: Role::Employee,
         ));
 
         $response = $this->ctrl()($this->request(['role' => 'employee']));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
     }
 
     public function testReturns422ForInvalidRole(): void
@@ -201,7 +221,7 @@ final class ListUsersControllerTest extends TestCase
 
         $response = $this->ctrl()($this->request(['role' => 'superuser']));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422ForInvalidIsActive(): void
@@ -210,7 +230,7 @@ final class ListUsersControllerTest extends TestCase
 
         $response = $this->ctrl()($this->request(['is_active' => 'maybe']));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422ForInvalidDateFormat(): void
@@ -219,7 +239,7 @@ final class ListUsersControllerTest extends TestCase
 
         $response = $this->ctrl()($this->request(['created_from' => '01-01-2025']));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422WhenCreatedFromAfterCreatedTo(): void
@@ -231,66 +251,79 @@ final class ListUsersControllerTest extends TestCase
             'created_to'   => '2025-01-01',
         ]));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testFiltersUsersByIsActive(): void
     {
         $this->seedCaller(Role::Admin);
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('inactive@test.test'),
+            id: UserId::generate(),
+            email: new Email('inactive@test.test'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('In'), lastName: new LastName('Active'),
-            role: Role::Employee, isActive: false,
+            firstName: new FirstName('In'),
+            lastName: new LastName('Active'),
+            role: Role::Employee,
+            isActive: false,
         ));
 
         $response = $this->ctrl()($this->request(['is_active' => 'false']));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $items = $response->data()['data'];
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
+        self::assertIsArray($items);
+        self::assertCount(1, $items);
     }
 
     public function testDefaultSortIsEmailAsc(): void
     {
         $this->seedCaller(Role::Admin);
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('charlie@example.com'),
+            id: UserId::generate(),
+            email: new Email('charlie@example.com'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('Charlie'), lastName: new LastName('User'),
+            firstName: new FirstName('Charlie'),
+            lastName: new LastName('User'),
         ));
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('alice@example.com'),
+            id: UserId::generate(),
+            email: new Email('alice@example.com'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('Alice'), lastName: new LastName('User'),
+            firstName: new FirstName('Alice'),
+            lastName: new LastName('User'),
         ));
 
         $rawData = $this->ctrl()($this->request())->data()['data'];
-        if (!is_array($rawData)) { $this->fail('Expected array'); }
+        if (!\is_array($rawData)) {
+            self::fail('Expected array');
+        }
         $emails = array_column($rawData, 'email');
         $pos_alice   = array_search('alice@example.com', $emails, true);
         $pos_charlie = array_search('charlie@example.com', $emails, true);
-        $this->assertNotFalse($pos_alice);
-        $this->assertNotFalse($pos_charlie);
-        $this->assertLessThan($pos_charlie, $pos_alice);
+        self::assertNotFalse($pos_alice);
+        self::assertNotFalse($pos_charlie);
+        self::assertLessThan($pos_charlie, $pos_alice);
     }
 
     public function testSortByEmailDescReturnsReverseOrder(): void
     {
         $this->seedCaller(Role::Admin);
         $this->userRepo->save(new User(
-            id: UserId::generate(), email: new Email('alice@example.com'),
+            id: UserId::generate(),
+            email: new Email('alice@example.com'),
             password: HashedPassword::fromPlain(new PlainPassword('password123')),
-            firstName: new FirstName('Alice'), lastName: new LastName('User'),
+            firstName: new FirstName('Alice'),
+            lastName: new LastName('User'),
         ));
 
         // caller@test.test > alice@example.com alphabetically, so caller is first in desc
         $items = $this->ctrl()($this->request(['sort_by' => 'email', 'sort_direction' => 'desc']))->data()['data'];
-        $this->assertIsArray($items);
+        self::assertIsArray($items);
         $first = $items[0];
-        if (!is_array($first)) { $this->fail('Expected array element'); }
-        $this->assertSame('caller@test.test', $first['email']);
+        if (!\is_array($first)) {
+            self::fail('Expected array element');
+        }
+        self::assertSame('caller@test.test', $first['email']);
     }
 
     public function testSortByFirstNameAscIsAccepted(): void
@@ -298,7 +331,7 @@ final class ListUsersControllerTest extends TestCase
         $this->seedCaller(Role::Admin);
 
         $response = $this->ctrl()($this->request(['sort_by' => 'first_name']));
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 
     public function testInvalidSortByReturns422(): void
@@ -306,7 +339,7 @@ final class ListUsersControllerTest extends TestCase
         $this->seedCaller(Role::Admin);
 
         $response = $this->ctrl()($this->request(['sort_by' => 'not_a_field']));
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testInvalidSortDirectionReturns422(): void
@@ -314,6 +347,6 @@ final class ListUsersControllerTest extends TestCase
         $this->seedCaller(Role::Admin);
 
         $response = $this->ctrl()($this->request(['sort_direction' => 'random']));
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 }

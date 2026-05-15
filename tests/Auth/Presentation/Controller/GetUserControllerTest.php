@@ -29,18 +29,18 @@ final class GetUserControllerTest extends TestCase
     {
         $this->userId = UserId::generate();
         $this->user   = new User(
-            id:        $this->userId,
-            email:     new Email('alice@example.com'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $this->userId,
+            email: new Email('alice@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Alice'),
-            lastName:  new LastName('Smith'),
-            role:      Role::Employee,
+            lastName: new LastName('Smith'),
+            role: Role::Employee,
         );
     }
 
     private function makeAuth(?UserId $callerId = null): JwtAuthMiddleware
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willReturn($callerId ?? $this->userId);
 
         return new JwtAuthMiddleware($svc);
@@ -48,7 +48,7 @@ final class GetUserControllerTest extends TestCase
 
     private function makeRepo(?User $user): UserRepositoryInterface
     {
-        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo = self::createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturn($user);
 
         return $repo;
@@ -56,7 +56,7 @@ final class GetUserControllerTest extends TestCase
 
     private function makeAuthorization(User $caller): UserAuthorizationService
     {
-        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo = self::createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturn($caller);
 
         return new UserAuthorizationService($repo);
@@ -76,14 +76,14 @@ final class GetUserControllerTest extends TestCase
         );
         $response = $ctrl($this->authedRequest($this->userId->value));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $data = $response->data();
-        $this->assertSame($this->userId->value, $data['id']);
-        $this->assertSame('alice@example.com',  $data['email']);
-        $this->assertSame('Alice',              $data['first_name']);
-        $this->assertSame('Smith',              $data['last_name']);
-        $this->assertSame('employee',           $data['role']);
-        $this->assertTrue($data['is_active']);
+        self::assertSame($this->userId->value, $data['id']);
+        self::assertSame('alice@example.com', $data['email']);
+        self::assertSame('Alice', $data['first_name']);
+        self::assertSame('Smith', $data['last_name']);
+        self::assertSame('employee', $data['role']);
+        self::assertTrue($data['is_active']);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
@@ -95,7 +95,7 @@ final class GetUserControllerTest extends TestCase
         );
         $response = $ctrl(new Request('GET', "/api/users/{$this->userId->value}", [], [], ['id' => $this->userId->value]));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns400ForMalformedId(): void
@@ -107,7 +107,7 @@ final class GetUserControllerTest extends TestCase
         );
         $response = $ctrl($this->authedRequest('not-a-uuid'));
 
-        $this->assertSame(400, $response->status());
+        self::assertSame(400, $response->status());
     }
 
     public function testReturns404WhenUserNotFound(): void
@@ -119,28 +119,28 @@ final class GetUserControllerTest extends TestCase
         );
         $response = $ctrl($this->authedRequest('550e8400-e29b-41d4-a716-446655440000'));
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns403WhenCallerIsNotAuthorized(): void
     {
         $targetId   = UserId::generate();
         $target     = new User(
-            id:        $targetId,
-            email:     new Email('bob@example.com'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $targetId,
+            email: new Email('bob@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Bob'),
-            lastName:  new LastName('Jones'),
-            role:      Role::Employee,
+            lastName: new LastName('Jones'),
+            role: Role::Employee,
         );
         $callerId   = UserId::generate();
         $caller     = new User(
-            id:        $callerId,
-            email:     new Email('shopmanager@example.com'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $callerId,
+            email: new Email('shopmanager@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Shop'),
-            lastName:  new LastName('Manager'),
-            role:      Role::ShopManager,
+            lastName: new LastName('Manager'),
+            role: Role::ShopManager,
         );
 
         $ctrl     = new GetUserController(
@@ -150,6 +150,6 @@ final class GetUserControllerTest extends TestCase
         );
         $response = $ctrl($this->authedRequest($targetId->value));
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 }

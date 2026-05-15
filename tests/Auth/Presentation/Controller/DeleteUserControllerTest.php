@@ -36,7 +36,7 @@ final class DeleteUserControllerTest extends TestCase
 
     private function makeAuth(): JwtAuthMiddleware
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willReturn($this->callerId);
 
         return new JwtAuthMiddleware($svc);
@@ -45,12 +45,12 @@ final class DeleteUserControllerTest extends TestCase
     private function seedUser(UserId $id, Role $role, ?string $companyId = null): void
     {
         $this->userRepo->save(new User(
-            id:        $id,
-            email:     new Email($id->value . '@test.test'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $id,
+            email: new Email($id->value . '@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Test'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
         ));
     }
@@ -67,8 +67,11 @@ final class DeleteUserControllerTest extends TestCase
     private function deleteRequest(): Request
     {
         return new Request(
-            'DELETE', "/api/users/{$this->targetId->value}",
-            ['Authorization' => 'Bearer tok'], [], ['id' => $this->targetId->value],
+            'DELETE',
+            "/api/users/{$this->targetId->value}",
+            ['Authorization' => 'Bearer tok'],
+            [],
+            ['id' => $this->targetId->value],
         );
     }
 
@@ -79,8 +82,8 @@ final class DeleteUserControllerTest extends TestCase
 
         $response = $this->ctrl()($this->deleteRequest());
 
-        $this->assertSame(200, $response->status());
-        $this->assertTrue($response->data()['deleted'] ?? false);
+        self::assertSame(200, $response->status());
+        self::assertTrue($response->data()['deleted'] ?? false);
     }
 
     public function testSoftDeletesTargetUser(): void
@@ -90,16 +93,20 @@ final class DeleteUserControllerTest extends TestCase
 
         $this->ctrl()($this->deleteRequest());
 
-        $this->assertNull($this->userRepo->findById($this->targetId));
+        self::assertNull($this->userRepo->findById($this->targetId));
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
         $response = $this->ctrl()(new Request(
-            'DELETE', "/api/users/{$this->targetId->value}", [], [], ['id' => $this->targetId->value],
+            'DELETE',
+            "/api/users/{$this->targetId->value}",
+            [],
+            [],
+            ['id' => $this->targetId->value],
         ));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns422ForMalformedId(): void
@@ -107,10 +114,14 @@ final class DeleteUserControllerTest extends TestCase
         $this->seedUser($this->callerId, Role::Admin);
 
         $response = $this->ctrl()(new Request(
-            'DELETE', '/api/users/bad', ['Authorization' => 'Bearer tok'], [], ['id' => 'bad'],
+            'DELETE',
+            '/api/users/bad',
+            ['Authorization' => 'Bearer tok'],
+            [],
+            ['id' => 'bad'],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns404WhenTargetNotFound(): void
@@ -119,7 +130,7 @@ final class DeleteUserControllerTest extends TestCase
 
         $response = $this->ctrl()($this->deleteRequest());
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns403WhenForbidden(): void
@@ -129,6 +140,6 @@ final class DeleteUserControllerTest extends TestCase
 
         $response = $this->ctrl()($this->deleteRequest());
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 }

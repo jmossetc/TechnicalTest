@@ -16,7 +16,7 @@ final readonly class CompanyName
             throw new InvalidArgumentException('Company name cannot be empty');
         }
 
-        if (strlen($trimmed) > 255) {
+        if (\strlen($trimmed) > 255) {
             throw new InvalidArgumentException('Company name cannot exceed 255 characters');
         }
     }

@@ -27,53 +27,53 @@ final class ShopTest extends TestCase
     public function testConstructsWithDefaults(): void
     {
         $shop = new Shop($this->id, $this->companyId, $this->name);
-        $this->assertSame($this->id,        $shop->id);
-        $this->assertSame($this->companyId, $shop->companyId);
-        $this->assertSame($this->name,      $shop->name);
-        $this->assertFalse($shop->isDigital);
-        $this->assertTrue($shop->isActive);
-        $this->assertNull($shop->email);
-        $this->assertNull($shop->phoneNumber);
-        $this->assertNull($shop->latitude);
-        $this->assertNull($shop->longitude);
+        self::assertSame($this->id, $shop->id);
+        self::assertSame($this->companyId, $shop->companyId);
+        self::assertSame($this->name, $shop->name);
+        self::assertFalse($shop->isDigital);
+        self::assertTrue($shop->isActive);
+        self::assertNull($shop->email);
+        self::assertNull($shop->phoneNumber);
+        self::assertNull($shop->latitude);
+        self::assertNull($shop->longitude);
     }
 
     public function testJsonSerializeContainsAllExpectedKeys(): void
     {
-        $data = (new Shop($this->id, $this->companyId, $this->name))->jsonSerialize();
+        $data = new Shop($this->id, $this->companyId, $this->name)->jsonSerialize();
 
         foreach (['id', 'company_id', 'name', 'email', 'phone_number',
-                  'address_line_1', 'address_line_2', 'city', 'postal_code', 'country',
-                  'latitude', 'longitude', 'is_digital', 'is_active',
-                  'created_at', 'updated_at'] as $key) {
-            $this->assertArrayHasKey($key, $data);
+            'address_line_1', 'address_line_2', 'city', 'postal_code', 'country',
+            'latitude', 'longitude', 'is_digital', 'is_active',
+            'created_at', 'updated_at'] as $key) {
+            self::assertArrayHasKey($key, $data);
         }
     }
 
     public function testJsonSerializeValuesMatchProperties(): void
     {
         $shop = new Shop(
-            id:          $this->id,
-            companyId:   $this->companyId,
-            name:        $this->name,
-            address:     new ShopAddress(city: 'Paris', country: 'France'),
-            email:       'shop@example.com',
+            id: $this->id,
+            companyId: $this->companyId,
+            name: $this->name,
+            address: new ShopAddress(city: 'Paris', country: 'France'),
+            email: 'shop@example.com',
             phoneNumber: '+33123456789',
-            latitude:    48.8566,
-            longitude:   2.3522,
-            isDigital:   true,
+            latitude: 48.8566,
+            longitude: 2.3522,
+            isDigital: true,
         );
         $data = $shop->jsonSerialize();
 
-        $this->assertSame($this->id->value,        $data['id']);
-        $this->assertSame($this->companyId->value, $data['company_id']);
-        $this->assertSame('My Shop',               $data['name']);
-        $this->assertSame('shop@example.com',      $data['email']);
-        $this->assertSame('+33123456789',           $data['phone_number']);
-        $this->assertSame('Paris',                 $data['city']);
-        $this->assertSame('France',                $data['country']);
-        $this->assertSame(48.8566,                 $data['latitude']);
-        $this->assertSame(2.3522,                  $data['longitude']);
-        $this->assertTrue($data['is_digital']);
+        self::assertSame($this->id->value, $data['id']);
+        self::assertSame($this->companyId->value, $data['company_id']);
+        self::assertSame('My Shop', $data['name']);
+        self::assertSame('shop@example.com', $data['email']);
+        self::assertSame('+33123456789', $data['phone_number']);
+        self::assertSame('Paris', $data['city']);
+        self::assertSame('France', $data['country']);
+        self::assertSame(48.8566, $data['latitude']);
+        self::assertSame(2.3522, $data['longitude']);
+        self::assertTrue($data['is_digital']);
     }
 }

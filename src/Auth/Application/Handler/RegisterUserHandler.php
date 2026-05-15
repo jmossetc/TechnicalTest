@@ -34,14 +34,14 @@ final readonly class RegisterUserHandler
         $userId = UserId::generate();
 
         $this->repository->save(new User(
-            id:          $userId,
-            email:       $email,
-            password:    $this->passwordHasher->hash(new PlainPassword($command->password)),
-            firstName:   new FirstName($command->firstName),
-            lastName:    new LastName($command->lastName),
-            role:        Role::from($command->role),
-            companyId:   $command->companyId,
-            shopId:      $command->shopId,
+            id: $userId,
+            email: $email,
+            password: $this->passwordHasher->hash(new PlainPassword($command->password)),
+            firstName: new FirstName($command->firstName),
+            lastName: new LastName($command->lastName),
+            role: Role::from($command->role),
+            companyId: $command->companyId,
+            shopId: $command->shopId,
             phoneNumber: $command->phoneNumber,
         ));
 

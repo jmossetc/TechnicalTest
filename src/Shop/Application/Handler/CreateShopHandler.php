@@ -34,21 +34,21 @@ final readonly class CreateShopHandler
 
         $id   = ShopId::generate();
         $shop = new Shop(
-            id:          $id,
-            companyId:   $companyId,
-            name:        $name,
-            address:     new ShopAddress(
+            id: $id,
+            companyId: $companyId,
+            name: $name,
+            address: new ShopAddress(
                 addressLine1: $command->addressLine1,
                 addressLine2: $command->addressLine2,
-                city:         $command->city,
-                postalCode:   $command->postalCode,
-                country:      $command->country,
+                city: $command->city,
+                postalCode: $command->postalCode,
+                country: $command->country,
             ),
-            email:       $command->email,
+            email: $command->email,
             phoneNumber: $command->phoneNumber,
-            latitude:    $command->latitude,
-            longitude:   $command->longitude,
-            isDigital:   $command->isDigital,
+            latitude: $command->latitude,
+            longitude: $command->longitude,
+            isDigital: $command->isDigital,
         );
 
         $this->repository->save($shop);

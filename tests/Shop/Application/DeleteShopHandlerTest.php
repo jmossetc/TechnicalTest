@@ -26,14 +26,14 @@ final class DeleteShopHandlerTest extends TestCase
     {
         $this->repository = new InMemoryShopRepository();
         $this->handler    = new DeleteShopHandler($this->repository);
-        $this->existingId = (new CreateShopHandler($this->repository))
+        $this->existingId = new CreateShopHandler($this->repository)
             ->handle(new CreateShop(self::COMPANY_A, 'My Shop'));
     }
 
     public function testDeletesShop(): void
     {
         $this->handler->handle($this->existingId->value);
-        $this->assertNull($this->repository->findById($this->existingId));
+        self::assertNull($this->repository->findById($this->existingId));
     }
 
     public function testThrowsShopNotFoundExceptionForUnknownId(): void

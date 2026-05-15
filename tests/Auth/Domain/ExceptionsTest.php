@@ -17,36 +17,36 @@ final class ExceptionsTest extends TestCase
     public function testForbiddenExceptionHasDefaultMessage(): void
     {
         $e = new ForbiddenException();
-        $this->assertNotEmpty($e->getMessage());
+        self::assertNotEmpty($e->getMessage());
     }
 
     public function testForbiddenExceptionAcceptsCustomMessage(): void
     {
         $e = new ForbiddenException('Custom message');
-        $this->assertSame('Custom message', $e->getMessage());
+        self::assertSame('Custom message', $e->getMessage());
     }
 
     public function testInvalidCredentialsExceptionHasMessage(): void
     {
         $e = new InvalidCredentialsException();
-        $this->assertNotEmpty($e->getMessage());
+        self::assertNotEmpty($e->getMessage());
     }
 
     public function testInvalidTokenExceptionIncludesReason(): void
     {
         $e = new InvalidTokenException('token expired');
-        $this->assertStringContainsString('token expired', $e->getMessage());
+        self::assertStringContainsString('token expired', $e->getMessage());
     }
 
     public function testUserAlreadyExistsExceptionIncludesEmail(): void
     {
         $e = new UserAlreadyExistsException(new Email('alice@example.com'));
-        $this->assertStringContainsString('alice@example.com', $e->getMessage());
+        self::assertStringContainsString('alice@example.com', $e->getMessage());
     }
 
     public function testUserNotFoundExceptionHasMessage(): void
     {
         $e = new UserNotFoundException();
-        $this->assertNotEmpty($e->getMessage());
+        self::assertNotEmpty($e->getMessage());
     }
 }

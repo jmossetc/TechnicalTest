@@ -15,14 +15,14 @@ final class CompanySearchCriteriaTest extends TestCase
     {
         $c = new CompanySearchCriteria();
 
-        $this->assertNull($c->name);
-        $this->assertNull($c->email);
-        $this->assertNull($c->phoneNumber);
-        $this->assertNull($c->city);
-        $this->assertNull($c->postalCode);
-        $this->assertNull($c->country);
-        $this->assertNull($c->createdFrom);
-        $this->assertNull($c->createdTo);
+        self::assertNull($c->name);
+        self::assertNull($c->email);
+        self::assertNull($c->phoneNumber);
+        self::assertNull($c->city);
+        self::assertNull($c->postalCode);
+        self::assertNull($c->country);
+        self::assertNull($c->createdFrom);
+        self::assertNull($c->createdTo);
     }
 
     public function testAcceptsAllFields(): void
@@ -31,20 +31,20 @@ final class CompanySearchCriteriaTest extends TestCase
         $to   = new DateTimeImmutable('2025-12-31');
 
         $c = new CompanySearchCriteria(
-            name:        'Acme',
-            email:       'contact@',
+            name: 'Acme',
+            email: 'contact@',
             phoneNumber: '06',
-            city:        'Paris',
-            postalCode:  '75',
-            country:     'France',
+            city: 'Paris',
+            postalCode: '75',
+            country: 'France',
             createdFrom: $from,
-            createdTo:   $to,
+            createdTo: $to,
         );
 
-        $this->assertSame('Acme', $c->name);
-        $this->assertSame('Paris', $c->city);
-        $this->assertSame($from, $c->createdFrom);
-        $this->assertSame($to, $c->createdTo);
+        self::assertSame('Acme', $c->name);
+        self::assertSame('Paris', $c->city);
+        self::assertSame($from, $c->createdFrom);
+        self::assertSame($to, $c->createdTo);
     }
 
     public function testRejectsCreatedFromAfterCreatedTo(): void
@@ -54,7 +54,7 @@ final class CompanySearchCriteriaTest extends TestCase
 
         new CompanySearchCriteria(
             createdFrom: new DateTimeImmutable('2025-02-01'),
-            createdTo:   new DateTimeImmutable('2025-01-01'),
+            createdTo: new DateTimeImmutable('2025-01-01'),
         );
     }
 
@@ -64,7 +64,7 @@ final class CompanySearchCriteriaTest extends TestCase
 
         $c = new CompanySearchCriteria(createdFrom: $date, createdTo: $date);
 
-        $this->assertSame($date, $c->createdFrom);
-        $this->assertSame($date, $c->createdTo);
+        self::assertSame($date, $c->createdFrom);
+        self::assertSame($date, $c->createdTo);
     }
 }

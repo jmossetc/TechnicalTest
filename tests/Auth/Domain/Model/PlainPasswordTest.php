@@ -14,7 +14,7 @@ final class PlainPasswordTest extends TestCase
     {
         $password = new PlainPassword('12345678');
 
-        $this->assertSame('12345678', $password->value);
+        self::assertSame('12345678', $password->value);
     }
 
     public function testAcceptsLongPassword(): void
@@ -22,7 +22,7 @@ final class PlainPasswordTest extends TestCase
         $long = str_repeat('a', 100);
         $password = new PlainPassword($long);
 
-        $this->assertSame($long, $password->value);
+        self::assertSame($long, $password->value);
     }
 
     public function testRejectsTooShortPassword(): void

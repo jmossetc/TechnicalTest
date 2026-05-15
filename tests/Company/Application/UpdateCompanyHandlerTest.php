@@ -27,7 +27,7 @@ final class UpdateCompanyHandlerTest extends TestCase
 
     private function create(string $name): string
     {
-        return (new CreateCompanyHandler($this->repository))->handle(new CreateCompany($name))->value;
+        return new CreateCompanyHandler($this->repository)->handle(new CreateCompany($name))->value;
     }
 
     public function testUpdatesName(): void
@@ -37,8 +37,8 @@ final class UpdateCompanyHandlerTest extends TestCase
         $this->handler->handle(new UpdateCompany($id, 'New Name'));
 
         $company = $this->repository->findById(new \Mossetc\TechnicalTest\Company\Domain\Model\CompanyId($id));
-        $this->assertNotNull($company);
-        $this->assertSame('New Name', $company->name->value);
+        self::assertNotNull($company);
+        self::assertSame('New Name', $company->name->value);
     }
 
     public function testUpdatesOptionalFields(): void
@@ -46,21 +46,21 @@ final class UpdateCompanyHandlerTest extends TestCase
         $id = $this->create('Corp');
 
         $this->handler->handle(new UpdateCompany(
-            id:    $id,
-            name:  'Corp',
+            id: $id,
+            name: 'Corp',
             email: 'new@corp.com',
-            city:  'London',
+            city: 'London',
         ));
 
         $company = $this->repository->findById(new \Mossetc\TechnicalTest\Company\Domain\Model\CompanyId($id));
-        $this->assertNotNull($company);
-        $this->assertSame('new@corp.com', $company->email);
-        $this->assertSame('London',       $company->city);
+        self::assertNotNull($company);
+        self::assertSame('new@corp.com', $company->email);
+        self::assertSame('London', $company->city);
     }
 
     public function testNullFieldsPreserveExistingValues(): void
     {
-        $id = (new CreateCompanyHandler($this->repository))->handle(
+        $id = new CreateCompanyHandler($this->repository)->handle(
             new CreateCompany('Corp', email: 'old@corp.com', city: 'Paris'),
         )->value;
 
@@ -68,9 +68,9 @@ final class UpdateCompanyHandlerTest extends TestCase
         $this->handler->handle(new UpdateCompany($id, 'Corp'));
 
         $company = $this->repository->findById(new \Mossetc\TechnicalTest\Company\Domain\Model\CompanyId($id));
-        $this->assertNotNull($company);
-        $this->assertSame('old@corp.com', $company->email);
-        $this->assertSame('Paris',        $company->city);
+        self::assertNotNull($company);
+        self::assertSame('old@corp.com', $company->email);
+        self::assertSame('Paris', $company->city);
     }
 
     public function testIsActiveCanBeToggled(): void
@@ -80,8 +80,8 @@ final class UpdateCompanyHandlerTest extends TestCase
         $this->handler->handle(new UpdateCompany($id, 'Corp', isActive: false));
 
         $company = $this->repository->findById(new \Mossetc\TechnicalTest\Company\Domain\Model\CompanyId($id));
-        $this->assertNotNull($company);
-        $this->assertFalse($company->isActive);
+        self::assertNotNull($company);
+        self::assertFalse($company->isActive);
     }
 
     public function testThrowsWhenNotFound(): void
@@ -112,7 +112,7 @@ final class UpdateCompanyHandlerTest extends TestCase
         $this->handler->handle(new UpdateCompany($id, 'Same'));
 
         $company = $this->repository->findById(new \Mossetc\TechnicalTest\Company\Domain\Model\CompanyId($id));
-        $this->assertSame('Same', $company?->name->value);
+        self::assertSame('Same', $company?->name->value);
     }
 
     public function testPreservesCreatedAt(): void
@@ -125,6 +125,6 @@ final class UpdateCompanyHandlerTest extends TestCase
         $this->handler->handle(new UpdateCompany($id, 'Corp Renamed'));
 
         $after = $this->repository->findById(new \Mossetc\TechnicalTest\Company\Domain\Model\CompanyId($id));
-        $this->assertEquals($before?->createdAt, $after?->createdAt);
+        self::assertSame($before?->createdAt, $after?->createdAt);
     }
 }

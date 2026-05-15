@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mossetc\TechnicalTest\Tests\Auth\Domain\Model;
 
 use Mossetc\TechnicalTest\Auth\Domain\Model\AuthToken;
@@ -18,6 +20,6 @@ class AuthTokenTest extends TestCase
     public function testToString(): void
     {
         $token = new AuthToken('token-value');
-        $this->assertSame('token-value', (string) $token);
+        self::assertSame('token-value', (string) $token);
     }
 }

@@ -88,16 +88,16 @@ final readonly class ListShopsController implements ControllerInterface
         }
 
         return new ShopSearchCriteria(
-            companyId:   $companyId,
-            name:        $this->nullableString($query['name'] ?? ''),
-            email:       $this->nullableString($query['email'] ?? ''),
+            companyId: $companyId,
+            name: $this->nullableString($query['name'] ?? ''),
+            email: $this->nullableString($query['email'] ?? ''),
             phoneNumber: $this->nullableString($query['phone_number'] ?? ''),
-            city:        $this->nullableString($query['city'] ?? ''),
-            postalCode:  $this->nullableString($query['postal_code'] ?? ''),
-            country:     $this->nullableString($query['country'] ?? ''),
-            isDigital:   $isDigital,
+            city: $this->nullableString($query['city'] ?? ''),
+            postalCode: $this->nullableString($query['postal_code'] ?? ''),
+            country: $this->nullableString($query['country'] ?? ''),
+            isDigital: $isDigital,
             createdFrom: Date::parseDate($query['created_from'] ?? ''),
-            createdTo:   Date::parseDate($query['created_to'] ?? '', endOfDay: true),
+            createdTo: Date::parseDate($query['created_to'] ?? '', endOfDay: true),
         );
     }
 

@@ -18,10 +18,10 @@ final class ListCompaniesCommandTest extends TestCase
     {
         $cmd = new ListCompanies();
 
-        $this->assertSame(1, $cmd->page);
-        $this->assertSame(10, $cmd->limit);
-        $this->assertNull($cmd->criteria->name);
-        $this->assertNull($cmd->criteria->email);
+        self::assertSame(1, $cmd->page);
+        self::assertSame(10, $cmd->limit);
+        self::assertNull($cmd->criteria->name);
+        self::assertNull($cmd->criteria->email);
     }
 
     public function testAcceptsCustomCriteria(): void
@@ -29,10 +29,10 @@ final class ListCompaniesCommandTest extends TestCase
         $criteria = new CompanySearchCriteria(name: 'Acme', city: 'Paris');
         $cmd      = new ListCompanies(page: 3, limit: 25, criteria: $criteria);
 
-        $this->assertSame(3,      $cmd->page);
-        $this->assertSame(25,     $cmd->limit);
-        $this->assertSame('Acme', $cmd->criteria->name);
-        $this->assertSame('Paris', $cmd->criteria->city);
+        self::assertSame(3, $cmd->page);
+        self::assertSame(25, $cmd->limit);
+        self::assertSame('Acme', $cmd->criteria->name);
+        self::assertSame('Paris', $cmd->criteria->city);
     }
 
     public function testRejectsPageZero(): void
@@ -61,26 +61,26 @@ final class ListCompaniesCommandTest extends TestCase
 
     public function testAcceptsLimitBoundaries(): void
     {
-        $this->assertSame(1,   (new ListCompanies(limit: 1))->limit);
-        $this->assertSame(100, (new ListCompanies(limit: 100))->limit);
+        self::assertSame(1, new ListCompanies(limit: 1)->limit);
+        self::assertSame(100, new ListCompanies(limit: 100)->limit);
     }
 
     public function testDefaultSortIsNameAsc(): void
     {
         $cmd = new ListCompanies();
 
-        $this->assertSame(\Mossetc\TechnicalTest\Company\Domain\Model\CompanySortField::Name, $cmd->sort->field);
-        $this->assertSame(\Mossetc\TechnicalTest\Shared\Domain\SortDirection::Asc, $cmd->sort->direction);
+        self::assertSame(CompanySortField::Name, $cmd->sort->field);
+        self::assertSame(SortDirection::Asc, $cmd->sort->direction);
     }
 
     public function testAcceptsCustomSort(): void
     {
-        $sort = new \Mossetc\TechnicalTest\Company\Domain\Model\CompanySortCriteria(
-            field:     \Mossetc\TechnicalTest\Company\Domain\Model\CompanySortField::CreatedAt,
-            direction: \Mossetc\TechnicalTest\Shared\Domain\SortDirection::Desc,
+        $sort = new CompanySortCriteria(
+            field: CompanySortField::CreatedAt,
+            direction: SortDirection::Desc,
         );
         $cmd = new ListCompanies(sort: $sort);
 
-        $this->assertSame($sort, $cmd->sort);
+        self::assertSame($sort, $cmd->sort);
     }
 }

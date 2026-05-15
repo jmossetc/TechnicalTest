@@ -16,7 +16,7 @@ final readonly class ShopName
             throw new InvalidArgumentException('Shop name cannot be empty');
         }
 
-        if (strlen($trimmed) > 255) {
+        if (\strlen($trimmed) > 255) {
             throw new InvalidArgumentException('Shop name cannot exceed 255 characters');
         }
     }

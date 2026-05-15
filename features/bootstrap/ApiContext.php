@@ -89,8 +89,11 @@ final class ApiContext implements Context
             $this->lastUserId = is_string($id) ? $id : '';
         }
 
-        Assert::assertContains($regResponse->status(), [201, 409],
-            "Registration step expected 201 or 409, got {$regResponse->status()}");
+        Assert::assertContains(
+            $regResponse->status(),
+            [201, 409],
+            "Registration step expected 201 or 409, got {$regResponse->status()}"
+        );
 
         $loginResponse = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
         Assert::assertSame(200, $loginResponse->status(), 'Login failed unexpectedly');
@@ -142,7 +145,7 @@ final class ApiContext implements Context
     public function aCompanyExists(string $companyId): void
     {
         $this->companyRepository->save(new Company(
-            id:   new CompanyId($companyId),
+            id: new CompanyId($companyId),
             name: new CompanyName("Company {$companyId}"),
         ));
     }
@@ -153,9 +156,9 @@ final class ApiContext implements Context
     public function aShopExistsForCompany(string $shopId, string $companyId): void
     {
         $this->shopRepository->save(new Shop(
-            id:        new ShopId($shopId),
+            id: new ShopId($shopId),
             companyId: new CompanyId($companyId),
-            name:      new ShopName("Shop {$shopId}"),
+            name: new ShopName("Shop {$shopId}"),
         ));
     }
 
@@ -354,8 +357,11 @@ final class ApiContext implements Context
     /** @When I list users on page :page with limit :limit */
     public function iListUsersOnPageWithLimit(int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet('/api/users', $this->token,
-            ['page' => (string) $page, 'limit' => (string) $limit]);
+        $this->lastResponse = $this->doGet(
+            '/api/users',
+            $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit]
+        );
     }
 
     /** @When I list users filtered by company :companyId */
@@ -575,15 +581,21 @@ final class ApiContext implements Context
     /** @When I list shops for company :companyId */
     public function iListShopsForCompany(string $companyId): void
     {
-        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken,
-            ['company_id' => $companyId]);
+        $this->lastResponse = $this->doGet(
+            '/api/shops',
+            $this->token ?: $this->adminToken,
+            ['company_id' => $companyId]
+        );
     }
 
     /** @When I list shops for company :companyId on page :page with limit :limit */
     public function iListShopsForCompanyOnPageWithLimit(string $companyId, int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken,
-            ['company_id' => $companyId, 'page' => (string) $page, 'limit' => (string) $limit]);
+        $this->lastResponse = $this->doGet(
+            '/api/shops',
+            $this->token ?: $this->adminToken,
+            ['company_id' => $companyId, 'page' => (string) $page, 'limit' => (string) $limit]
+        );
     }
 
     /** @When I list shops */
@@ -595,8 +607,11 @@ final class ApiContext implements Context
     /** @When I list shops on page :page with limit :limit */
     public function iListShopsOnPageWithLimit(int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet('/api/shops', $this->token ?: $this->adminToken,
-            ['page' => (string) $page, 'limit' => (string) $limit]);
+        $this->lastResponse = $this->doGet(
+            '/api/shops',
+            $this->token ?: $this->adminToken,
+            ['page' => (string) $page, 'limit' => (string) $limit]
+        );
     }
 
     /** @When I list shops with search :params */
@@ -662,8 +677,11 @@ final class ApiContext implements Context
     /** @When I list companies on page :page with limit :limit */
     public function iListCompaniesOnPageWithLimit(int $page, int $limit): void
     {
-        $this->lastResponse = $this->doGet('/api/companies', $this->token,
-            ['page' => (string) $page, 'limit' => (string) $limit]);
+        $this->lastResponse = $this->doGet(
+            '/api/companies',
+            $this->token,
+            ['page' => (string) $page, 'limit' => (string) $limit]
+        );
     }
 
     /** @When I list companies filtered by name :name */
@@ -746,7 +764,10 @@ final class ApiContext implements Context
         }
 
         return $this->router->dispatch(new Request(
-            method: 'POST', path: $path, headers: $headers, body: $body,
+            method: 'POST',
+            path: $path,
+            headers: $headers,
+            body: $body,
         ));
     }
 
@@ -756,7 +777,11 @@ final class ApiContext implements Context
         $headers = $token !== '' ? ['Authorization' => "Bearer {$token}"] : [];
 
         return $this->router->dispatch(new Request(
-            method: 'GET', path: $path, headers: $headers, body: [], query: $query,
+            method: 'GET',
+            path: $path,
+            headers: $headers,
+            body: [],
+            query: $query,
         ));
     }
 
@@ -769,7 +794,10 @@ final class ApiContext implements Context
         }
 
         return $this->router->dispatch(new Request(
-            method: 'PATCH', path: $path, headers: $headers, body: $body,
+            method: 'PATCH',
+            path: $path,
+            headers: $headers,
+            body: $body,
         ));
     }
 
@@ -778,7 +806,10 @@ final class ApiContext implements Context
         $headers = $token !== '' ? ['Authorization' => "Bearer {$token}"] : [];
 
         return $this->router->dispatch(new Request(
-            method: 'DELETE', path: $path, headers: $headers, body: [],
+            method: 'DELETE',
+            path: $path,
+            headers: $headers,
+            body: [],
         ));
     }
 
@@ -808,12 +839,12 @@ final class ApiContext implements Context
 
         $userId = UserId::generate();
         $this->userRepository->save(new User(
-            id:        $userId,
-            email:     new Email($email),
-            password:  HashedPassword::fromPlain(new PlainPassword($password)),
+            id: $userId,
+            email: new Email($email),
+            password: HashedPassword::fromPlain(new PlainPassword($password)),
             firstName: new FirstName('Behat'),
-            lastName:  new LastName('Admin'),
-            role:      Role::Admin,
+            lastName: new LastName('Admin'),
+            role: Role::Admin,
         ));
 
         $loginResponse = $this->doPost('/api/auth/login', ['email' => $email, 'password' => $password]);
@@ -832,14 +863,14 @@ final class ApiContext implements Context
     ): UserId {
         $userId = UserId::generate();
         $this->userRepository->save(new User(
-            id:        $userId,
-            email:     new Email($email),
-            password:  HashedPassword::fromPlain(new PlainPassword($password)),
+            id: $userId,
+            email: new Email($email),
+            password: HashedPassword::fromPlain(new PlainPassword($password)),
             firstName: new FirstName('Test'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
-            shopId:    $shopId,
+            shopId: $shopId,
         ));
 
         return $userId;

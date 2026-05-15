@@ -26,16 +26,16 @@ final readonly class CreateCompanyHandler
         $id = CompanyId::generate();
 
         $this->repository->save(new Company(
-            id:           $id,
-            name:         $name,
-            email:        $command->email,
-            phoneNumber:  $command->phoneNumber,
-            website:      $command->website,
+            id: $id,
+            name: $name,
+            email: $command->email,
+            phoneNumber: $command->phoneNumber,
+            website: $command->website,
             addressLine1: $command->addressLine1,
             addressLine2: $command->addressLine2,
-            city:         $command->city,
-            postalCode:   $command->postalCode,
-            country:      $command->country,
+            city: $command->city,
+            postalCode: $command->postalCode,
+            country: $command->country,
         ));
 
         return $id;

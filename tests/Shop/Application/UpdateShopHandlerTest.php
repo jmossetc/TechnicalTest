@@ -28,12 +28,12 @@ final class UpdateShopHandlerTest extends TestCase
     {
         $this->repository = new InMemoryShopRepository();
         $this->handler    = new UpdateShopHandler($this->repository);
-        $this->existingId = (new CreateShopHandler($this->repository))->handle(
+        $this->existingId = new CreateShopHandler($this->repository)->handle(
             new CreateShop(
                 companyId: self::COMPANY_A,
-                name:      'Original Name',
-                email:     'old@example.com',
-                city:      'Lyon',
+                name: 'Original Name',
+                email: 'old@example.com',
+                city: 'Lyon',
                 isDigital: false,
             ),
         );
@@ -44,48 +44,48 @@ final class UpdateShopHandlerTest extends TestCase
         $this->handler->handle(new UpdateShop($this->existingId->value, 'New Name'));
 
         $shop = $this->repository->findById($this->existingId);
-        $this->assertNotNull($shop);
-        $this->assertSame('New Name', $shop->name->value);
+        self::assertNotNull($shop);
+        self::assertSame('New Name', $shop->name->value);
     }
 
     public function testNullFieldsPreserveExistingValues(): void
     {
         $this->handler->handle(new UpdateShop(
-            id:   $this->existingId->value,
+            id: $this->existingId->value,
             name: 'New Name',
         ));
 
         $shop = $this->repository->findById($this->existingId);
-        $this->assertNotNull($shop);
-        $this->assertSame('old@example.com', $shop->email);
-        $this->assertSame('Lyon',            $shop->address->city);
-        $this->assertFalse($shop->isDigital);
+        self::assertNotNull($shop);
+        self::assertSame('old@example.com', $shop->email);
+        self::assertSame('Lyon', $shop->address->city);
+        self::assertFalse($shop->isDigital);
     }
 
     public function testUpdatesAllOptionalFields(): void
     {
         $this->handler->handle(new UpdateShop(
-            id:          $this->existingId->value,
-            name:        'Updated Shop',
-            email:       'new@example.com',
+            id: $this->existingId->value,
+            name: 'Updated Shop',
+            email: 'new@example.com',
             phoneNumber: '+33987654321',
-            city:        'Paris',
-            postalCode:  '75001',
-            country:     'France',
-            latitude:    48.8566,
-            longitude:   2.3522,
-            isDigital:   true,
-            isActive:    false,
+            city: 'Paris',
+            postalCode: '75001',
+            country: 'France',
+            latitude: 48.8566,
+            longitude: 2.3522,
+            isDigital: true,
+            isActive: false,
         ));
 
         $shop = $this->repository->findById($this->existingId);
-        $this->assertNotNull($shop);
-        $this->assertSame('new@example.com', $shop->email);
-        $this->assertSame('+33987654321',     $shop->phoneNumber);
-        $this->assertSame('Paris',           $shop->address->city);
-        $this->assertSame(48.8566,           $shop->latitude);
-        $this->assertTrue($shop->isDigital);
-        $this->assertFalse($shop->isActive);
+        self::assertNotNull($shop);
+        self::assertSame('new@example.com', $shop->email);
+        self::assertSame('+33987654321', $shop->phoneNumber);
+        self::assertSame('Paris', $shop->address->city);
+        self::assertSame(48.8566, $shop->latitude);
+        self::assertTrue($shop->isDigital);
+        self::assertFalse($shop->isActive);
     }
 
     public function testRenamingToOwnCurrentNameDoesNotThrow(): void
@@ -93,13 +93,13 @@ final class UpdateShopHandlerTest extends TestCase
         $this->handler->handle(new UpdateShop($this->existingId->value, 'Original Name'));
 
         $shop = $this->repository->findById($this->existingId);
-        $this->assertNotNull($shop);
-        $this->assertSame('Original Name', $shop->name->value);
+        self::assertNotNull($shop);
+        self::assertSame('Original Name', $shop->name->value);
     }
 
     public function testThrowsWhenNewNameConflictsWithDifferentShop(): void
     {
-        (new CreateShopHandler($this->repository))
+        new CreateShopHandler($this->repository)
             ->handle(new CreateShop(self::COMPANY_A, 'Taken Name'));
 
         $this->expectException(ShopAlreadyExistsException::class);

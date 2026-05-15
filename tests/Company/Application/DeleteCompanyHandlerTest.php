@@ -25,11 +25,11 @@ final class DeleteCompanyHandlerTest extends TestCase
 
     public function testDeletesExistingCompany(): void
     {
-        $id = (new CreateCompanyHandler($this->repository))->handle(new CreateCompany('Acme'));
+        $id = new CreateCompanyHandler($this->repository)->handle(new CreateCompany('Acme'));
 
         $this->handler->handle($id->value);
 
-        $this->assertNull($this->repository->findById($id));
+        self::assertNull($this->repository->findById($id));
     }
 
     public function testThrowsWhenNotFound(): void

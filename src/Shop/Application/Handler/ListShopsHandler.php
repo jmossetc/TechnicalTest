@@ -24,7 +24,7 @@ final readonly class ListShopsHandler
                 $offset,
             ),
             total: $this->repository->countByCriteria($query->criteria),
-            page:  $query->page,
+            page: $query->page,
             limit: $query->limit,
         );
     }

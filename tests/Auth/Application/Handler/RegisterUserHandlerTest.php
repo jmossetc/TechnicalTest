@@ -35,8 +35,8 @@ final class RegisterUserHandlerTest extends TestCase
         $userId = $this->handler->handle($this->cmd());
 
         $saved = $this->repository->findById($userId);
-        $this->assertNotNull($saved);
-        $this->assertSame('alice@example.com', $saved->email->value);
+        self::assertNotNull($saved);
+        self::assertSame('alice@example.com', $saved->email->value);
     }
 
     public function testReturnsGeneratedId(): void
@@ -44,8 +44,8 @@ final class RegisterUserHandlerTest extends TestCase
         $id   = $this->handler->handle($this->cmd());
         $user = $this->repository->findById($id);
 
-        $this->assertNotNull($user);
-        $this->assertTrue($id->equals($user->id));
+        self::assertNotNull($user);
+        self::assertTrue($id->equals($user->id));
     }
 
     public function testHashesPassword(): void
@@ -53,8 +53,8 @@ final class RegisterUserHandlerTest extends TestCase
         $this->handler->handle($this->cmd());
 
         $user = $this->repository->findByEmail(new Email('alice@example.com'));
-        $this->assertNotNull($user);
-        $this->assertNotSame('password123', $user->password->hash);
+        self::assertNotNull($user);
+        self::assertNotSame('password123', $user->password->hash);
     }
 
     public function testStoresFirstAndLastName(): void
@@ -62,22 +62,26 @@ final class RegisterUserHandlerTest extends TestCase
         $this->handler->handle(new RegisterUser('a@b.com', 'password123', 'Bob', 'Jones'));
 
         $user = $this->repository->findByEmail(new Email('a@b.com'));
-        $this->assertNotNull($user);
-        $this->assertSame('Bob', $user->firstName->value);
-        $this->assertSame('Jones', $user->lastName->value);
+        self::assertNotNull($user);
+        self::assertSame('Bob', $user->firstName->value);
+        self::assertSame('Jones', $user->lastName->value);
     }
 
     public function testStoresRole(): void
     {
         $this->handler->handle(new RegisterUser(
-            'cm@example.com', 'password123', 'Carol', 'M',
-            'company_admin', '11111111-1111-4111-8111-111111111111',
+            'cm@example.com',
+            'password123',
+            'Carol',
+            'M',
+            'company_admin',
+            '11111111-1111-4111-8111-111111111111',
         ));
 
         $user = $this->repository->findByEmail(new Email('cm@example.com'));
-        $this->assertNotNull($user);
-        $this->assertSame(Role::CompanyAdmin, $user->role);
-        $this->assertSame('11111111-1111-4111-8111-111111111111', $user->companyId);
+        self::assertNotNull($user);
+        self::assertSame(Role::CompanyAdmin, $user->role);
+        self::assertSame('11111111-1111-4111-8111-111111111111', $user->companyId);
     }
 
     public function testDefaultRoleIsEmployee(): void
@@ -85,21 +89,25 @@ final class RegisterUserHandlerTest extends TestCase
         $this->handler->handle($this->cmd());
 
         $user = $this->repository->findByEmail(new Email('alice@example.com'));
-        $this->assertNotNull($user);
-        $this->assertSame(Role::Employee, $user->role);
+        self::assertNotNull($user);
+        self::assertSame(Role::Employee, $user->role);
     }
 
     public function testStoresShopId(): void
     {
         $this->handler->handle(new RegisterUser(
-            'sm@example.com', 'password123', 'Sam', 'M',
-            'shop_manager', '11111111-1111-4111-8111-111111111111',
+            'sm@example.com',
+            'password123',
+            'Sam',
+            'M',
+            'shop_manager',
+            '11111111-1111-4111-8111-111111111111',
             'aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
         ));
 
         $user = $this->repository->findByEmail(new Email('sm@example.com'));
-        $this->assertNotNull($user);
-        $this->assertSame('aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa', $user->shopId);
+        self::assertNotNull($user);
+        self::assertSame('aaaa1111-aaaa-4aaa-8aaa-aaaaaaaaaaaa', $user->shopId);
     }
 
     public function testThrowsOnDuplicateEmail(): void

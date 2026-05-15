@@ -33,18 +33,18 @@ final class GetShopControllerTest extends ShopControllerTestCase
             $this->authedRequest('GET', "/api/shops/{$id->value}", attrs: ['id' => $id->value]),
         );
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $data = $response->data();
-        $this->assertSame($id->value,      $data['id']);
-        $this->assertSame(self::COMPANY_A, $data['company_id']);
-        $this->assertSame('My Shop',       $data['name']);
+        self::assertSame($id->value, $data['id']);
+        self::assertSame(self::COMPANY_A, $data['company_id']);
+        self::assertSame('My Shop', $data['name']);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
         $id = $this->seedShop(self::COMPANY_A);
         $response = $this->ctrl()($this->unauthRequest('GET', "/api/shops/{$id->value}"));
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns404WhenShopNotFound(): void
@@ -52,7 +52,7 @@ final class GetShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('GET', '/api/shops/' . self::UNKNOWN_UUID, attrs: ['id' => self::UNKNOWN_UUID]),
         );
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns400ForMalformedId(): void
@@ -60,7 +60,7 @@ final class GetShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('GET', '/api/shops/bad-id', attrs: ['id' => 'bad-id']),
         );
-        $this->assertSame(400, $response->status());
+        self::assertSame(400, $response->status());
     }
 
     public function testReturns403WhenCallerLacksShopAccess(): void
@@ -70,7 +70,7 @@ final class GetShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl(Role::CompanyAdmin, '22222222-2222-4222-8222-222222222222')(
             $this->authedRequest('GET', "/api/shops/{$id->value}", attrs: ['id' => $id->value]),
         );
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testCompanyAdminCanAccessShopInOwnCompany(): void
@@ -80,7 +80,7 @@ final class GetShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl(Role::CompanyAdmin, self::COMPANY_A)(
             $this->authedRequest('GET', "/api/shops/{$id->value}", attrs: ['id' => $id->value]),
         );
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 
     public function testShopManagerCanAccessOwnShop(): void
@@ -90,6 +90,6 @@ final class GetShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl(Role::ShopManager, shopId: $id->value)(
             $this->authedRequest('GET', "/api/shops/{$id->value}", attrs: ['id' => $id->value]),
         );
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 }

@@ -107,19 +107,19 @@ final readonly class UpdateUserHandler
         }
 
         $this->repository->save(new User(
-            id:          $target->id,
-            email:       $email,
-            password:    $password,
-            firstName:   $firstName,
-            lastName:    $lastName,
-            role:        $role,
-            companyId:   $companyId,
-            shopId:      $shopId,
+            id: $target->id,
+            email: $email,
+            password: $password,
+            firstName: $firstName,
+            lastName: $lastName,
+            role: $role,
+            companyId: $companyId,
+            shopId: $shopId,
             phoneNumber: $phoneNumber,
-            isActive:    $isActive,
+            isActive: $isActive,
             lastLoginAt: $target->lastLoginAt,
-            createdAt:   $target->createdAt,
-            deletedAt:   $target->deletedAt,
+            createdAt: $target->createdAt,
+            deletedAt: $target->deletedAt,
         ));
     }
 }

@@ -14,14 +14,14 @@ final class EmailTest extends TestCase
     {
         $email = new Email('User@Example.COM');
 
-        $this->assertSame('user@example.com', $email->value);
+        self::assertSame('user@example.com', $email->value);
     }
 
     public function testTrimsWhitespace(): void
     {
         $email = new Email('  user@example.com  ');
 
-        $this->assertSame('user@example.com', $email->value);
+        self::assertSame('user@example.com', $email->value);
     }
 
     public function testRejectsInvalidEmail(): void
@@ -50,7 +50,7 @@ final class EmailTest extends TestCase
         $a = new Email('user@example.com');
         $b = new Email('USER@EXAMPLE.COM');
 
-        $this->assertTrue($a->equals($b));
+        self::assertTrue($a->equals($b));
     }
 
     public function testDifferentEmailsAreNotEqual(): void
@@ -58,13 +58,13 @@ final class EmailTest extends TestCase
         $a = new Email('alice@example.com');
         $b = new Email('bob@example.com');
 
-        $this->assertFalse($a->equals($b));
+        self::assertFalse($a->equals($b));
     }
 
     public function testToString(): void
     {
         $email = new Email('user@example.com');
 
-        $this->assertSame('user@example.com', (string) $email);
+        self::assertSame('user@example.com', (string) $email);
     }
 }

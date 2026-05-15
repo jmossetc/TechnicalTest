@@ -11,21 +11,21 @@ final class SortDirectionTest extends TestCase
 {
     public function testAscHasCorrectValue(): void
     {
-        $this->assertSame('asc', SortDirection::Asc->value);
+        self::assertSame('asc', SortDirection::Asc->value);
     }
 
     public function testDescHasCorrectValue(): void
     {
-        $this->assertSame('desc', SortDirection::Desc->value);
+        self::assertSame('desc', SortDirection::Desc->value);
     }
 
     public function testFromStringAsc(): void
     {
-        $this->assertSame(SortDirection::Asc, SortDirection::from('asc'));
+        self::assertSame(SortDirection::Asc, SortDirection::from('asc'));
     }
 
     public function testFromStringDesc(): void
     {
-        $this->assertSame(SortDirection::Desc, SortDirection::from('desc'));
+        self::assertSame(SortDirection::Desc, SortDirection::from('desc'));
     }
 }

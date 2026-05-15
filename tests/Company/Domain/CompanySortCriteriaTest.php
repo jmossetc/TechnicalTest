@@ -13,24 +13,24 @@ final class CompanySortCriteriaTest extends TestCase
 {
     public function testDefaultFieldIsName(): void
     {
-        $this->assertSame(CompanySortField::Name, (new CompanySortCriteria())->field);
+        self::assertSame(CompanySortField::Name, new CompanySortCriteria()->field);
     }
 
     public function testDefaultDirectionIsAsc(): void
     {
-        $this->assertSame(SortDirection::Asc, (new CompanySortCriteria())->direction);
+        self::assertSame(SortDirection::Asc, new CompanySortCriteria()->direction);
     }
 
     public function testAcceptsAllFields(): void
     {
         foreach (CompanySortField::cases() as $field) {
-            $this->assertSame($field, (new CompanySortCriteria(field: $field))->field);
+            self::assertSame($field, new CompanySortCriteria(field: $field)->field);
         }
     }
 
     public function testAcceptsBothDirections(): void
     {
-        $this->assertSame(SortDirection::Asc,  (new CompanySortCriteria(direction: SortDirection::Asc))->direction);
-        $this->assertSame(SortDirection::Desc, (new CompanySortCriteria(direction: SortDirection::Desc))->direction);
+        self::assertSame(SortDirection::Asc, new CompanySortCriteria(direction: SortDirection::Asc)->direction);
+        self::assertSame(SortDirection::Desc, new CompanySortCriteria(direction: SortDirection::Desc)->direction);
     }
 }

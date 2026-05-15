@@ -13,24 +13,24 @@ final class UserSortCriteriaTest extends TestCase
 {
     public function testDefaultFieldIsEmail(): void
     {
-        $this->assertSame(UserSortField::Email, (new UserSortCriteria())->field);
+        self::assertSame(UserSortField::Email, new UserSortCriteria()->field);
     }
 
     public function testDefaultDirectionIsAsc(): void
     {
-        $this->assertSame(SortDirection::Asc, (new UserSortCriteria())->direction);
+        self::assertSame(SortDirection::Asc, new UserSortCriteria()->direction);
     }
 
     public function testAcceptsAllFields(): void
     {
         foreach (UserSortField::cases() as $field) {
-            $this->assertSame($field, (new UserSortCriteria(field: $field))->field);
+            self::assertSame($field, new UserSortCriteria(field: $field)->field);
         }
     }
 
     public function testAcceptsBothDirections(): void
     {
-        $this->assertSame(SortDirection::Asc,  (new UserSortCriteria(direction: SortDirection::Asc))->direction);
-        $this->assertSame(SortDirection::Desc, (new UserSortCriteria(direction: SortDirection::Desc))->direction);
+        self::assertSame(SortDirection::Asc, new UserSortCriteria(direction: SortDirection::Asc)->direction);
+        self::assertSame(SortDirection::Desc, new UserSortCriteria(direction: SortDirection::Desc)->direction);
     }
 }

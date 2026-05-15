@@ -13,6 +13,7 @@ use Mossetc\TechnicalTest\Auth\Domain\Model\FirstName;
 use Mossetc\TechnicalTest\Auth\Domain\Model\HashedPassword;
 use Mossetc\TechnicalTest\Auth\Domain\Model\LastName;
 use Mossetc\TechnicalTest\Auth\Domain\Model\PlainPassword;
+use Mossetc\TechnicalTest\Auth\Domain\Model\Role;
 use Mossetc\TechnicalTest\Auth\Domain\Model\User;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserId;
 use Mossetc\TechnicalTest\Auth\Domain\Model\UserScope;
@@ -41,8 +42,8 @@ final class ListUsersHandlerTest extends TestCase
     {
         $result = $this->handler->handle(new ListUsers());
 
-        $this->assertSame([], $result->users);
-        $this->assertSame(0, $result->total);
+        self::assertSame([], $result->users);
+        self::assertSame(0, $result->total);
     }
 
     public function testReturnsAllUsersForAdminScope(): void
@@ -52,8 +53,8 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(limit: 10));
 
-        $this->assertCount(2, $result->users);
-        $this->assertSame(2, $result->total);
+        self::assertCount(2, $result->users);
+        self::assertSame(2, $result->total);
     }
 
     public function testPaginationLimitIsRespected(): void
@@ -64,9 +65,9 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(page: 1, limit: 2));
 
-        $this->assertCount(2, $result->users);
-        $this->assertSame(3, $result->total);
-        $this->assertSame(2, $result->pages());
+        self::assertCount(2, $result->users);
+        self::assertSame(3, $result->total);
+        self::assertSame(2, $result->pages());
     }
 
     public function testSecondPageReturnsRemainder(): void
@@ -77,8 +78,8 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(page: 2, limit: 2));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('c@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('c@example.com', $result->users[0]->email->value);
     }
 
     public function testOrderedByEmailAscending(): void
@@ -88,9 +89,9 @@ final class ListUsersHandlerTest extends TestCase
         $this->register('bob@example.com');
 
         $result  = $this->handler->handle(new ListUsers(limit: 10));
-        $emails  = array_map(fn($u) => $u->email->value, $result->users);
+        $emails  = array_map(static fn($u) => $u->email->value, $result->users);
 
-        $this->assertSame(['alice@example.com', 'bob@example.com', 'charlie@example.com'], $emails);
+        self::assertSame(['alice@example.com', 'bob@example.com', 'charlie@example.com'], $emails);
     }
 
     public function testCompanyScopeFiltersCorrectly(): void
@@ -101,8 +102,8 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(scope: UserScope::companies([$company])));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('cm@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('cm@example.com', $result->users[0]->email->value);
     }
 
     public function testShopScopeFiltersCorrectly(): void
@@ -114,8 +115,8 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(scope: UserScope::shops([$shop])));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('sm@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('sm@example.com', $result->users[0]->email->value);
     }
 
     public function testShopScopeWithCompanyConstraintFiltersCorrectly(): void
@@ -129,8 +130,8 @@ final class ListUsersHandlerTest extends TestCase
         // scopeCompanyId constrains to companyA only
         $result = $this->handler->handle(new ListUsers(scope: UserScope::shops([$shop], $companyA)));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('sm-a@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('sm-a@example.com', $result->users[0]->email->value);
     }
 
     public function testPageBeyondTotalReturnsEmpty(): void
@@ -139,8 +140,8 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(page: 99));
 
-        $this->assertSame([], $result->users);
-        $this->assertSame(1, $result->total);
+        self::assertSame([], $result->users);
+        self::assertSame(1, $result->total);
     }
 
     public function testFiltersUsersByEmailPartialMatch(): void
@@ -151,8 +152,8 @@ final class ListUsersHandlerTest extends TestCase
         $criteria = new UserSearchCriteria(email: 'alice');
         $result   = $this->handler->handle(new ListUsers(criteria: $criteria));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('alice@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('alice@example.com', $result->users[0]->email->value);
     }
 
     public function testFiltersUsersByRole(): void
@@ -160,31 +161,31 @@ final class ListUsersHandlerTest extends TestCase
         $this->register('admin@example.com', 'admin');
         $this->register('emp@example.com', 'employee');
 
-        $criteria = new UserSearchCriteria(role: \Mossetc\TechnicalTest\Auth\Domain\Model\Role::Employee);
+        $criteria = new UserSearchCriteria(role: Role::Employee);
         $result   = $this->handler->handle(new ListUsers(criteria: $criteria));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('emp@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('emp@example.com', $result->users[0]->email->value);
     }
 
     public function testFiltersUsersByIsActive(): void
     {
         $this->register('active@example.com');
         $inactive = new User(
-            id:        UserId::generate(),
-            email:     new Email('inactive@example.com'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: UserId::generate(),
+            email: new Email('inactive@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('In'),
-            lastName:  new LastName('Active'),
-            isActive:  false,
+            lastName: new LastName('Active'),
+            isActive: false,
         );
         $this->repository->save($inactive);
 
         $criteria = new UserSearchCriteria(isActive: false);
         $result   = $this->handler->handle(new ListUsers(criteria: $criteria));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('inactive@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('inactive@example.com', $result->users[0]->email->value);
     }
 
     public function testCombinesEmailAndRoleCriteria(): void
@@ -195,12 +196,12 @@ final class ListUsersHandlerTest extends TestCase
 
         $criteria = new UserSearchCriteria(
             email: 'alice',
-            role:  \Mossetc\TechnicalTest\Auth\Domain\Model\Role::Employee,
+            role: Role::Employee,
         );
         $result = $this->handler->handle(new ListUsers(criteria: $criteria));
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('alice@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('alice@example.com', $result->users[0]->email->value);
     }
 
     public function testCriteriaAndScopeAreBothApplied(): void
@@ -215,8 +216,8 @@ final class ListUsersHandlerTest extends TestCase
             new ListUsers(scope: UserScope::companies([$company]), criteria: $criteria)
         );
 
-        $this->assertCount(1, $result->users);
-        $this->assertSame('alice@example.com', $result->users[0]->email->value);
+        self::assertCount(1, $result->users);
+        self::assertSame('alice@example.com', $result->users[0]->email->value);
     }
 
     public function testSortByEmailDescendingReturnsReverseOrder(): void
@@ -227,14 +228,14 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(
             limit: 10,
-            sort:  new UserSortCriteria(
-                field:     UserSortField::Email,
+            sort: new UserSortCriteria(
+                field: UserSortField::Email,
                 direction: SortDirection::Desc,
             ),
         ));
 
-        $emails = array_map(fn($u) => $u->email->value, $result->users);
-        $this->assertSame(['charlie@example.com', 'bob@example.com', 'alice@example.com'], $emails);
+        $emails = array_map(static fn($u) => $u->email->value, $result->users);
+        self::assertSame(['charlie@example.com', 'bob@example.com', 'alice@example.com'], $emails);
     }
 
     public function testSortByFirstNameAscendingReturnsAlphabeticalFirstNameOrder(): void
@@ -245,14 +246,14 @@ final class ListUsersHandlerTest extends TestCase
 
         $result = $this->handler->handle(new ListUsers(
             limit: 10,
-            sort:  new UserSortCriteria(
-                field:     UserSortField::FirstName,
+            sort: new UserSortCriteria(
+                field: UserSortField::FirstName,
                 direction: SortDirection::Asc,
             ),
         ));
 
-        $names = array_map(fn($u) => $u->firstName->value, $result->users);
-        $this->assertSame(['Alice', 'Bob', 'Charlie'], $names);
+        $names = array_map(static fn($u) => $u->firstName->value, $result->users);
+        self::assertSame(['Alice', 'Bob', 'Charlie'], $names);
     }
 
     private function register(

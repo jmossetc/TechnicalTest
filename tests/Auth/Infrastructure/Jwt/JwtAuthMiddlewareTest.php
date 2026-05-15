@@ -20,7 +20,7 @@ final class JwtAuthMiddlewareTest extends TestCase
 
     private function tokenServiceReturning(UserId $id): TokenServiceInterface
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willReturn($id);
 
         return $svc;
@@ -33,7 +33,7 @@ final class JwtAuthMiddlewareTest extends TestCase
 
         $result = $middleware->authenticate(['Authorization' => 'Bearer some.jwt.token']);
 
-        $this->assertTrue($expected->equals($result));
+        self::assertTrue($expected->equals($result));
     }
 
     public function testHeaderLookupIsCaseInsensitive(): void
@@ -43,26 +43,26 @@ final class JwtAuthMiddlewareTest extends TestCase
 
         $result = $middleware->authenticate(['authorization' => 'Bearer some.jwt.token']);
 
-        $this->assertTrue($expected->equals($result));
+        self::assertTrue($expected->equals($result));
     }
 
     public function testThrowsWhenAuthorizationHeaderIsMissing(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->middleware($this->createStub(TokenServiceInterface::class))
+        $this->middleware(self::createStub(TokenServiceInterface::class))
             ->authenticate([]);
     }
 
     public function testThrowsWhenSchemeIsNotBearer(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->middleware($this->createStub(TokenServiceInterface::class))
+        $this->middleware(self::createStub(TokenServiceInterface::class))
             ->authenticate(['Authorization' => 'Basic dXNlcjpwYXNz']);
     }
 
     public function testThrowsWhenTokenIsInvalid(): void
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willThrowException(new InvalidTokenException('bad'));
 
         $this->expectException(InvalidTokenException::class);
@@ -72,7 +72,7 @@ final class JwtAuthMiddlewareTest extends TestCase
     public function testPassesOnlyTokenPartToService(): void
     {
         $svc = $this->createMock(TokenServiceInterface::class);
-        $svc->expects($this->once())
+        $svc->expects(self::once())
             ->method('validate')
             ->with('my.actual.token')
             ->willReturn(UserId::generate());

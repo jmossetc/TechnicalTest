@@ -46,12 +46,12 @@ final readonly class Response
     /** @return array<string, mixed> */
     private static function normalize(mixed $data): array
     {
-        if (!is_array($data)) {
+        if (!\is_array($data)) {
             return [];
         }
         $result = [];
         foreach ($data as $key => $value) {
-            if (is_string($key)) {
+            if (\is_string($key)) {
                 $result[$key] = self::normalizeValue($value);
             }
         }
@@ -63,7 +63,7 @@ final readonly class Response
         if ($value instanceof \JsonSerializable) {
             return self::normalize($value->jsonSerialize());
         }
-        if (is_array($value)) {
+        if (\is_array($value)) {
             return array_map(self::normalizeValue(...), $value);
         }
         return $value;

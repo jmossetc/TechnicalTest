@@ -49,12 +49,12 @@ final class InMemoryShopRepository implements ShopRepositoryInterface
         $shops = array_values($this->filteredByCriteria($criteria));
         usort($shops, $this->buildComparator($sort));
 
-        return array_slice($shops, $offset, $limit);
+        return \array_slice($shops, $offset, $limit);
     }
 
     public function countByCriteria(ShopSearchCriteria $criteria): int
     {
-        return count($this->filteredByCriteria($criteria));
+        return \count($this->filteredByCriteria($criteria));
     }
 
     public function delete(ShopId $id): void

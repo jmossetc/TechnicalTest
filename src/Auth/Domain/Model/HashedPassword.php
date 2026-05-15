@@ -17,7 +17,7 @@ final readonly class HashedPassword
 
     public static function fromHash(string $hash): self
     {
-        if (strlen($hash) < 20) {
+        if (\strlen($hash) < 20) {
             throw new InvalidArgumentException('Invalid password hash');
         }
 

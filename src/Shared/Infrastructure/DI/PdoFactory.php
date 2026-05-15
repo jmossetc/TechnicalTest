@@ -16,7 +16,7 @@ final class PdoFactory
         string $password,
     ): PDO {
         return new PDO(
-            sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database),
+            \sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database),
             $username,
             $password,
             [

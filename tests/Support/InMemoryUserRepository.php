@@ -53,20 +53,20 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         }
         $u = $this->store[$id->value];
         $this->store[$id->value] = new User(
-            id:          $u->id,
-            email:       $u->email,
-            password:    $u->password,
-            firstName:   $u->firstName,
-            lastName:    $u->lastName,
-            role:        $u->role,
-            companyId:   $u->companyId,
-            shopId:      $u->shopId,
+            id: $u->id,
+            email: $u->email,
+            password: $u->password,
+            firstName: $u->firstName,
+            lastName: $u->lastName,
+            role: $u->role,
+            companyId: $u->companyId,
+            shopId: $u->shopId,
             phoneNumber: $u->phoneNumber,
-            isActive:    $u->isActive,
+            isActive: $u->isActive,
             lastLoginAt: new DateTimeImmutable(),
-            createdAt:   $u->createdAt,
-            updatedAt:   $u->updatedAt,
-            deletedAt:   $u->deletedAt,
+            createdAt: $u->createdAt,
+            updatedAt: $u->updatedAt,
+            deletedAt: $u->deletedAt,
         );
     }
 
@@ -83,17 +83,17 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         ));
         usort($users, $this->buildComparator($sort));
 
-        return array_slice($users, $offset, $limit);
+        return \array_slice($users, $offset, $limit);
     }
 
     public function count(): int
     {
-        return count($this->store);
+        return \count($this->store);
     }
 
     public function countByCriteria(UserSearchCriteria $criteria, UserScope $scope): int
     {
-        return count(array_filter(
+        return \count(array_filter(
             $this->store,
             fn(User $u): bool => $this->matchesScope($u, $scope) && $this->matchesCriteria($u, $criteria),
         ));
@@ -123,12 +123,12 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         }
 
         if ($scope->isCompanies()) {
-            return $u->companyId !== null && in_array($u->companyId, $scope->ids, true);
+            return $u->companyId !== null && \in_array($u->companyId, $scope->ids, true);
         }
 
         if ($scope->isShops()) {
             return $u->shopId !== null
-                && in_array($u->shopId, $scope->ids, true)
+                && \in_array($u->shopId, $scope->ids, true)
                 && ($scope->scopeCompanyId === null || $u->companyId === $scope->scopeCompanyId);
         }
 

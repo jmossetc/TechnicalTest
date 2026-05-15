@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mossetc\TechnicalTest\Shop\Domain\Service;
 
 use InvalidArgumentException;
@@ -28,7 +30,7 @@ final readonly class ShopInputValidatorService
         $country = $this->nullableString($inputs['country'] ?? '');
         $latitude = $this->checkCoordinate($inputs['latitude'] ?? null, 90, 'Latitude');
         $longitude = $this->checkCoordinate($inputs['longitude'] ?? null, 180, 'Longitude');
-        $isDigital = (bool)($inputs['is_digital'] ?? false);
+        $isDigital = (bool) ($inputs['is_digital'] ?? false);
 
         if ($name === null) {
             throw new InvalidArgumentException('name is required');
@@ -68,7 +70,7 @@ final readonly class ShopInputValidatorService
             if (!is_numeric($coordinate)) {
                 throw new InvalidArgumentException($coordinateName . ' must be numeric');
             }
-            $coordinate = (float)$coordinate;
+            $coordinate = (float) $coordinate;
             if ($coordinate < -$boundary || $coordinate > $boundary) {
                 throw new InvalidArgumentException($coordinateName . ' must be between -' . $boundary . ' and ' . $boundary);
             }
@@ -81,7 +83,7 @@ final readonly class ShopInputValidatorService
 
     private function nullableString(mixed $value): ?string
     {
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             return null;
         }
         return $value !== '' ? $value : null;

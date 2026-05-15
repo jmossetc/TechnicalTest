@@ -11,21 +11,21 @@ final class PaginatedShopsTest extends TestCase
 {
     public function testPagesRoundsUp(): void
     {
-        $this->assertSame(3, (new PaginatedShops([], 25, 1, 10))->pages());
+        self::assertSame(3, new PaginatedShops([], 25, 1, 10)->pages());
     }
 
     public function testPagesWhenExactlyDivisible(): void
     {
-        $this->assertSame(2, (new PaginatedShops([], 20, 1, 10))->pages());
+        self::assertSame(2, new PaginatedShops([], 20, 1, 10)->pages());
     }
 
     public function testPagesWhenTotalIsZero(): void
     {
-        $this->assertSame(0, (new PaginatedShops([], 0, 1, 10))->pages());
+        self::assertSame(0, new PaginatedShops([], 0, 1, 10)->pages());
     }
 
     public function testPagesWhenLimitIsZero(): void
     {
-        $this->assertSame(0, (new PaginatedShops([], 10, 1, 0))->pages());
+        self::assertSame(0, new PaginatedShops([], 10, 1, 0)->pages());
     }
 }

@@ -30,14 +30,14 @@ final class CreateShopControllerTest extends ShopControllerTestCase
             $this->authedRequest('POST', '/api/shops', ['name' => 'My Shop'], ['companyId' => self::COMPANY_A]),
         );
 
-        $this->assertSame(201, $response->status());
-        $this->assertArrayHasKey('id', $response->data());
+        self::assertSame(201, $response->status());
+        self::assertArrayHasKey('id', $response->data());
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
         $response = $this->ctrl()($this->unauthRequest('POST', '/api/shops'));
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns403WhenCallerLacksCompanyAccess(): void
@@ -45,7 +45,7 @@ final class CreateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl(Role::CompanyAdmin, self::COMPANY_B)(
             $this->authedRequest('POST', '/api/shops', ['name' => 'X'], ['companyId' => self::COMPANY_A]),
         );
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testReturns422WhenNameIsEmpty(): void
@@ -53,7 +53,7 @@ final class CreateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('POST', '/api/shops', ['name' => ''], ['companyId' => self::COMPANY_A]),
         );
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422WhenNameIsMissing(): void
@@ -61,7 +61,7 @@ final class CreateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('POST', '/api/shops', [], ['companyId' => self::COMPANY_A]),
         );
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns409OnDuplicateName(): void
@@ -71,7 +71,7 @@ final class CreateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('POST', '/api/shops', ['name' => 'Taken'], ['companyId' => self::COMPANY_A]),
         );
-        $this->assertSame(409, $response->status());
+        self::assertSame(409, $response->status());
     }
 
     public function testShopIsPersistedAfterSuccess(): void
@@ -80,6 +80,6 @@ final class CreateShopControllerTest extends ShopControllerTestCase
             $this->authedRequest('POST', '/api/shops', ['name' => 'New Shop'], ['companyId' => self::COMPANY_A]),
         );
 
-        $this->assertSame(1, $this->shopRepo->countByCriteria(new ShopSearchCriteria()));
+        self::assertSame(1, $this->shopRepo->countByCriteria(new ShopSearchCriteria()));
     }
 }

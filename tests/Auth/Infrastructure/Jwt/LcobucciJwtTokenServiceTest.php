@@ -39,7 +39,10 @@ final class LcobucciJwtTokenServiceTest extends TestCase
 
         return new class ($dt) implements ClockInterface {
             public function __construct(private readonly DateTimeImmutable $time) {}
-            public function now(): DateTimeImmutable { return $this->time; }
+            public function now(): DateTimeImmutable
+            {
+                return $this->time;
+            }
         };
     }
 
@@ -47,7 +50,7 @@ final class LcobucciJwtTokenServiceTest extends TestCase
     {
         $token = $this->service()->issue(UserId::generate(), new Email('user@example.com'));
 
-        $this->assertNotEmpty($token->value);
+        self::assertNotEmpty($token->value);
     }
 
     public function testIssuedTokenCanBeValidated(): void
@@ -58,7 +61,7 @@ final class LcobucciJwtTokenServiceTest extends TestCase
         $token  = $service->issue($userId, new Email('user@example.com'));
         $result = $service->validate($token->value);
 
-        $this->assertTrue($userId->equals($result));
+        self::assertTrue($userId->equals($result));
     }
 
     public function testTwoTokensForSameUserAreDifferent(): void
@@ -70,7 +73,7 @@ final class LcobucciJwtTokenServiceTest extends TestCase
         $a = $service->issue($userId, $email);
         $b = $service->issue($userId, $email);
 
-        $this->assertNotSame($a->value, $b->value);
+        self::assertNotSame($a->value, $b->value);
     }
 
     public function testValidateThrowsForEmptyToken(): void

@@ -19,8 +19,8 @@ use RuntimeException;
 
 final readonly class ShopRepository implements ShopRepositoryInterface
 {
-    private const string SELECT_COLUMNS =
-        'BIN_TO_UUID(id) AS id, BIN_TO_UUID(company_id) AS company_id, name,
+    private const string SELECT_COLUMNS
+        = 'BIN_TO_UUID(id) AS id, BIN_TO_UUID(company_id) AS company_id, name,
          email, phone_number, address_line_1, address_line_2, city, postal_code, country,
          latitude, longitude, is_digital, is_active, created_at, updated_at, deleted_at';
 
@@ -59,15 +59,15 @@ final readonly class ShopRepository implements ShopRepositoryInterface
             'name'          => $shop->name->value,
             'email'         => $shop->email,
             'phone_number'  => $shop->phoneNumber,
-            'address_line_1'=> $shop->address->addressLine1,
-            'address_line_2'=> $shop->address->addressLine2,
+            'address_line_1' => $shop->address->addressLine1,
+            'address_line_2' => $shop->address->addressLine2,
             'city'          => $shop->address->city,
             'postal_code'   => $shop->address->postalCode,
             'country'       => $shop->address->country,
             'latitude'      => $shop->latitude,
             'longitude'     => $shop->longitude,
             'is_digital'    => $shop->isDigital ? 1 : 0,
-            'is_active'     => $shop->isActive  ? 1 : 0,
+            'is_active'     => $shop->isActive ? 1 : 0,
         ]);
     }
 
@@ -81,7 +81,7 @@ final readonly class ShopRepository implements ShopRepositoryInterface
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return is_array($row) ? $this->hydrate($row) : null;
+        return \is_array($row) ? $this->hydrate($row) : null;
     }
 
     public function findByNameAndCompany(ShopName $name, CompanyId $companyId): ?Shop
@@ -94,7 +94,7 @@ final readonly class ShopRepository implements ShopRepositoryInterface
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return is_array($row) ? $this->hydrate($row) : null;
+        return \is_array($row) ? $this->hydrate($row) : null;
     }
 
     public function findPaginatedByCriteria(
@@ -112,7 +112,7 @@ final readonly class ShopRepository implements ShopRepositoryInterface
         $stmt->execute([...$params, $limit, $offset]);
 
         $shops = [];
-        while (is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
+        while (\is_array($row = $stmt->fetch(PDO::FETCH_ASSOC))) {
             $shops[] = $this->hydrate($row);
         }
 
@@ -222,25 +222,25 @@ final readonly class ShopRepository implements ShopRepositoryInterface
         $lng = $row['longitude'] ?? null;
 
         return new Shop(
-            id:          new ShopId($this->col($row, 'id')),
-            companyId:   new CompanyId($this->col($row, 'company_id')),
-            name:        new ShopName($this->col($row, 'name')),
-            address:     new ShopAddress(
+            id: new ShopId($this->col($row, 'id')),
+            companyId: new CompanyId($this->col($row, 'company_id')),
+            name: new ShopName($this->col($row, 'name')),
+            address: new ShopAddress(
                 addressLine1: $this->nullable($row['address_line_1'] ?? null),
                 addressLine2: $this->nullable($row['address_line_2'] ?? null),
-                city:         $this->nullable($row['city'] ?? null),
-                postalCode:   $this->nullable($row['postal_code'] ?? null),
-                country:      $this->nullable($row['country'] ?? null),
+                city: $this->nullable($row['city'] ?? null),
+                postalCode: $this->nullable($row['postal_code'] ?? null),
+                country: $this->nullable($row['country'] ?? null),
             ),
-            email:       $this->nullable($row['email'] ?? null),
+            email: $this->nullable($row['email'] ?? null),
             phoneNumber: $this->nullable($row['phone_number'] ?? null),
-            latitude:    is_numeric($lat) ? (float) $lat : null,
-            longitude:   is_numeric($lng) ? (float) $lng : null,
-            isDigital:   (bool) ($row['is_digital'] ?? false),
-            isActive:    (bool) ($row['is_active']  ?? true),
-            createdAt:   $this->parseDateTime($this->col($row, 'created_at')),
-            updatedAt:   $this->parseDateTime($this->col($row, 'updated_at')),
-            deletedAt:   $this->parseDateTimeNullable($row['deleted_at'] ?? null),
+            latitude: is_numeric($lat) ? (float) $lat : null,
+            longitude: is_numeric($lng) ? (float) $lng : null,
+            isDigital: (bool) ($row['is_digital'] ?? false),
+            isActive: (bool) ($row['is_active']  ?? true),
+            createdAt: $this->parseDateTime($this->col($row, 'created_at')),
+            updatedAt: $this->parseDateTime($this->col($row, 'updated_at')),
+            deletedAt: $this->parseDateTimeNullable($row['deleted_at'] ?? null),
         );
     }
 
@@ -251,9 +251,9 @@ final readonly class ShopRepository implements ShopRepositoryInterface
     {
         $value = $row[$key] ?? null;
 
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             throw new RuntimeException(
-                sprintf("Expected string for column '%s', got %s", $key, get_debug_type($value)),
+                \sprintf("Expected string for column '%s', got %s", $key, get_debug_type($value)),
             );
         }
 
@@ -262,7 +262,7 @@ final readonly class ShopRepository implements ShopRepositoryInterface
 
     private function nullable(mixed $value): ?string
     {
-        return is_string($value) && $value !== '' ? $value : null;
+        return \is_string($value) && $value !== '' ? $value : null;
     }
 
     private function parseDateTime(string $value): DateTimeImmutable
@@ -278,7 +278,7 @@ final readonly class ShopRepository implements ShopRepositoryInterface
 
     private function parseDateTimeNullable(mixed $value): ?DateTimeImmutable
     {
-        if (!is_string($value) || $value === '') {
+        if (!\is_string($value) || $value === '') {
             return null;
         }
 

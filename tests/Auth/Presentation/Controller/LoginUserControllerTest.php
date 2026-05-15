@@ -25,13 +25,13 @@ final class LoginUserControllerTest extends TestCase
         $this->userRepo = new InMemoryUserRepository();
         $this->hasher   = new PasswordHasher('');
 
-        (new RegisterUserHandler($this->userRepo, $this->hasher))
+        new RegisterUserHandler($this->userRepo, $this->hasher)
             ->handle(new RegisterUser('alice@example.com', 'password123', 'Alice', 'Smith'));
     }
 
     private function ctrl(?TokenServiceInterface $tokens = null): LoginUserController
     {
-        $tokens ??= $this->createStub(TokenServiceInterface::class);
+        $tokens ??= self::createStub(TokenServiceInterface::class);
 
         return new LoginUserController(
             new LoginUserHandler($this->userRepo, $tokens, $this->hasher),
@@ -45,40 +45,40 @@ final class LoginUserControllerTest extends TestCase
 
     public function testReturnsTokenOnSuccess(): void
     {
-        $tokens = $this->createStub(TokenServiceInterface::class);
+        $tokens = self::createStub(TokenServiceInterface::class);
         $tokens->method('issue')->willReturn(new AuthToken('the.jwt.token'));
 
         $response = $this->ctrl($tokens)($this->req('alice@example.com', 'password123'));
 
-        $this->assertSame(200, $response->status());
-        $this->assertSame('the.jwt.token', $response->data()['token'] ?? null);
+        self::assertSame(200, $response->status());
+        self::assertSame('the.jwt.token', $response->data()['token'] ?? null);
     }
 
     public function testReturns422WhenEmailIsMissing(): void
     {
         $response = $this->ctrl()($this->req('', 'password123'));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422WhenPasswordIsMissing(): void
     {
         $response = $this->ctrl()($this->req('alice@example.com', ''));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns401OnInvalidCredentials(): void
     {
         $response = $this->ctrl()($this->req('alice@example.com', 'wrongpasss1'));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns401OnUnknownEmail(): void
     {
         $response = $this->ctrl()($this->req('ghost@example.com', 'password123'));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 }

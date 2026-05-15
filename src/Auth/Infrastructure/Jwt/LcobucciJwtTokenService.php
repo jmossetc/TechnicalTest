@@ -29,7 +29,6 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
     public function __construct(
         private readonly JwtConfig $config,
         private readonly ClockInterface $clock = new SystemClock(),
-
     ) {
         $signer = new Sha256();
         $key = InMemory::plainText($config->secret);
@@ -89,7 +88,7 @@ final class LcobucciJwtTokenService implements TokenServiceInterface
 
         $userId = $parsed->claims()->get('user_id');
 
-        if (!is_string($userId) || $userId === '') {
+        if (!\is_string($userId) || $userId === '') {
             throw new InvalidTokenException('missing or invalid user_id claim');
         }
 

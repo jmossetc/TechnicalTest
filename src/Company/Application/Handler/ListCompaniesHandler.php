@@ -23,9 +23,9 @@ final readonly class ListCompaniesHandler
                 $query->limit,
                 $offset,
             ),
-            total:     $this->repository->countByCriteria($query->criteria),
-            page:      $query->page,
-            limit:     $query->limit,
+            total: $this->repository->countByCriteria($query->criteria),
+            page: $query->page,
+            limit: $query->limit,
         );
     }
 }

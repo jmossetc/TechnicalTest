@@ -45,10 +45,10 @@ final class RouteLoaderTest extends TestCase
               methods: [POST]
             YAML);
 
-        $routes = (new RouteLoader())->load($path);
+        $routes = new RouteLoader()->load($path);
 
-        $this->assertNotNull($routes->get('list_users'));
-        $this->assertNotNull($routes->get('create_user'));
+        self::assertNotNull($routes->get('list_users'));
+        self::assertNotNull($routes->get('create_user'));
     }
 
     public function testRoutePathIsCorrect(): void
@@ -59,10 +59,10 @@ final class RouteLoaderTest extends TestCase
               methods: [GET]
             YAML);
 
-        $route = (new RouteLoader())->load($path)->get('get_user');
+        $route = new RouteLoader()->load($path)->get('get_user');
 
-        $this->assertNotNull($route);
-        $this->assertSame('/api/users/{id}', $route->getPath());
+        self::assertNotNull($route);
+        self::assertSame('/api/users/{id}', $route->getPath());
     }
 
     public function testRouteMethodsAreCaseNormalized(): void
@@ -73,11 +73,11 @@ final class RouteLoaderTest extends TestCase
               methods: [post, Put]
             YAML);
 
-        $route = (new RouteLoader())->load($path)->get('create');
+        $route = new RouteLoader()->load($path)->get('create');
 
-        $this->assertNotNull($route);
-        $this->assertContains('POST', $route->getMethods());
-        $this->assertContains('PUT',  $route->getMethods());
+        self::assertNotNull($route);
+        self::assertContains('POST', $route->getMethods());
+        self::assertContains('PUT', $route->getMethods());
     }
 
     public function testRouteWithNoMethodsIsAllowed(): void
@@ -87,18 +87,18 @@ final class RouteLoaderTest extends TestCase
               path: /api/ping
             YAML);
 
-        $routes = (new RouteLoader())->load($path);
+        $routes = new RouteLoader()->load($path);
 
-        $this->assertNotNull($routes->get('any_method'));
+        self::assertNotNull($routes->get('any_method'));
     }
 
     public function testEmptyFileProducesNoRoutes(): void
     {
         $path = $this->writeYaml('empty.yaml', '{}');
 
-        $routes = (new RouteLoader())->load($path);
+        $routes = new RouteLoader()->load($path);
 
-        $this->assertCount(0, $routes);
+        self::assertCount(0, $routes);
     }
 
     public function testMultipleRoutesAreAllLoaded(): void
@@ -109,9 +109,9 @@ final class RouteLoaderTest extends TestCase
         }
 
         $path   = $this->writeYaml('many.yaml', $yaml);
-        $routes = (new RouteLoader())->load($path);
+        $routes = new RouteLoader()->load($path);
 
-        $this->assertCount(5, $routes);
+        self::assertCount(5, $routes);
     }
 
     // ── Error paths ───────────────────────────────────────────────────────────
@@ -121,16 +121,16 @@ final class RouteLoaderTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessageMatches('/not found/i');
 
-        (new RouteLoader())->load('/nonexistent/routes.yaml');
+        new RouteLoader()->load('/nonexistent/routes.yaml');
     }
 
     public function testYamlListProducesNoRoutes(): void
     {
         // A YAML sequence produces integer keys; those are silently skipped
         $path   = $this->writeYaml('list.yaml', "- item1\n- item2\n");
-        $routes = (new RouteLoader())->load($path);
+        $routes = new RouteLoader()->load($path);
 
-        $this->assertCount(0, $routes);
+        self::assertCount(0, $routes);
     }
 
     public function testThrowsWhenRouteHasNoPathKey(): void
@@ -143,7 +143,7 @@ final class RouteLoaderTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessageMatches("/path/i");
 
-        (new RouteLoader())->load($path);
+        new RouteLoader()->load($path);
     }
 
     public function testSkipsEntryWithNonStringName(): void
@@ -155,8 +155,8 @@ final class RouteLoaderTest extends TestCase
               methods: [GET]
             YAML);
 
-        $routes = (new RouteLoader())->load($path);
+        $routes = new RouteLoader()->load($path);
 
-        $this->assertNotNull($routes->get('valid_route'));
+        self::assertNotNull($routes->get('valid_route'));
     }
 }

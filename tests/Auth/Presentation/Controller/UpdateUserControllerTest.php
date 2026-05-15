@@ -42,7 +42,7 @@ final class UpdateUserControllerTest extends TestCase
 
     private function makeAuth(): JwtAuthMiddleware
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willReturn($this->callerId);
 
         return new JwtAuthMiddleware($svc);
@@ -51,14 +51,14 @@ final class UpdateUserControllerTest extends TestCase
     private function seedUser(UserId $id, Role $role, ?string $companyId = null, ?string $shopId = null): void
     {
         $this->userRepo->save(new User(
-            id:        $id,
-            email:     new Email($id->value . '@test.test'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $id,
+            email: new Email($id->value . '@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Test'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
-            shopId:    $shopId,
+            shopId: $shopId,
         ));
     }
 
@@ -77,7 +77,8 @@ final class UpdateUserControllerTest extends TestCase
         $id = $targetId ?? $this->targetId->value;
 
         return new Request(
-            'PATCH', "/api/users/{$id}",
+            'PATCH',
+            "/api/users/{$id}",
             ['Authorization' => 'Bearer tok'],
             $body,
             ['id' => $id],
@@ -90,7 +91,7 @@ final class UpdateUserControllerTest extends TestCase
         // caller == target
         $response = $this->ctrl()($this->patchRequest(['first_name' => 'Jane'], $this->callerId->value));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 
     public function testAdminUpdateReturns200(): void
@@ -100,7 +101,7 @@ final class UpdateUserControllerTest extends TestCase
 
         $response = $this->ctrl()($this->patchRequest(['first_name' => 'Jane']));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 
     public function testShopManagerCanUpdateEmployeeInOwnShop(): void
@@ -110,13 +111,14 @@ final class UpdateUserControllerTest extends TestCase
 
         $response = $this->ctrl()($this->patchRequest(['first_name' => 'Jane']));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 
     public function testReturns401WhenTokenMissing(): void
     {
         $request = new Request(
-            'PATCH', "/api/users/{$this->targetId->value}",
+            'PATCH',
+            "/api/users/{$this->targetId->value}",
             [], // no Authorization header
             ['first_name' => 'Jane'],
             ['id' => $this->targetId->value],
@@ -124,12 +126,12 @@ final class UpdateUserControllerTest extends TestCase
 
         $response = $this->ctrl()($request);
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns401WhenTokenInvalid(): void
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willThrowException(new InvalidTokenException('bad token'));
 
         $ctrl = new UpdateUserController(
@@ -140,7 +142,7 @@ final class UpdateUserControllerTest extends TestCase
 
         $response = $ctrl($this->patchRequest(['first_name' => 'Jane']));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns403WhenEmployeeUpdatesOtherUser(): void
@@ -150,7 +152,7 @@ final class UpdateUserControllerTest extends TestCase
 
         $response = $this->ctrl()($this->patchRequest(['first_name' => 'Jane']));
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testReturns404WhenTargetNotFound(): void
@@ -160,19 +162,19 @@ final class UpdateUserControllerTest extends TestCase
 
         $response = $this->ctrl()($this->patchRequest(['first_name' => 'Jane']));
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns409OnEmailConflict(): void
     {
         $otherId = UserId::generate();
         $this->userRepo->save(new User(
-            id:        $otherId,
-            email:     new Email('taken@example.com'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $otherId,
+            email: new Email('taken@example.com'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Other'),
-            lastName:  new LastName('User'),
-            role:      Role::Employee,
+            lastName: new LastName('User'),
+            role: Role::Employee,
         ));
         $this->seedUser($this->callerId, Role::Employee, self::COMPANY_A);
 
@@ -182,14 +184,14 @@ final class UpdateUserControllerTest extends TestCase
             $this->callerId->value,
         ));
 
-        $this->assertSame(409, $response->status());
+        self::assertSame(409, $response->status());
     }
 
     public function testReturns422OnInvalidEmail(): void
     {
         $response = $this->ctrl()($this->patchRequest(['email' => 'not-an-email']));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422WhenCurrentPasswordMissingOnSelfPasswordChange(): void
@@ -201,7 +203,7 @@ final class UpdateUserControllerTest extends TestCase
             $this->callerId->value,
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422WhenCurrentPasswordWrong(): void
@@ -213,6 +215,6 @@ final class UpdateUserControllerTest extends TestCase
             $this->callerId->value,
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 }

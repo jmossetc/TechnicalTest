@@ -14,7 +14,7 @@ final class LastNameTest extends TestCase
     {
         $name = new LastName('Smith');
 
-        $this->assertSame('Smith', $name->value);
+        self::assertSame('Smith', $name->value);
     }
 
     public function testRejectsEmptyString(): void
@@ -39,6 +39,6 @@ final class LastNameTest extends TestCase
     {
         $name = new LastName(str_repeat('b', 255));
 
-        $this->assertSame(255, strlen($name->value));
+        self::assertSame(255, \strlen($name->value));
     }
 }

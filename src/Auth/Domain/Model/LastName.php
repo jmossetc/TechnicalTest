@@ -14,7 +14,7 @@ final readonly class LastName
             throw new InvalidArgumentException('Last name cannot be empty');
         }
 
-        if (strlen($value) > 255) {
+        if (\strlen($value) > 255) {
             throw new InvalidArgumentException('Last name cannot exceed 255 characters');
         }
     }

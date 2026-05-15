@@ -28,7 +28,7 @@ final readonly class UserUpdateInputValidatorService
         $phoneNumber = $this->nullableString($body['phone_number'] ?? null);
         $password    = $this->nullableString($body['password'] ?? null);
         $current     = $this->nullableString($body['current_password'] ?? null);
-        $isActive    = isset($body['is_active']) && is_bool($body['is_active']) ? $body['is_active'] : null;
+        $isActive    = isset($body['is_active']) && \is_bool($body['is_active']) ? $body['is_active'] : null;
         $role        = $this->nullableString($body['role'] ?? null);
         $companyId   = $this->nullableString($body['company_id'] ?? null);
         $shopId      = $this->nullableString($body['shop_id'] ?? null);
@@ -54,26 +54,26 @@ final readonly class UserUpdateInputValidatorService
             }
         }
 
-        if ($password !== null && strlen($password) < 8) {
+        if ($password !== null && \strlen($password) < 8) {
             throw new InvalidArgumentException('Password must be at least 8 characters long');
         }
 
         return new UserUpdateInput(
-            firstName:       $firstName,
-            lastName:        $lastName,
-            email:           $email,
-            phoneNumber:     $phoneNumber,
-            password:        $password,
+            firstName: $firstName,
+            lastName: $lastName,
+            email: $email,
+            phoneNumber: $phoneNumber,
+            password: $password,
             currentPassword: $current,
-            isActive:        $isActive,
-            role:            $role,
-            companyId:       $companyId,
-            shopId:          $shopId,
+            isActive: $isActive,
+            role: $role,
+            companyId: $companyId,
+            shopId: $shopId,
         );
     }
 
     private function nullableString(mixed $value): ?string
     {
-        return is_string($value) && $value !== '' ? $value : null;
+        return \is_string($value) && $value !== '' ? $value : null;
     }
 }

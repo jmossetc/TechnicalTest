@@ -13,7 +13,7 @@ final class AsHttpControllerTest extends TestCase
     {
         $attribute = new AsHttpController('my_route');
 
-        $this->assertSame('my_route', $attribute->route);
+        self::assertSame('my_route', $attribute->route);
     }
 
     public function testIsAnAttribute(): void
@@ -21,7 +21,7 @@ final class AsHttpControllerTest extends TestCase
         $reflection = new \ReflectionClass(AsHttpController::class);
         $attributes = $reflection->getAttributes(\Attribute::class);
 
-        $this->assertNotEmpty($attributes);
+        self::assertNotEmpty($attributes);
     }
 
     public function testTargetsClasses(): void
@@ -31,7 +31,7 @@ final class AsHttpControllerTest extends TestCase
         /** @var \Attribute $meta */
         $meta = $attrs[0]->newInstance();
 
-        $this->assertSame(\Attribute::TARGET_CLASS, $meta->flags);
+        self::assertSame(\Attribute::TARGET_CLASS, $meta->flags);
     }
 
     public function testRouteIsReadonly(): void
@@ -39,6 +39,6 @@ final class AsHttpControllerTest extends TestCase
         $reflection = new \ReflectionClass(AsHttpController::class);
         $property   = $reflection->getProperty('route');
 
-        $this->assertTrue($property->isReadOnly());
+        self::assertTrue($property->isReadOnly());
     }
 }

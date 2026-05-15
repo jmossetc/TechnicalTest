@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mossetc\TechnicalTest\Company\Domain\Service;
 
 use InvalidArgumentException;
@@ -10,7 +12,7 @@ use Mossetc\TechnicalTest\Company\Application\DTO\CompanyInput;
 
 final readonly class CompanyInputValidatorService
 {
-    public function __construct(private PhoneNumberUtil $phoneNumberUtil){}
+    public function __construct(private PhoneNumberUtil $phoneNumberUtil) {}
 
     /**
      * @param array<string, mixed> $inputs
@@ -60,7 +62,7 @@ final readonly class CompanyInputValidatorService
 
     private function nullableString(mixed $value): ?string
     {
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             return null;
         }
         return $value !== '' ? $value : null;

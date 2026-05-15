@@ -24,8 +24,8 @@ final class RegistrationInputValidatorServiceTest extends TestCase
     private function validator(?ShopRepositoryInterface $shopRepo = null): RegistrationInputValidatorService
     {
         return new RegistrationInputValidatorService(
-            $shopRepo ?? $this->createStub(ShopRepositoryInterface::class),
-                PhoneNumberUtil::getInstance()
+            $shopRepo ?? self::createStub(ShopRepositoryInterface::class),
+            PhoneNumberUtil::getInstance()
         );
     }
 
@@ -46,14 +46,14 @@ final class RegistrationInputValidatorServiceTest extends TestCase
 
     private function shopRepoReturning(?string $companyId): ShopRepositoryInterface
     {
-        $repo = $this->createStub(ShopRepositoryInterface::class);
+        $repo = self::createStub(ShopRepositoryInterface::class);
 
         if ($companyId !== null) {
             $shop = new Shop(
-                id:        ShopId::generate(),
+                id: ShopId::generate(),
                 companyId: new CompanyId($companyId),
-                name:      new ShopName('Test Shop'),
-                address:   new ShopAddress(),
+                name: new ShopName('Test Shop'),
+                address: new ShopAddress(),
             );
             $repo->method('findById')->willReturn($shop);
         }
@@ -176,20 +176,20 @@ final class RegistrationInputValidatorServiceTest extends TestCase
     {
         $input = $this->validator()->validate($this->baseBody());
 
-        $this->assertSame(Role::Employee, $input->role);
-        $this->assertSame('alice@example.com', $input->email);
-        $this->assertSame('password123',       $input->password);
-        $this->assertSame('Alice',             $input->firstName);
-        $this->assertSame('Smith',             $input->lastName);
-        $this->assertNull($input->companyId);
-        $this->assertNull($input->shopId);
+        self::assertSame(Role::Employee, $input->role);
+        self::assertSame('alice@example.com', $input->email);
+        self::assertSame('password123', $input->password);
+        self::assertSame('Alice', $input->firstName);
+        self::assertSame('Smith', $input->lastName);
+        self::assertNull($input->companyId);
+        self::assertNull($input->shopId);
     }
 
     public function testValidAdminInputReturnsInput(): void
     {
         $input = $this->validator()->validate($this->baseBody(['role' => 'admin']));
 
-        $this->assertSame(Role::Admin, $input->role);
+        self::assertSame(Role::Admin, $input->role);
     }
 
     public function testValidCompanyAdminInputSetsCompanyId(): void
@@ -199,9 +199,9 @@ final class RegistrationInputValidatorServiceTest extends TestCase
             'company_id' => self::COMPANY_A,
         ]));
 
-        $this->assertSame(Role::CompanyAdmin,  $input->role);
-        $this->assertSame(self::COMPANY_A,     $input->companyId);
-        $this->assertNull($input->shopId);
+        self::assertSame(Role::CompanyAdmin, $input->role);
+        self::assertSame(self::COMPANY_A, $input->companyId);
+        self::assertNull($input->shopId);
     }
 
     public function testValidShopManagerResolvesCompanyFromShop(): void
@@ -211,22 +211,22 @@ final class RegistrationInputValidatorServiceTest extends TestCase
             'shop_id' => self::SHOP_A,
         ]));
 
-        $this->assertSame(Role::ShopManager,   $input->role);
-        $this->assertSame(self::SHOP_A,        $input->shopId);
-        $this->assertSame(self::COMPANY_A,     $input->companyId);
+        self::assertSame(Role::ShopManager, $input->role);
+        self::assertSame(self::SHOP_A, $input->shopId);
+        self::assertSame(self::COMPANY_A, $input->companyId);
     }
 
     public function testPhoneNumberIsStoredWhenPresent(): void
     {
         $input = $this->validator()->validate($this->baseBody(['phone_number' => '+33612345678']));
 
-        $this->assertSame('+33612345678', $input->phoneNumber);
+        self::assertSame('+33612345678', $input->phoneNumber);
     }
 
     public function testPhoneNumberIsNullWhenAbsent(): void
     {
         $input = $this->validator()->validate($this->baseBody());
 
-        $this->assertNull($input->phoneNumber);
+        self::assertNull($input->phoneNumber);
     }
 }

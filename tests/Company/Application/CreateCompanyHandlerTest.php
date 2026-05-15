@@ -28,8 +28,8 @@ final class CreateCompanyHandlerTest extends TestCase
         $id = $this->handler->handle(new CreateCompany('Acme Corp'));
 
         $saved = $this->repository->findById($id);
-        $this->assertNotNull($saved);
-        $this->assertSame('Acme Corp', $saved->name->value);
+        self::assertNotNull($saved);
+        self::assertSame('Acme Corp', $saved->name->value);
     }
 
     public function testReturnedIdMatchesSavedCompany(): void
@@ -37,34 +37,34 @@ final class CreateCompanyHandlerTest extends TestCase
         $id      = $this->handler->handle(new CreateCompany('Globex'));
         $company = $this->repository->findById($id);
 
-        $this->assertNotNull($company);
-        $this->assertTrue($id->equals($company->id));
+        self::assertNotNull($company);
+        self::assertTrue($id->equals($company->id));
     }
 
     public function testStoresAllOptionalFields(): void
     {
         $this->handler->handle(new CreateCompany(
-            name:         'Full Corp',
-            email:        'info@full.com',
-            phoneNumber:  '+33123456789',
-            website:      'https://full.com',
+            name: 'Full Corp',
+            email: 'info@full.com',
+            phoneNumber: '+33123456789',
+            website: 'https://full.com',
             addressLine1: '10 Rue de la Paix',
             addressLine2: 'Bâtiment B',
-            city:         'Paris',
-            postalCode:   '75001',
-            country:      'France',
+            city: 'Paris',
+            postalCode: '75001',
+            country: 'France',
         ));
 
         $company = $this->repository->findByName(new CompanyName('Full Corp'));
-        $this->assertNotNull($company);
-        $this->assertSame('info@full.com',      $company->email);
-        $this->assertSame('+33123456789',        $company->phoneNumber);
-        $this->assertSame('https://full.com',    $company->website);
-        $this->assertSame('10 Rue de la Paix',   $company->addressLine1);
-        $this->assertSame('Bâtiment B',          $company->addressLine2);
-        $this->assertSame('Paris',               $company->city);
-        $this->assertSame('75001',               $company->postalCode);
-        $this->assertSame('France',              $company->country);
+        self::assertNotNull($company);
+        self::assertSame('info@full.com', $company->email);
+        self::assertSame('+33123456789', $company->phoneNumber);
+        self::assertSame('https://full.com', $company->website);
+        self::assertSame('10 Rue de la Paix', $company->addressLine1);
+        self::assertSame('Bâtiment B', $company->addressLine2);
+        self::assertSame('Paris', $company->city);
+        self::assertSame('75001', $company->postalCode);
+        self::assertSame('France', $company->country);
     }
 
     public function testThrowsWhenNameAlreadyExists(): void

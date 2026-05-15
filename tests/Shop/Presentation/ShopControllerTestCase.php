@@ -43,7 +43,7 @@ abstract class ShopControllerTestCase extends TestCase
 
     protected function makeAuth(): JwtAuthMiddleware
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willReturn($this->callerId);
 
         return new JwtAuthMiddleware($svc);
@@ -55,17 +55,17 @@ abstract class ShopControllerTestCase extends TestCase
         ?string $shopId = null,
     ): UserAuthorizationService {
         $caller = new User(
-            id:        $this->callerId,
-            email:     new Email('caller@test.test'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $this->callerId,
+            email: new Email('caller@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Caller'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
-            shopId:    $shopId,
+            shopId: $shopId,
         );
 
-        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo = self::createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturn($caller);
 
         return new UserAuthorizationService($repo);
@@ -81,15 +81,15 @@ abstract class ShopControllerTestCase extends TestCase
         ?string $country = null,
         bool $isDigital = false,
     ): ShopId {
-        return (new CreateShopHandler($this->shopRepo))->handle(new CreateShop(
-            companyId:   $companyId,
-            name:        $name,
-            email:       $email,
+        return new CreateShopHandler($this->shopRepo)->handle(new CreateShop(
+            companyId: $companyId,
+            name: $name,
+            email: $email,
             phoneNumber: $phoneNumber,
-            city:        $city,
-            postalCode:  $postalCode,
-            country:     $country,
-            isDigital:   $isDigital,
+            city: $city,
+            postalCode: $postalCode,
+            country: $country,
+            isDigital: $isDigital,
         ));
     }
 

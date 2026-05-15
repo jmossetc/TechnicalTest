@@ -36,8 +36,8 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
             $this->authedRequest('PUT', "/api/shops/{$id->value}", ['name' => 'Updated'], ['id' => $id->value]),
         );
 
-        $this->assertSame(200, $response->status());
-        $this->assertTrue($response->data()['updated']);
+        self::assertSame(200, $response->status());
+        self::assertTrue($response->data()['updated']);
     }
 
     public function testShopNameIsUpdatedInRepository(): void
@@ -48,15 +48,15 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
         );
 
         $shop = $this->shopRepo->findById($id);
-        $this->assertNotNull($shop);
-        $this->assertSame('Updated', $shop->name->value);
+        self::assertNotNull($shop);
+        self::assertSame('Updated', $shop->name->value);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
         $id = $this->seedShop(self::COMPANY_A);
         $response = $this->ctrl()($this->unauthRequest('PUT', "/api/shops/{$id->value}"));
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns404WhenShopNotFound(): void
@@ -64,7 +64,7 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('PUT', '/api/shops/' . self::UNKNOWN_UUID, ['name' => 'X'], ['id' => self::UNKNOWN_UUID]),
         );
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns400ForMalformedId(): void
@@ -72,7 +72,7 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('PUT', '/api/shops/bad-id', ['name' => 'X'], ['id' => 'bad-id']),
         );
-        $this->assertSame(400, $response->status());
+        self::assertSame(400, $response->status());
     }
 
     public function testReturns403WhenCallerLacksShopAccess(): void
@@ -82,7 +82,7 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl(Role::CompanyAdmin, '22222222-2222-4222-8222-222222222222')(
             $this->authedRequest('PUT', "/api/shops/{$id->value}", ['name' => 'X'], ['id' => $id->value]),
         );
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testReturns422WhenNameIsEmpty(): void
@@ -92,7 +92,7 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('PUT', "/api/shops/{$id->value}", ['name' => ''], ['id' => $id->value]),
         );
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422WhenNameIsMissing(): void
@@ -102,7 +102,7 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('PUT', "/api/shops/{$id->value}", [], ['id' => $id->value]),
         );
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns409WhenNewNameConflictsWithAnotherShop(): void
@@ -113,6 +113,6 @@ final class UpdateShopControllerTest extends ShopControllerTestCase
         $response = $this->ctrl()(
             $this->authedRequest('PUT', "/api/shops/{$id->value}", ['name' => 'Taken'], ['id' => $id->value]),
         );
-        $this->assertSame(409, $response->status());
+        self::assertSame(409, $response->status());
     }
 }

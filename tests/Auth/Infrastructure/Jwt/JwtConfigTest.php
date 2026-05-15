@@ -16,10 +16,10 @@ final class JwtConfigTest extends TestCase
     {
         $config = new JwtConfig(self::VALID_SECRET, 'https://issuer.test', 'https://audience.test', 3600);
 
-        $this->assertSame(self::VALID_SECRET,           $config->secret);
-        $this->assertSame('https://issuer.test',        $config->issuer);
-        $this->assertSame('https://audience.test',      $config->audience);
-        $this->assertSame(3600,                         $config->ttlSeconds);
+        self::assertSame(self::VALID_SECRET, $config->secret);
+        self::assertSame('https://issuer.test', $config->issuer);
+        self::assertSame('https://audience.test', $config->audience);
+        self::assertSame(3600, $config->ttlSeconds);
     }
 
     public function testRejectsSecretShorterThan32Characters(): void
@@ -33,7 +33,7 @@ final class JwtConfigTest extends TestCase
         $secret = str_repeat('a', 32);
         $config = new JwtConfig($secret, 'http://i', 'http://a');
 
-        $this->assertSame($secret, $config->secret);
+        self::assertSame($secret, $config->secret);
     }
 
     public function testRejectsEmptyIssuer(): void
@@ -64,6 +64,6 @@ final class JwtConfigTest extends TestCase
     {
         $config = new JwtConfig(self::VALID_SECRET, 'http://i', 'http://a');
 
-        $this->assertSame(3600, $config->ttlSeconds);
+        self::assertSame(3600, $config->ttlSeconds);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mossetc\TechnicalTest\Company\Application\DTO;
 
 final readonly class CompanyInput

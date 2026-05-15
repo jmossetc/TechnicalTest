@@ -17,7 +17,7 @@ final class PasswordHasherTest extends TestCase
 
         $hash = $hasher->hash($plain);
 
-        $this->assertNotSame($plain->value, $hash->hash);
+        self::assertNotSame($plain->value, $hash->hash);
     }
 
     public function testVerifiesCorrectPassword(): void
@@ -25,7 +25,7 @@ final class PasswordHasherTest extends TestCase
         $hasher = new PasswordHasher('');
         $plain  = new PlainPassword('secret123');
 
-        $this->assertTrue($hasher->verify($plain, $hasher->hash($plain)));
+        self::assertTrue($hasher->verify($plain, $hasher->hash($plain)));
     }
 
     public function testRejectsWrongPassword(): void
@@ -33,7 +33,7 @@ final class PasswordHasherTest extends TestCase
         $hasher = new PasswordHasher('');
         $hash   = $hasher->hash(new PlainPassword('correct123'));
 
-        $this->assertFalse($hasher->verify(new PlainPassword('wrongpass1'), $hash));
+        self::assertFalse($hasher->verify(new PlainPassword('wrongpass1'), $hash));
     }
 
     public function testTwoHashesOfSamePasswordDiffer(): void
@@ -41,7 +41,7 @@ final class PasswordHasherTest extends TestCase
         $hasher = new PasswordHasher('');
         $plain  = new PlainPassword('secret123');
 
-        $this->assertNotSame($hasher->hash($plain)->hash, $hasher->hash($plain)->hash);
+        self::assertNotSame($hasher->hash($plain)->hash, $hasher->hash($plain)->hash);
     }
 
     public function testEmptyPepperBehavesLikeNoPepper(): void
@@ -50,7 +50,7 @@ final class PasswordHasherTest extends TestCase
         $plain  = new PlainPassword('mypassword');
         $hash   = $hasher->hash($plain);
 
-        $this->assertTrue($hasher->verify($plain, $hash));
+        self::assertTrue($hasher->verify($plain, $hash));
     }
 
     public function testPepperChangesHash(): void
@@ -62,7 +62,7 @@ final class PasswordHasherTest extends TestCase
         $hashA = $noPepper->hash($plain);
         $hashB = $pepper->hash($plain);
 
-        $this->assertNotSame($hashA->hash, $hashB->hash);
+        self::assertNotSame($hashA->hash, $hashB->hash);
     }
 
     public function testHashedWithPepperCannotBeVerifiedWithoutPepper(): void
@@ -73,7 +73,7 @@ final class PasswordHasherTest extends TestCase
 
         $hash = $pepper->hash($plain);
 
-        $this->assertFalse($noPepper->verify($plain, $hash));
+        self::assertFalse($noPepper->verify($plain, $hash));
     }
 
     public function testPepperRoundTrip(): void
@@ -81,6 +81,6 @@ final class PasswordHasherTest extends TestCase
         $plain  = new PlainPassword('mypassword');
         $hasher = new PasswordHasher('supersecretpeppervalue32chars!!');
 
-        $this->assertTrue($hasher->verify($plain, $hasher->hash($plain)));
+        self::assertTrue($hasher->verify($plain, $hasher->hash($plain)));
     }
 }

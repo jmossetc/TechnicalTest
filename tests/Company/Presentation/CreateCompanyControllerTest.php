@@ -25,15 +25,15 @@ final class CreateCompanyControllerTest extends CompanyControllerTestCase
     {
         $response = $this->ctrl()($this->authedRequest('POST', '/api/companies', ['name' => 'Acme']));
 
-        $this->assertSame(201, $response->status());
-        $this->assertArrayHasKey('id', $response->data());
+        self::assertSame(201, $response->status());
+        self::assertArrayHasKey('id', $response->data());
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
     {
         $response = $this->ctrl()($this->unauthRequest('POST', '/api/companies'));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns403WhenNotAdmin(): void
@@ -42,21 +42,21 @@ final class CreateCompanyControllerTest extends CompanyControllerTestCase
             $this->authedRequest('POST', '/api/companies', ['name' => 'Corp']),
         );
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testReturns422WhenNameIsEmpty(): void
     {
         $response = $this->ctrl()($this->authedRequest('POST', '/api/companies', ['name' => '']));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns422WhenNameIsMissing(): void
     {
         $response = $this->ctrl()($this->authedRequest('POST', '/api/companies', []));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns409OnDuplicateName(): void
@@ -65,13 +65,13 @@ final class CreateCompanyControllerTest extends CompanyControllerTestCase
 
         $response = $this->ctrl()($this->authedRequest('POST', '/api/companies', ['name' => 'Taken']));
 
-        $this->assertSame(409, $response->status());
+        self::assertSame(409, $response->status());
     }
 
     public function testStoresCompanyInRepository(): void
     {
         $this->ctrl()($this->authedRequest('POST', '/api/companies', ['name' => 'New Corp']));
 
-        $this->assertSame(1, $this->companyRepo->countByCriteria(new CompanySearchCriteria()));
+        self::assertSame(1, $this->companyRepo->countByCriteria(new CompanySearchCriteria()));
     }
 }

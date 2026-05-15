@@ -24,13 +24,14 @@ final class UpdateCompanyControllerTest extends CompanyControllerTestCase
     {
         $id       = $this->seedCompany('Old Name');
         $response = $this->ctrl()($this->authedRequest(
-            'PATCH', "/api/companies/{$id->value}",
-            body:  ['name' => 'New Name'],
+            'PATCH',
+            "/api/companies/{$id->value}",
+            body: ['name' => 'New Name'],
             attrs: ['id'   => $id->value],
         ));
 
-        $this->assertSame(200, $response->status());
-        $this->assertTrue($response->data()['updated'] ?? false);
+        self::assertSame(200, $response->status());
+        self::assertTrue($response->data()['updated'] ?? false);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
@@ -38,42 +39,45 @@ final class UpdateCompanyControllerTest extends CompanyControllerTestCase
         $id       = $this->seedCompany();
         $response = $this->ctrl()($this->unauthRequest('PATCH', "/api/companies/{$id->value}", ['id' => $id->value]));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns403WhenForbidden(): void
     {
         $id       = $this->seedCompany();
         $response = $this->ctrl(Role::Employee)($this->authedRequest(
-            'PATCH', "/api/companies/{$id->value}",
-            body:  ['name' => 'X'],
+            'PATCH',
+            "/api/companies/{$id->value}",
+            body: ['name' => 'X'],
             attrs: ['id'   => $id->value],
         ));
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testReturns422WhenNameIsEmpty(): void
     {
         $id       = $this->seedCompany();
         $response = $this->ctrl()($this->authedRequest(
-            'PATCH', "/api/companies/{$id->value}",
-            body:  ['name' => ''],
+            'PATCH',
+            "/api/companies/{$id->value}",
+            body: ['name' => ''],
             attrs: ['id'   => $id->value],
         ));
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testReturns404WhenNotFound(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'PATCH', '/api/companies/99999999-9999-4999-8999-999999999999',
-            body:  ['name' => 'X'],
+            'PATCH',
+            '/api/companies/99999999-9999-4999-8999-999999999999',
+            body: ['name' => 'X'],
             attrs: ['id'   => '99999999-9999-4999-8999-999999999999'],
         ));
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns409OnDuplicateName(): void
@@ -82,12 +86,13 @@ final class UpdateCompanyControllerTest extends CompanyControllerTestCase
         $idBeta = $this->seedCompany('Beta');
 
         $response = $this->ctrl()($this->authedRequest(
-            'PATCH', "/api/companies/{$idBeta->value}",
-            body:  ['name' => 'Alpha'],
+            'PATCH',
+            "/api/companies/{$idBeta->value}",
+            body: ['name' => 'Alpha'],
             attrs: ['id'   => $idBeta->value],
         ));
 
-        $this->assertSame(409, $response->status());
+        self::assertSame(409, $response->status());
     }
 
     public function testIsActiveIsParsedAsBooleanTrue(): void
@@ -95,12 +100,13 @@ final class UpdateCompanyControllerTest extends CompanyControllerTestCase
         $id = $this->seedCompany();
 
         $this->ctrl()($this->authedRequest(
-            'PATCH', "/api/companies/{$id->value}",
-            body:  ['name' => 'Corp', 'is_active' => true],
+            'PATCH',
+            "/api/companies/{$id->value}",
+            body: ['name' => 'Corp', 'is_active' => true],
             attrs: ['id'   => $id->value],
         ));
 
-        $this->assertTrue($this->companyRepo->findById($id)?->isActive);
+        self::assertTrue($this->companyRepo->findById($id)?->isActive);
     }
 
     public function testIsActiveIsParsedAsBooleanFalse(): void
@@ -108,23 +114,25 @@ final class UpdateCompanyControllerTest extends CompanyControllerTestCase
         $id = $this->seedCompany();
 
         $this->ctrl()($this->authedRequest(
-            'PATCH', "/api/companies/{$id->value}",
-            body:  ['name' => 'Corp', 'is_active' => false],
+            'PATCH',
+            "/api/companies/{$id->value}",
+            body: ['name' => 'Corp', 'is_active' => false],
             attrs: ['id'   => $id->value],
         ));
 
-        $this->assertFalse($this->companyRepo->findById($id)?->isActive);
+        self::assertFalse($this->companyRepo->findById($id)?->isActive);
     }
 
     public function testCompanyAdminCanUpdateOwnCompany(): void
     {
         $id       = $this->seedCompany('Mine');
         $response = $this->ctrl(Role::CompanyAdmin, $id->value)($this->authedRequest(
-            'PATCH', "/api/companies/{$id->value}",
-            body:  ['name' => 'Mine Updated'],
+            'PATCH',
+            "/api/companies/{$id->value}",
+            body: ['name' => 'Mine Updated'],
             attrs: ['id'   => $id->value],
         ));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 }

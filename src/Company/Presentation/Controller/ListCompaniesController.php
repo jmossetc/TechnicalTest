@@ -74,14 +74,14 @@ final readonly class ListCompaniesController implements ControllerInterface
     private function buildCriteria(array $query): CompanySearchCriteria
     {
         return new CompanySearchCriteria(
-            name:        $this->nullableString($query['name'] ?? ''),
-            email:       $this->nullableString($query['email'] ?? ''),
+            name: $this->nullableString($query['name'] ?? ''),
+            email: $this->nullableString($query['email'] ?? ''),
             phoneNumber: $this->nullableString($query['phone_number'] ?? ''),
-            city:        $this->nullableString($query['city'] ?? ''),
-            postalCode:  $this->nullableString($query['postal_code'] ?? ''),
-            country:     $this->nullableString($query['country'] ?? ''),
+            city: $this->nullableString($query['city'] ?? ''),
+            postalCode: $this->nullableString($query['postal_code'] ?? ''),
+            country: $this->nullableString($query['country'] ?? ''),
             createdFrom: Date::parseDate($query['created_from'] ?? ''),
-            createdTo:   Date::parseDate($query['created_to'] ?? '', endOfDay: true),
+            createdTo: Date::parseDate($query['created_to'] ?? '', endOfDay: true),
         );
     }
 

@@ -20,25 +20,25 @@ final class UserUpdateInputValidatorServiceTest extends TestCase
     {
         $input = $this->validator()->validate([]);
 
-        $this->assertNull($input->firstName);
-        $this->assertNull($input->lastName);
-        $this->assertNull($input->email);
-        $this->assertNull($input->phoneNumber);
-        $this->assertNull($input->password);
-        $this->assertNull($input->currentPassword);
-        $this->assertNull($input->isActive);
-        $this->assertNull($input->role);
-        $this->assertNull($input->companyId);
-        $this->assertNull($input->shopId);
+        self::assertNull($input->firstName);
+        self::assertNull($input->lastName);
+        self::assertNull($input->email);
+        self::assertNull($input->phoneNumber);
+        self::assertNull($input->password);
+        self::assertNull($input->currentPassword);
+        self::assertNull($input->isActive);
+        self::assertNull($input->role);
+        self::assertNull($input->companyId);
+        self::assertNull($input->shopId);
     }
 
     public function testAcceptsValidPartialInput(): void
     {
         $input = $this->validator()->validate(['first_name' => 'Jane', 'last_name' => 'Doe']);
 
-        $this->assertSame('Jane', $input->firstName);
-        $this->assertSame('Doe', $input->lastName);
-        $this->assertNull($input->email);
+        self::assertSame('Jane', $input->firstName);
+        self::assertSame('Doe', $input->lastName);
+        self::assertNull($input->email);
     }
 
     public function testRejectsInvalidEmail(): void
@@ -61,7 +61,7 @@ final class UserUpdateInputValidatorServiceTest extends TestCase
     {
         $input = $this->validator()->validate(['phone_number' => '+33612345678']);
 
-        $this->assertSame('+33612345678', $input->phoneNumber);
+        self::assertSame('+33612345678', $input->phoneNumber);
     }
 
     public function testRejectsBlankFirstName(): void
@@ -92,20 +92,20 @@ final class UserUpdateInputValidatorServiceTest extends TestCase
     {
         $input = $this->validator()->validate(['is_active' => false]);
 
-        $this->assertFalse($input->isActive);
+        self::assertFalse($input->isActive);
     }
 
     public function testIgnoresNonBoolIsActive(): void
     {
         $input = $this->validator()->validate(['is_active' => 'yes']);
 
-        $this->assertNull($input->isActive);
+        self::assertNull($input->isActive);
     }
 
     public function testCurrentPasswordPassedThrough(): void
     {
         $input = $this->validator()->validate(['current_password' => 'myOldPass1']);
 
-        $this->assertSame('myOldPass1', $input->currentPassword);
+        self::assertSame('myOldPass1', $input->currentPassword);
     }
 }

@@ -51,20 +51,20 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         }
         $u = $this->store[$id->value];
         $this->store[$id->value] = new User(
-            id:          $u->id,
-            email:       $u->email,
-            password:    $u->password,
-            firstName:   $u->firstName,
-            lastName:    $u->lastName,
-            role:        $u->role,
-            companyId:   $u->companyId,
-            shopId:      $u->shopId,
+            id: $u->id,
+            email: $u->email,
+            password: $u->password,
+            firstName: $u->firstName,
+            lastName: $u->lastName,
+            role: $u->role,
+            companyId: $u->companyId,
+            shopId: $u->shopId,
             phoneNumber: $u->phoneNumber,
-            isActive:    $u->isActive,
+            isActive: $u->isActive,
             lastLoginAt: new DateTimeImmutable(),
-            createdAt:   $u->createdAt,
-            updatedAt:   $u->updatedAt,
-            deletedAt:   $u->deletedAt,
+            createdAt: $u->createdAt,
+            updatedAt: $u->updatedAt,
+            deletedAt: $u->deletedAt,
         );
     }
 

@@ -12,11 +12,11 @@ final class ShopAddressTest extends TestCase
     public function testDefaultsAllToNull(): void
     {
         $addr = new ShopAddress();
-        $this->assertNull($addr->addressLine1);
-        $this->assertNull($addr->addressLine2);
-        $this->assertNull($addr->city);
-        $this->assertNull($addr->postalCode);
-        $this->assertNull($addr->country);
+        self::assertNull($addr->addressLine1);
+        self::assertNull($addr->addressLine2);
+        self::assertNull($addr->city);
+        self::assertNull($addr->postalCode);
+        self::assertNull($addr->country);
     }
 
     public function testStoresAllFields(): void
@@ -24,14 +24,14 @@ final class ShopAddressTest extends TestCase
         $addr = new ShopAddress(
             addressLine1: '10 Rue de la Paix',
             addressLine2: 'Bâtiment B',
-            city:         'Paris',
-            postalCode:   '75001',
-            country:      'France',
+            city: 'Paris',
+            postalCode: '75001',
+            country: 'France',
         );
-        $this->assertSame('10 Rue de la Paix', $addr->addressLine1);
-        $this->assertSame('Bâtiment B',        $addr->addressLine2);
-        $this->assertSame('Paris',             $addr->city);
-        $this->assertSame('75001',             $addr->postalCode);
-        $this->assertSame('France',            $addr->country);
+        self::assertSame('10 Rue de la Paix', $addr->addressLine1);
+        self::assertSame('Bâtiment B', $addr->addressLine2);
+        self::assertSame('Paris', $addr->city);
+        self::assertSame('75001', $addr->postalCode);
+        self::assertSame('France', $addr->country);
     }
 }

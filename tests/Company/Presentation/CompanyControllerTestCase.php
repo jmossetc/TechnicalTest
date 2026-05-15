@@ -38,7 +38,7 @@ abstract class CompanyControllerTestCase extends TestCase
 
     protected function makeAuth(): JwtAuthMiddleware
     {
-        $svc = $this->createStub(TokenServiceInterface::class);
+        $svc = self::createStub(TokenServiceInterface::class);
         $svc->method('validate')->willReturn($this->callerId);
 
         return new JwtAuthMiddleware($svc);
@@ -57,16 +57,16 @@ abstract class CompanyControllerTestCase extends TestCase
     protected function makeAuthzWithRole(Role $role, ?string $companyId = null): UserAuthorizationService
     {
         $caller = new User(
-            id:        $this->callerId,
-            email:     new Email('caller@test.test'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $this->callerId,
+            email: new Email('caller@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Caller'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
         );
 
-        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo = self::createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturn($caller);
 
         return new UserAuthorizationService($repo);
@@ -74,7 +74,7 @@ abstract class CompanyControllerTestCase extends TestCase
 
     protected function seedCompany(string $name = 'Test Company'): CompanyId
     {
-        return (new CreateCompanyHandler($this->companyRepo))->handle(new CreateCompany($name));
+        return new CreateCompanyHandler($this->companyRepo)->handle(new CreateCompany($name));
     }
 
     protected function seedCompanyFull(
@@ -85,14 +85,14 @@ abstract class CompanyControllerTestCase extends TestCase
         ?string $postalCode = null,
         ?string $country = null,
     ): CompanyId {
-        return (new CreateCompanyHandler($this->companyRepo))
+        return new CreateCompanyHandler($this->companyRepo)
             ->handle(new CreateCompany(
-                name:        $name,
-                email:       $email,
+                name: $name,
+                email: $email,
                 phoneNumber: $phoneNumber,
-                city:        $city,
-                postalCode:  $postalCode,
-                country:     $country,
+                city: $city,
+                postalCode: $postalCode,
+                country: $country,
             ));
     }
 

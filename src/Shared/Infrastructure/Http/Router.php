@@ -35,7 +35,7 @@ final readonly class Router
             );
         }
 
-        $routeName = is_string($match['_route'] ?? null) ? $match['_route'] : '';
+        $routeName = \is_string($match['_route'] ?? null) ? $match['_route'] : '';
 
         if (!$this->controllers->has($routeName)) {
             return Response::error('Not Found', 404);
@@ -47,9 +47,7 @@ final readonly class Router
             return Response::error('Not Found', 404);
         }
 
-        $attributes = array_filter($match, static function ($value, $key) {
-            return is_string($value) && !str_starts_with($key, '_');
-        }, ARRAY_FILTER_USE_BOTH);
+        $attributes = array_filter($match, static fn($value, $key) => \is_string($value) && !str_starts_with($key, '_'), ARRAY_FILTER_USE_BOTH);
 
         return $controller($request->withAttributes($attributes));
     }

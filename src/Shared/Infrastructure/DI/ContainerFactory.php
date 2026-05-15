@@ -22,7 +22,7 @@ final class ContainerFactory
 {
     private static function create(): ContainerBuilder
     {
-        $projectDir = dirname(__DIR__, 4);
+        $projectDir = \dirname(__DIR__, 4);
 
         $container = new ContainerBuilder();
         $container->setParameter('routes.config', $projectDir . '/config/routes.yaml');

@@ -289,40 +289,40 @@ final class UserAuthorizationServiceTest extends TestCase
     public function testAdminWithNoFilterSeesEveryone(): void
     {
         $scope = $this->service(callerRole: Role::Admin)->resolveListingScope($this->callerId);
-        $this->assertTrue($scope->isAll());
+        self::assertTrue($scope->isAll());
     }
 
     public function testAdminWithCompanyFilterSeesThoseCompanies(): void
     {
         $scope = $this->service(callerRole: Role::Admin)
             ->resolveListingScope($this->callerId, [self::COMPANY_A, self::COMPANY_B]);
-        $this->assertTrue($scope->isCompanies());
-        $this->assertSame([self::COMPANY_A, self::COMPANY_B], $scope->ids);
+        self::assertTrue($scope->isCompanies());
+        self::assertSame([self::COMPANY_A, self::COMPANY_B], $scope->ids);
     }
 
     public function testCompanyAdminSeesOwnCompany(): void
     {
         $scope = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
             ->resolveListingScope($this->callerId);
-        $this->assertTrue($scope->isCompanies());
-        $this->assertSame([self::COMPANY_A], $scope->ids);
+        self::assertTrue($scope->isCompanies());
+        self::assertSame([self::COMPANY_A], $scope->ids);
     }
 
     public function testCompanyAdminCanFilterByShops(): void
     {
         $scope = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
             ->resolveListingScope($this->callerId, [], [self::SHOP_A1]);
-        $this->assertTrue($scope->isShops());
-        $this->assertSame([self::SHOP_A1], $scope->ids);
-        $this->assertSame(self::COMPANY_A, $scope->scopeCompanyId);
+        self::assertTrue($scope->isShops());
+        self::assertSame([self::SHOP_A1], $scope->ids);
+        self::assertSame(self::COMPANY_A, $scope->scopeCompanyId);
     }
 
     public function testShopManagerSeesOwnShop(): void
     {
         $scope = $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)
             ->resolveListingScope($this->callerId);
-        $this->assertTrue($scope->isShops());
-        $this->assertSame([self::SHOP_A1], $scope->ids);
+        self::assertTrue($scope->isShops());
+        self::assertSame([self::SHOP_A1], $scope->ids);
     }
 
     public function testEmployeeCannotListUsers(): void
@@ -358,25 +358,25 @@ final class UserAuthorizationServiceTest extends TestCase
     public function testAuthorizeShopAccessForAdmin(): void
     {
         $this->expectNotToPerformAssertions();
-        $this->service(callerRole: Role::Admin)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+        $this->service(callerRole: Role::Admin)->authorizeShopAccess($this->callerId, self::SHOP_A1, self::COMPANY_A);
     }
 
     public function testAuthorizeShopAccessForCompanyAdmin(): void
     {
         $this->expectNotToPerformAssertions();
-        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+        $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)->authorizeShopAccess($this->callerId, self::SHOP_A1, self::COMPANY_A);
     }
 
     public function testAuthorizeShopAccessForShopManager(): void
     {
         $this->expectNotToPerformAssertions();
-        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_A1)->authorizeShopAccess($this->callerId, self::SHOP_A1, self::COMPANY_A);
     }
 
     public function testAuthorizeShopAccessForWrongShopManager(): void
     {
         $this->expectException(ForbiddenException::class);
-        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_B1)->authorizeShopAccess($this->callerId, self::SHOP_A1,self::COMPANY_A);
+        $this->service(callerRole: Role::ShopManager, callerShopId: self::SHOP_B1)->authorizeShopAccess($this->callerId, self::SHOP_A1, self::COMPANY_A);
     }
 
     // ── resolveShopListingCompanyId ──────────────────────────────────────────────
@@ -386,7 +386,7 @@ final class UserAuthorizationServiceTest extends TestCase
         $result = $this->service(callerRole: Role::Admin)
             ->resolveShopListingCompanyId($this->callerId, null);
 
-        $this->assertNull($result);
+        self::assertNull($result);
     }
 
     public function testAdminCanFilterShopsByCompanyId(): void
@@ -394,7 +394,7 @@ final class UserAuthorizationServiceTest extends TestCase
         $result = $this->service(callerRole: Role::Admin)
             ->resolveShopListingCompanyId($this->callerId, self::COMPANY_A);
 
-        $this->assertSame(self::COMPANY_A, $result);
+        self::assertSame(self::COMPANY_A, $result);
     }
 
     public function testCompanyAdminGetsTheirOwnCompanyId(): void
@@ -402,7 +402,7 @@ final class UserAuthorizationServiceTest extends TestCase
         $result = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
             ->resolveShopListingCompanyId($this->callerId, null);
 
-        $this->assertSame(self::COMPANY_A, $result);
+        self::assertSame(self::COMPANY_A, $result);
     }
 
     public function testCompanyAdminRequestedCompanyIdIsIgnored(): void
@@ -410,7 +410,7 @@ final class UserAuthorizationServiceTest extends TestCase
         $result = $this->service(callerRole: Role::CompanyAdmin, callerCompanyId: self::COMPANY_A)
             ->resolveShopListingCompanyId($this->callerId, self::COMPANY_B);
 
-        $this->assertSame(self::COMPANY_A, $result);
+        self::assertSame(self::COMPANY_A, $result);
     }
 
     public function testShopManagerCannotListShops(): void
@@ -436,9 +436,9 @@ final class UserAuthorizationServiceTest extends TestCase
         $target = $this->makeUser($this->targetId, Role::Employee, self::COMPANY_A);
         $perms  = $this->serviceWithBoth(Role::Admin)->authorizeUserUpdate($this->callerId, $target);
 
-        $this->assertTrue($perms->canEditProfile);
-        $this->assertTrue($perms->canEditStatus);
-        $this->assertTrue($perms->canEditRole);
+        self::assertTrue($perms->canEditProfile);
+        self::assertTrue($perms->canEditStatus);
+        self::assertTrue($perms->canEditRole);
     }
 
     public function testSelfGetsProfilePermissionOnly(): void
@@ -446,9 +446,9 @@ final class UserAuthorizationServiceTest extends TestCase
         $self  = $this->makeUser($this->callerId, Role::Employee, self::COMPANY_A);
         $perms = $this->serviceWithBoth(Role::Employee, self::COMPANY_A)->authorizeUserUpdate($this->callerId, $self);
 
-        $this->assertTrue($perms->canEditProfile);
-        $this->assertFalse($perms->canEditStatus);
-        $this->assertFalse($perms->canEditRole);
+        self::assertTrue($perms->canEditProfile);
+        self::assertFalse($perms->canEditStatus);
+        self::assertFalse($perms->canEditRole);
     }
 
     public function testCompanyAdminGetsProfileAndStatusForOwnCompany(): void
@@ -457,9 +457,9 @@ final class UserAuthorizationServiceTest extends TestCase
         $perms  = $this->serviceWithBoth(Role::CompanyAdmin, self::COMPANY_A)
             ->authorizeUserUpdate($this->callerId, $target);
 
-        $this->assertTrue($perms->canEditProfile);
-        $this->assertTrue($perms->canEditStatus);
-        $this->assertFalse($perms->canEditRole);
+        self::assertTrue($perms->canEditProfile);
+        self::assertTrue($perms->canEditStatus);
+        self::assertFalse($perms->canEditRole);
     }
 
     public function testCompanyAdminForbiddenForOtherCompany(): void
@@ -477,9 +477,9 @@ final class UserAuthorizationServiceTest extends TestCase
         $perms  = $this->serviceWithBoth(Role::ShopManager, self::COMPANY_A, self::SHOP_A1)
             ->authorizeUserUpdate($this->callerId, $target);
 
-        $this->assertTrue($perms->canEditProfile);
-        $this->assertTrue($perms->canEditStatus);
-        $this->assertFalse($perms->canEditRole);
+        self::assertTrue($perms->canEditProfile);
+        self::assertTrue($perms->canEditStatus);
+        self::assertFalse($perms->canEditRole);
     }
 
     public function testShopManagerForbiddenForEmployeeInOtherShop(): void
@@ -519,7 +519,7 @@ final class UserAuthorizationServiceTest extends TestCase
     ): UserAuthorizationService {
         $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId, $isUserActive);
 
-        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo = self::createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturnCallback(
             static fn(UserId $id): ?User => $caller->id->equals($id) ? $caller : null,
         );
@@ -534,7 +534,7 @@ final class UserAuthorizationServiceTest extends TestCase
     ): UserAuthorizationService {
         $caller = $this->makeUser($this->callerId, $callerRole, $callerCompanyId, $callerShopId);
 
-        $repo = $this->createStub(UserRepositoryInterface::class);
+        $repo = self::createStub(UserRepositoryInterface::class);
         $repo->method('findById')->willReturnCallback(
             static fn(UserId $id): ?User => $caller->id->equals($id) ? $caller : null,
         );
@@ -550,15 +550,15 @@ final class UserAuthorizationServiceTest extends TestCase
         bool $isActive = true,
     ): User {
         return new User(
-            id:        $id,
-            email:     new Email($id->value . '@test.test'),
-            password:  HashedPassword::fromPlain(new PlainPassword('password123')),
+            id: $id,
+            email: new Email($id->value . '@test.test'),
+            password: HashedPassword::fromPlain(new PlainPassword('password123')),
             firstName: new FirstName('Test'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
-            shopId:    $shopId,
-            isActive:  $isActive,
+            shopId: $shopId,
+            isActive: $isActive,
         );
     }
 }

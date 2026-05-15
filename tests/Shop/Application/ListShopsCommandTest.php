@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Mossetc\TechnicalTest\Tests\Shop\Application;
 
 use InvalidArgumentException;
+use Mossetc\TechnicalTest\Shared\Domain\SortDirection;
 use Mossetc\TechnicalTest\Shop\Application\Command\ListShops;
 use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSearchCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria;
+use Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField;
 use PHPUnit\Framework\TestCase;
 
 final class ListShopsCommandTest extends TestCase
@@ -15,10 +18,10 @@ final class ListShopsCommandTest extends TestCase
     {
         $cmd = new ListShops();
 
-        $this->assertSame(1, $cmd->page);
-        $this->assertSame(10, $cmd->limit);
-        $this->assertNull($cmd->criteria->companyId);
-        $this->assertNull($cmd->criteria->name);
+        self::assertSame(1, $cmd->page);
+        self::assertSame(10, $cmd->limit);
+        self::assertNull($cmd->criteria->companyId);
+        self::assertNull($cmd->criteria->name);
     }
 
     public function testAcceptsCustomCriteria(): void
@@ -26,10 +29,10 @@ final class ListShopsCommandTest extends TestCase
         $criteria = new ShopSearchCriteria(name: 'Flagship', city: 'Paris');
         $cmd      = new ListShops(page: 2, limit: 20, criteria: $criteria);
 
-        $this->assertSame(2,          $cmd->page);
-        $this->assertSame(20,         $cmd->limit);
-        $this->assertSame('Flagship', $cmd->criteria->name);
-        $this->assertSame('Paris',    $cmd->criteria->city);
+        self::assertSame(2, $cmd->page);
+        self::assertSame(20, $cmd->limit);
+        self::assertSame('Flagship', $cmd->criteria->name);
+        self::assertSame('Paris', $cmd->criteria->city);
     }
 
     public function testRejectsPageZero(): void
@@ -58,26 +61,26 @@ final class ListShopsCommandTest extends TestCase
 
     public function testAcceptsLimitBoundaries(): void
     {
-        $this->assertSame(1,   (new ListShops(limit: 1))->limit);
-        $this->assertSame(100, (new ListShops(limit: 100))->limit);
+        self::assertSame(1, new ListShops(limit: 1)->limit);
+        self::assertSame(100, new ListShops(limit: 100)->limit);
     }
 
     public function testDefaultSortIsNameAsc(): void
     {
         $cmd = new ListShops();
 
-        $this->assertSame(\Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField::Name, $cmd->sort->field);
-        $this->assertSame(\Mossetc\TechnicalTest\Shared\Domain\SortDirection::Asc, $cmd->sort->direction);
+        self::assertSame(ShopSortField::Name, $cmd->sort->field);
+        self::assertSame(SortDirection::Asc, $cmd->sort->direction);
     }
 
     public function testAcceptsCustomSort(): void
     {
-        $sort = new \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortCriteria(
-            field:     \Mossetc\TechnicalTest\Shop\Domain\Model\ShopSortField::CreatedAt,
-            direction: \Mossetc\TechnicalTest\Shared\Domain\SortDirection::Desc,
+        $sort = new ShopSortCriteria(
+            field: ShopSortField::CreatedAt,
+            direction: SortDirection::Desc,
         );
         $cmd = new ListShops(sort: $sort);
 
-        $this->assertSame($sort, $cmd->sort);
+        self::assertSame($sort, $cmd->sort);
     }
 }

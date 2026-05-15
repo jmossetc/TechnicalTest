@@ -39,18 +39,18 @@ final readonly class UpdateCompanyHandler
         }
 
         $this->repository->save(new Company(
-            id:           $existing->id,
-            name:         $newName,
-            email:        $command->email        ?? $existing->email,
-            phoneNumber:  $command->phoneNumber  ?? $existing->phoneNumber,
-            website:      $command->website      ?? $existing->website,
+            id: $existing->id,
+            name: $newName,
+            email: $command->email        ?? $existing->email,
+            phoneNumber: $command->phoneNumber  ?? $existing->phoneNumber,
+            website: $command->website      ?? $existing->website,
             addressLine1: $command->addressLine1 ?? $existing->addressLine1,
             addressLine2: $command->addressLine2 ?? $existing->addressLine2,
-            city:         $command->city         ?? $existing->city,
-            postalCode:   $command->postalCode   ?? $existing->postalCode,
-            country:      $command->country      ?? $existing->country,
-            isActive:     $command->isActive     ?? $existing->isActive,
-            createdAt:    $existing->createdAt,
+            city: $command->city         ?? $existing->city,
+            postalCode: $command->postalCode   ?? $existing->postalCode,
+            country: $command->country      ?? $existing->country,
+            isActive: $command->isActive     ?? $existing->isActive,
+            createdAt: $existing->createdAt,
         ));
     }
 }

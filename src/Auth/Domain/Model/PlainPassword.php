@@ -10,7 +10,7 @@ final readonly class PlainPassword
 {
     public function __construct(public string $value)
     {
-        if (strlen($value) < 8) {
+        if (\strlen($value) < 8) {
             throw new InvalidArgumentException('Password must be at least 8 characters long');
         }
     }

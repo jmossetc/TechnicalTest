@@ -13,11 +13,11 @@ final class UserScopeTest extends TestCase
     {
         $scope = UserScope::all();
 
-        $this->assertTrue($scope->isAll());
-        $this->assertFalse($scope->isCompanies());
-        $this->assertFalse($scope->isShops());
-        $this->assertSame([], $scope->ids);
-        $this->assertNull($scope->scopeCompanyId);
+        self::assertTrue($scope->isAll());
+        self::assertFalse($scope->isCompanies());
+        self::assertFalse($scope->isShops());
+        self::assertSame([], $scope->ids);
+        self::assertNull($scope->scopeCompanyId);
     }
 
     public function testCompaniesScopeHoldsIds(): void
@@ -25,11 +25,11 @@ final class UserScopeTest extends TestCase
         $ids   = ['aaa', 'bbb'];
         $scope = UserScope::companies($ids);
 
-        $this->assertFalse($scope->isAll());
-        $this->assertTrue($scope->isCompanies());
-        $this->assertFalse($scope->isShops());
-        $this->assertSame($ids, $scope->ids);
-        $this->assertNull($scope->scopeCompanyId);
+        self::assertFalse($scope->isAll());
+        self::assertTrue($scope->isCompanies());
+        self::assertFalse($scope->isShops());
+        self::assertSame($ids, $scope->ids);
+        self::assertNull($scope->scopeCompanyId);
     }
 
     public function testShopsScopeHoldsIds(): void
@@ -37,25 +37,25 @@ final class UserScopeTest extends TestCase
         $ids   = ['shop1'];
         $scope = UserScope::shops($ids);
 
-        $this->assertFalse($scope->isAll());
-        $this->assertFalse($scope->isCompanies());
-        $this->assertTrue($scope->isShops());
-        $this->assertSame($ids, $scope->ids);
-        $this->assertNull($scope->scopeCompanyId);
+        self::assertFalse($scope->isAll());
+        self::assertFalse($scope->isCompanies());
+        self::assertTrue($scope->isShops());
+        self::assertSame($ids, $scope->ids);
+        self::assertNull($scope->scopeCompanyId);
     }
 
     public function testShopsScopeWithScopeCompanyId(): void
     {
         $scope = UserScope::shops(['shop1'], 'company-x');
 
-        $this->assertTrue($scope->isShops());
-        $this->assertSame('company-x', $scope->scopeCompanyId);
+        self::assertTrue($scope->isShops());
+        self::assertSame('company-x', $scope->scopeCompanyId);
     }
 
     public function testDefaultConstructorProducesAllScope(): void
     {
         $scope = new UserScope();
 
-        $this->assertTrue($scope->isAll());
+        self::assertTrue($scope->isAll());
     }
 }

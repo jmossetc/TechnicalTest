@@ -13,34 +13,34 @@ final class PaginatedUsersTest extends TestCase
     {
         $result = new PaginatedUsers(users: [], total: 25, page: 1, limit: 10);
 
-        $this->assertSame(3, $result->pages());
+        self::assertSame(3, $result->pages());
     }
 
     public function testExactDivisionProducesNoExtraPage(): void
     {
         $result = new PaginatedUsers(users: [], total: 20, page: 1, limit: 10);
 
-        $this->assertSame(2, $result->pages());
+        self::assertSame(2, $result->pages());
     }
 
     public function testZeroTotalReturnsZeroPages(): void
     {
         $result = new PaginatedUsers(users: [], total: 0, page: 1, limit: 10);
 
-        $this->assertSame(0, $result->pages());
+        self::assertSame(0, $result->pages());
     }
 
     public function testFewerItemsThanLimitIsOnePage(): void
     {
         $result = new PaginatedUsers(users: [], total: 5, page: 1, limit: 10);
 
-        $this->assertSame(1, $result->pages());
+        self::assertSame(1, $result->pages());
     }
 
     public function testSingleItemSinglePage(): void
     {
         $result = new PaginatedUsers(users: [], total: 1, page: 1, limit: 1);
 
-        $this->assertSame(1, $result->pages());
+        self::assertSame(1, $result->pages());
     }
 }

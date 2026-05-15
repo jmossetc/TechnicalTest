@@ -19,29 +19,29 @@ final class RouteLoader
 
         $config = Yaml::parseFile($path);
 
-        if (!is_array($config)) {
+        if (!\is_array($config)) {
             throw new RuntimeException("Route config must be a YAML mapping: {$path}");
         }
 
         $routes = new RouteCollection();
 
         foreach ($config as $name => $definition) {
-            if (!is_string($name) || !is_array($definition)) {
+            if (!\is_string($name) || !\is_array($definition)) {
                 continue;
             }
 
             $routePath = $definition['path'] ?? null;
 
-            if (!is_string($routePath)) {
+            if (!\is_string($routePath)) {
                 throw new RuntimeException("Route '{$name}' is missing a 'path' key");
             }
 
             $methods = [];
             $rawMethods = $definition['methods'] ?? [];
 
-            if (is_array($rawMethods)) {
+            if (\is_array($rawMethods)) {
                 foreach ($rawMethods as $method) {
-                    if (is_string($method)) {
+                    if (\is_string($method)) {
                         $methods[] = strtoupper($method);
                     }
                 }

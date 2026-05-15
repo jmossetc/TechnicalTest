@@ -24,17 +24,17 @@ final class GetCompanyControllerTest extends CompanyControllerTestCase
         $id       = $this->seedCompany('Acme');
         $response = $this->ctrl()($this->authedRequest('GET', "/api/companies/{$id->value}", attrs: ['id' => $id->value]));
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
         $data = $response->data();
-        $this->assertSame($id->value, $data['id']);
-        $this->assertSame('Acme',     $data['name']);
-        $this->assertArrayHasKey('email',          $data);
-        $this->assertArrayHasKey('phone_number',   $data);
-        $this->assertArrayHasKey('website',        $data);
-        $this->assertArrayHasKey('address_line_1', $data);
-        $this->assertArrayHasKey('city',           $data);
-        $this->assertArrayHasKey('is_active',      $data);
-        $this->assertArrayHasKey('created_at',     $data);
+        self::assertSame($id->value, $data['id']);
+        self::assertSame('Acme', $data['name']);
+        self::assertArrayHasKey('email', $data);
+        self::assertArrayHasKey('phone_number', $data);
+        self::assertArrayHasKey('website', $data);
+        self::assertArrayHasKey('address_line_1', $data);
+        self::assertArrayHasKey('city', $data);
+        self::assertArrayHasKey('is_active', $data);
+        self::assertArrayHasKey('created_at', $data);
     }
 
     public function testReturns401WhenNoAuthorizationHeader(): void
@@ -42,7 +42,7 @@ final class GetCompanyControllerTest extends CompanyControllerTestCase
         $id       = $this->seedCompany();
         $response = $this->ctrl()($this->unauthRequest('GET', "/api/companies/{$id->value}", ['id' => $id->value]));
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testReturns403WhenForbidden(): void
@@ -53,27 +53,29 @@ final class GetCompanyControllerTest extends CompanyControllerTestCase
             $this->authedRequest('GET', "/api/companies/{$id->value}", attrs: ['id' => $id->value]),
         );
 
-        $this->assertSame(403, $response->status());
+        self::assertSame(403, $response->status());
     }
 
     public function testReturns404WhenNotFound(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/companies/99999999-9999-4999-8999-999999999999',
+            'GET',
+            '/api/companies/99999999-9999-4999-8999-999999999999',
             attrs: ['id' => '99999999-9999-4999-8999-999999999999'],
         ));
 
-        $this->assertSame(404, $response->status());
+        self::assertSame(404, $response->status());
     }
 
     public function testReturns400ForMalformedId(): void
     {
         $response = $this->ctrl()($this->authedRequest(
-            'GET', '/api/companies/bad-id',
+            'GET',
+            '/api/companies/bad-id',
             attrs: ['id' => 'bad-id'],
         ));
 
-        $this->assertSame(400, $response->status());
+        self::assertSame(400, $response->status());
     }
 
     public function testCompanyAdminCanAccessOwnCompany(): void
@@ -83,6 +85,6 @@ final class GetCompanyControllerTest extends CompanyControllerTestCase
             $this->authedRequest('GET', "/api/companies/{$id->value}", attrs: ['id' => $id->value]),
         );
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 }

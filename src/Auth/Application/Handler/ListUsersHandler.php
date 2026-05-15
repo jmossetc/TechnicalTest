@@ -29,7 +29,7 @@ final readonly class ListUsersHandler
         return new PaginatedUsers(
             users: $users,
             total: $total,
-            page:  $command->page,
+            page: $command->page,
             limit: $command->limit,
         );
     }

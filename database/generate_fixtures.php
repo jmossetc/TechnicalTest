@@ -207,31 +207,31 @@ $tcm = count($companyRoleRows);
 $tsm = count($shopRoleRows);
 
 echo <<<SQL
--- =============================================================================
---  fixtures.sql  –  Stress-test dataset
---
---  Users:            {$tu}   (5 admins · {$tcm} company managers · {$tsm} shop managers · plain)
---  Companies:        {$tc}  (5 soft-deleted)
---  Shops:            {$ts} (7 per company, 30 soft-deleted)
---  company_manager:  {$tcm}  role grants
---  shop_manager:     {$tsm}  role grants
---
---  All passwords: Secret1234!
--- =============================================================================
+    -- =============================================================================
+    --  fixtures.sql  –  Stress-test dataset
+    --
+    --  Users:            {$tu}   (5 admins · {$tcm} company managers · {$tsm} shop managers · plain)
+    --  Companies:        {$tc}  (5 soft-deleted)
+    --  Shops:            {$ts} (7 per company, 30 soft-deleted)
+    --  company_manager:  {$tcm}  role grants
+    --  shop_manager:     {$tsm}  role grants
+    --
+    --  All passwords: Secret1234!
+    -- =============================================================================
 
-SET foreign_key_checks = 0;
+    SET foreign_key_checks = 0;
 
-TRUNCATE TABLE user_shop_roles;
-TRUNCATE TABLE user_company_roles;
-TRUNCATE TABLE user_admin_roles;
-TRUNCATE TABLE shops;
-TRUNCATE TABLE companies;
-TRUNCATE TABLE users;
+    TRUNCATE TABLE user_shop_roles;
+    TRUNCATE TABLE user_company_roles;
+    TRUNCATE TABLE user_admin_roles;
+    TRUNCATE TABLE shops;
+    TRUNCATE TABLE companies;
+    TRUNCATE TABLE users;
 
-SET foreign_key_checks = 1;
+    SET foreign_key_checks = 1;
 
 
-SQL;
+    SQL;
 
 insertChunked('users', '(id, email, password_hash, deleted_at)', $userRows, 50);
 insertChunked('user_admin_roles', '(user_id)', $adminRoleRows, 50);

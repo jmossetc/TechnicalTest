@@ -22,7 +22,7 @@ final readonly class JwtConfig
         string $audience,
         int $ttlSeconds = 3600,
     ) {
-        if (strlen($secret) < 32) {
+        if (\strlen($secret) < 32) {
             throw new InvalidArgumentException('JWT secret must be at least 32 characters long');
         }
 

@@ -15,7 +15,7 @@ final class ResponseTest extends TestCase
     {
         $response = Response::json(['key' => 'value']);
 
-        $this->assertSame(200, $response->status());
+        self::assertSame(200, $response->status());
     }
 
     public function testJsonStoresData(): void
@@ -23,22 +23,22 @@ final class ResponseTest extends TestCase
         $data     = ['id' => '123', 'name' => 'Alice'];
         $response = Response::json($data);
 
-        $this->assertSame($data, $response->data());
+        self::assertSame($data, $response->data());
     }
 
     public function testJsonAcceptsCustomStatus(): void
     {
         $response = Response::json(['id' => '1'], 201);
 
-        $this->assertSame(201, $response->status());
+        self::assertSame(201, $response->status());
     }
 
     public function testJsonAcceptsEmptyArray(): void
     {
         $response = Response::json([]);
 
-        $this->assertSame([], $response->data());
-        $this->assertSame(200, $response->status());
+        self::assertSame([], $response->data());
+        self::assertSame(200, $response->status());
     }
 
     // ── error() ───────────────────────────────────────────────────────────────
@@ -47,42 +47,42 @@ final class ResponseTest extends TestCase
     {
         $response = Response::error('Something went wrong');
 
-        $this->assertSame(400, $response->status());
+        self::assertSame(400, $response->status());
     }
 
     public function testErrorWrapsMessageInErrorKey(): void
     {
         $response = Response::error('Not found');
 
-        $this->assertSame(['error' => 'Not found'], $response->data());
+        self::assertSame(['error' => 'Not found'], $response->data());
     }
 
     public function testErrorAcceptsCustomStatus(): void
     {
         $response = Response::error('Unauthorized', 401);
 
-        $this->assertSame(401, $response->status());
+        self::assertSame(401, $response->status());
     }
 
     public function testError404(): void
     {
         $response = Response::error('Not Found', 404);
 
-        $this->assertSame(404, $response->status());
-        $this->assertSame('Not Found', $response->data()['error']);
+        self::assertSame(404, $response->status());
+        self::assertSame('Not Found', $response->data()['error']);
     }
 
     public function testError422(): void
     {
         $response = Response::error('Validation failed', 422);
 
-        $this->assertSame(422, $response->status());
+        self::assertSame(422, $response->status());
     }
 
     public function testError500(): void
     {
         $response = Response::error('Internal error', 500);
 
-        $this->assertSame(500, $response->status());
+        self::assertSame(500, $response->status());
     }
 }

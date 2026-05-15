@@ -54,7 +54,7 @@ final readonly class UpdateCompanyController implements ControllerInterface
         }
 
         $isActiveRaw = $request->body['is_active'] ?? null;
-        $isActive    = is_bool($isActiveRaw) ? $isActiveRaw : null;
+        $isActive    = \is_bool($isActiveRaw) ? $isActiveRaw : null;
 
         try {
             $this->handler->handle(UpdateCompany::fromCompanyInput($companyInput, $id, $isActive));

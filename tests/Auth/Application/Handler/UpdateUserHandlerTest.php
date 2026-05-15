@@ -49,14 +49,14 @@ final class UpdateUserHandlerTest extends TestCase
     ): User {
         $email = $email !== '' ? $email : $id->value . '@test.test';
         $user  = new User(
-            id:        $id,
-            email:     new Email($email),
-            password:  HashedPassword::fromPlain(new PlainPassword($password)),
+            id: $id,
+            email: new Email($email),
+            password: HashedPassword::fromPlain(new PlainPassword($password)),
             firstName: new FirstName('Test'),
-            lastName:  new LastName('User'),
-            role:      $role,
+            lastName: new LastName('User'),
+            role: $role,
             companyId: $companyId,
-            shopId:    $shopId,
+            shopId: $shopId,
         );
         $this->repo->save($user);
 
@@ -72,9 +72,9 @@ final class UpdateUserHandlerTest extends TestCase
         $this->handler()->handle(new UpdateUser($userId, $userId->value, $input));
 
         $updated = $this->repo->findById($userId);
-        $this->assertNotNull($updated);
-        $this->assertSame('Jane', $updated->firstName->value);
-        $this->assertSame('Smith', $updated->lastName->value);
+        self::assertNotNull($updated);
+        self::assertSame('Jane', $updated->firstName->value);
+        self::assertSame('Smith', $updated->lastName->value);
     }
 
     public function testSelfCanChangePasswordWithCorrectCurrentPassword(): void
@@ -86,8 +86,8 @@ final class UpdateUserHandlerTest extends TestCase
         $this->handler()->handle(new UpdateUser($userId, $userId->value, $input));
 
         $updated = $this->repo->findById($userId);
-        $this->assertNotNull($updated);
-        $this->assertTrue($updated->password->verify(new PlainPassword('newPassword1')));
+        self::assertNotNull($updated);
+        self::assertTrue($updated->password->verify(new PlainPassword('newPassword1')));
     }
 
     public function testSelfThrowsWhenCurrentPasswordMissing(): void
@@ -123,8 +123,8 @@ final class UpdateUserHandlerTest extends TestCase
         $this->handler()->handle(new UpdateUser($userId, $userId->value, $input));
 
         $updated = $this->repo->findById($userId);
-        $this->assertNotNull($updated);
-        $this->assertTrue($updated->isActive); // silently ignored
+        self::assertNotNull($updated);
+        self::assertTrue($updated->isActive); // silently ignored
     }
 
     public function testAdminCanChangeRole(): void
@@ -138,9 +138,9 @@ final class UpdateUserHandlerTest extends TestCase
         $this->handler()->handle(new UpdateUser($adminId, $targetId->value, $input));
 
         $updated = $this->repo->findById($targetId);
-        $this->assertNotNull($updated);
-        $this->assertSame(Role::CompanyAdmin, $updated->role);
-        $this->assertSame(self::COMPANY_A, $updated->companyId);
+        self::assertNotNull($updated);
+        self::assertSame(Role::CompanyAdmin, $updated->role);
+        self::assertSame(self::COMPANY_A, $updated->companyId);
     }
 
     public function testAdminCanChangePasswordWithoutCurrentPassword(): void
@@ -154,8 +154,8 @@ final class UpdateUserHandlerTest extends TestCase
         $this->handler()->handle(new UpdateUser($adminId, $targetId->value, $input));
 
         $updated = $this->repo->findById($targetId);
-        $this->assertNotNull($updated);
-        $this->assertTrue($updated->password->verify(new PlainPassword('newPassword1')));
+        self::assertNotNull($updated);
+        self::assertTrue($updated->password->verify(new PlainPassword('newPassword1')));
     }
 
     public function testEmailConflictThrows(): void
@@ -204,8 +204,8 @@ final class UpdateUserHandlerTest extends TestCase
         $this->handler()->handle(new UpdateUser($managerId, $empId->value, $input));
 
         $updated = $this->repo->findById($empId);
-        $this->assertNotNull($updated);
-        $this->assertTrue($updated->password->verify(new PlainPassword('oldPassword1'))); // unchanged
+        self::assertNotNull($updated);
+        self::assertTrue($updated->password->verify(new PlainPassword('oldPassword1'))); // unchanged
     }
 
     public function testCompanyAdminCanSetIsActive(): void
@@ -219,7 +219,7 @@ final class UpdateUserHandlerTest extends TestCase
         $this->handler()->handle(new UpdateUser($adminId, $targetId->value, $input));
 
         $updated = $this->repo->findById($targetId);
-        $this->assertNotNull($updated);
-        $this->assertFalse($updated->isActive);
+        self::assertNotNull($updated);
+        self::assertFalse($updated->isActive);
     }
 }

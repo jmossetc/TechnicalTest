@@ -13,37 +13,37 @@ final class PaginatedCompaniesTest extends TestCase
     {
         $dto = new PaginatedCompanies(companies: [], total: 25, page: 1, limit: 10);
 
-        $this->assertSame(3, $dto->pages());
+        self::assertSame(3, $dto->pages());
     }
 
     public function testExactDivisionProducesNoExtraPage(): void
     {
         $dto = new PaginatedCompanies(companies: [], total: 20, page: 1, limit: 10);
 
-        $this->assertSame(2, $dto->pages());
+        self::assertSame(2, $dto->pages());
     }
 
     public function testZeroTotalReturnsZeroPages(): void
     {
         $dto = new PaginatedCompanies(companies: [], total: 0, page: 1, limit: 10);
 
-        $this->assertSame(0, $dto->pages());
+        self::assertSame(0, $dto->pages());
     }
 
     public function testFewerItemsThanLimitIsOnePage(): void
     {
         $dto = new PaginatedCompanies(companies: [], total: 3, page: 1, limit: 10);
 
-        $this->assertSame(1, $dto->pages());
+        self::assertSame(1, $dto->pages());
     }
 
     public function testHoldsAllFields(): void
     {
         $dto = new PaginatedCompanies(companies: [], total: 5, page: 2, limit: 10);
 
-        $this->assertSame([], $dto->companies);
-        $this->assertSame(5,  $dto->total);
-        $this->assertSame(2,  $dto->page);
-        $this->assertSame(10, $dto->limit);
+        self::assertSame([], $dto->companies);
+        self::assertSame(5, $dto->total);
+        self::assertSame(2, $dto->page);
+        self::assertSame(10, $dto->limit);
     }
 }
