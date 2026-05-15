@@ -225,7 +225,7 @@
                 </div>
                 <div class="form-group">
                     <label>Address line 1</label>
-                    <input type="text" class="form-control" x-model="modal.form.addressLine1">
+                    <input type="text" class="form-control" x-model="modal.form.address_line_1">
                 </div>
                 <div class="form-row">
                     <div class="col form-group">
@@ -319,7 +319,7 @@ function shopsPage() {
                 open: true, mode: 'create', error: '', saving: false,
                 form: {
                     company_id: '', name: '', email: '', phone_number: '',
-                    addressLine1: '', city: '', postal_code: '', country: '', is_digital: false,
+                    address_line_1: '', city: '', postal_code: '', country: '', is_digital: false,
                 },
             };
         },
@@ -333,7 +333,9 @@ function shopsPage() {
             this.modal.error = '';
             try {
                 if (this.modal.mode === 'create') {
-                    const { company_id, ...body } = this.modal.form;
+                    const { company_id, address_line_1, ...rest } = this.modal.form;
+                    const body = { ...rest };
+                    if (address_line_1) body.addressLine1 = address_line_1;
                     await api.post(`/api/companies/${company_id}/shops`, body);
                 } else {
                     const { id, company_id, created_at, updated_at, ...body } = this.modal.form;
