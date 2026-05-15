@@ -66,7 +66,6 @@ CREATE TABLE IF NOT EXISTS shops
     KEY idx_shops_created_at (created_at),
     KEY idx_shops_is_active  (is_active),
     KEY idx_shops_is_digital (is_digital),
-    KEY idx_shops_created_at (created_at),
     KEY idx_shops_updated_at (updated_at),
     KEY idx_shops_deleted_at (deleted_at),
     CONSTRAINT fk_shops_company
