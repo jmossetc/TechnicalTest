@@ -2,7 +2,7 @@
 
 Welcome! This project is a technical test implementation featuring a PHP-based API with Docker support. This guide will
 help you set up, run, and test the application efficiently. There is an admin dashboard and API documentation available.
-Beware, the dashboard was made with AI so it has issues.
+It was made for a company during my job search in 48h without any other demands than "Write a Backend-End to manage companies using REST APIs". Beware, the dashboard was made with AI so it has issues.
 
 The project has three tables:
 - `users`
