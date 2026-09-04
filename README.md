@@ -2,7 +2,7 @@
 
 Welcome! This project is a technical test implementation featuring a PHP-based API with Docker support. This guide will
 help you set up, run, and test the application efficiently. There is an admin dashboard and API documentation available.
-It was made for a company during my job search in 48h without any other demands than "Write a Backend-End to manage companies using REST APIs". Beware, the dashboard was made with AI so it has issues.
+It was made for a company during my job search in 48h without any other demands than "Write a Backend-End to manage companies using REST APIs". Beware, the dashboard was vibe-coded without too much care as front-end wasn't evaluated.
 
 The project has three tables:
 - `users`
@@ -177,13 +177,3 @@ I have tried to use DDD, it may not be perfect as I have not worked with this ar
 - `docker/` — Docker configuration and entrypoints
 - `public/` — Entry point for the web server, the admin dashboard and api-docs
 - `config/` — Dependency Injection and Routing configs
-
-## 🤖 AI Usage
-
-I have used claude code specifically to generate most Unit Tests and Behat Features.
-
-While this is not ideal, I believe that it is better than having no tests. Realistically, 
-AI generated code is not always perfect and can introduce bugs. However, it can save time and effort in the short term.
-Which was ideal given the time constraints.
-
-Also, I have used the AI to generate the admin dashboard as it is not what I'm tested on.
